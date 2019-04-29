@@ -11,7 +11,7 @@ from pyhdf import SD
 import pprint
 
 # Specify hdf file
-f = SD.SD('CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf')
+f = SD.SD('../Data/CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf')
 
 #view datasets
 datasets_dic = f.datasets()

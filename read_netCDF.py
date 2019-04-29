@@ -12,6 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 # Specify nc file
-dataset = Dataset('ECMWF/Data/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+dataset = Dataset('../Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
 print (dataset.variables)
