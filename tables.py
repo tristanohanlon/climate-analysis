@@ -35,7 +35,7 @@ RHOZERO = 1.225         # sea-level density, kg/cu.m
 AZERO   = 340.294       # speed of sound at S.L.  m/sec
 BETAVISC = 1.458E-6     # viscosity constant
 SUTH    = 110.4         # Sutherland's constant, kelvins
-"""
+
 def LongUSTable():
     Itxt = open('us1py.prt', 'w')
     Itxt.write(' alt   sigma     delta    theta ')
@@ -86,7 +86,7 @@ def ShortUSTable():
             (1.0E6*viscosity, kinematicViscosity, 1.0E-6*vratio))
             
     Itxt.close()
-"""
+
 def LongSITable():
     Itxt = open('si1py.prt', 'w')
     Itxt.write(' alt    sigma      delta    theta ')
