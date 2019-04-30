@@ -9,7 +9,7 @@ Data is stored in a 2D array cccm_tcc_lat
 [:,0] = latitude
 [:,1] = total cloud cover fraction
 """
-
+import time
 import numpy as np
 import os
 from pyhdf import SD
@@ -20,8 +20,9 @@ lat=[] # create a blank array to add latitude data
 counter=0
 
 # The directory where your HDF files are stored
-os.chdir('2010/') 
+os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010') 
 
+start = time.time()
 # Load every file in the directory
 for filename in os.listdir(): 
     
@@ -33,11 +34,16 @@ for filename in os.listdir():
     lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
     # Get the cloud cover data as a list. Since this is the 'cloud free' data, need to invert later
-    cf = cf+f.select('Cloud free area percent coverage (CALIPSO-CloudSat)').get().tolist()
+    cf = cf+f.select('Cloud area enhanced').get().tolist()
 
 if len(lat) != len(cf):
     exit('Invalid sizes of lat and cf data')
+    
+end = time.time()
+print('Importing data from files to lists took:', end - start, 's')
 
+
+start = time.time()
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 #print("round lats")
 lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
@@ -62,6 +68,10 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tcc_lat = np.empty((averages_total,2),dtype=float)
 
+end = time.time()
+print('Create arrays and combined array took:', end - start, 's')
+
+start = time.time()
 # Current subtotal of current lat
 subtotal = 0.0
 # Current number of cloud cover entries in subtotal
@@ -85,7 +95,7 @@ for item in combined:
     if item[0] != current_lat:
         
         # Find the average value. 1 - is the inverse of the 'cloud free' precentage.
-        average = 1 - subtotal / number / 100
+        average = subtotal / number / 100
         #average = subtotal / number / 100
         """
         print("--------")
@@ -113,11 +123,12 @@ for item in combined:
     subtotal+=item[1]
     
 # Catch the last entry in the for loop
-average = 1 - subtotal / number / 100
+average = subtotal / number / 100
 #average = subtotal / number / 100
 cccm_tcc_lat[i] = [current_lat, average]
 
-
+end = time.time()
+print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud cover) elements
@@ -128,3 +139,18 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
+plt.figure()
+fig, ax = plt.subplots()
+
+#ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], '-r', label='Derived from MODIS radiances by the enhanced cloud mask')
+#ax.plot(cccm_tcc1_lat[:,0],cccm_tcc1_lat[:,1], '--g', label='Derived from MODIS radiances by the standard CERES-MODIS cloud mask')
+ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], 'b', label='CCCM')
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
+          ncol=4, fancybox=True, shadow=True);
+
+           
+ax.set_ylabel('Cloud Fraction', color='r')
+ax.set_xlabel('Latitude')
+
+plt.title('Global Cloud Fraction vs Latitude - 2010')
+plt.show()

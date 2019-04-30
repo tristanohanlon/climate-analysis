@@ -4,21 +4,25 @@ Created on Tue Mar  5 09:26:33 2019
 
 @author: Tristan O'Hanlon
 
-This will create a datasset of global total cloud ice water content with latitude.
-Data is stored in a 2D array cccm_tciw_lat 
+This will create a datasset of global total cloud cover with latitude.
+Data is stored in a 2D array cccm_tcc_lat 
 [:,0] = latitude
-[:,1] = total cloud ice water content
+[:,1] = total cloud cover fraction
 """
-
+import time
 import numpy as np
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
 
-lat = []
-tciw = []
+start = time.time()
 
-os.chdir('E:/University/University/MSc/Models/Data/CCCM/Test') 
+cf=[] # create a blank array to add cloud amount data
+lat=[] # create a blank array to add latitude data
+counter=0
+
+# The directory where your HDF files are stored
+os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  
 
 # Load every file in the directory
 for filename in os.listdir(): 
@@ -30,10 +34,15 @@ for filename in os.listdir():
     # Get the latitude data as a list
     lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
-    # Get the cloud ice water content data as a list. (25536, 113) 'units': 'grams per cubic meter'
-    tciw = tciw+f.select('Mean CloudSat radar only ice water content').get().tolist()
+    # Get the cloud cover data as a list. Since this is the 'cloud free' data, need to invert later
+    cf = cf+f.select('Cloud area enhanced').get().tolist()
 
-if len(lat) != len(tciw):
+end = time.time()
+print(end - start)
+
+start = time.time()
+
+if len(lat) != len(cf):
     exit('Invalid sizes of lat and cf data')
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
@@ -41,15 +50,16 @@ if len(lat) != len(tciw):
 lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 
 lat = np.array(lat)
-tciw = np.array(tciw)
+cf = np.array(cf)
 
-#Set the large 'fill values' in the data to nan before averaging        
-tciw[tciw > 10.0] = 0
+#cf[cf > 100] = None
 
-# Average the ice water content over latitude and longitude for each altitude level 
-tciw = np.nanmean(tciw, axis=1)
+end = time.time()
+print(end - start)
 
-combined = np.vstack((lat, tciw)).T
+start = time.time()
+
+combined = np.vstack((lat, cf)).T
 
 #print("get unique lats")
 unique = np.unique(lat)
@@ -63,19 +73,24 @@ unique = np.unique(lat)
 combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print (combined)
 
-# Averages of (lat,cloud ice water content) array
+# Averages of (lat,cloud cover) array
 averages_total = unique.size
-cccm_tciw_lat = np.empty((averages_total,2),dtype=float)
+cccm_tcc2_lat = np.empty((averages_total,2),dtype=float)
 
 # Current subtotal of current lat
 subtotal = 0.0
-# Current number of cloud ice water content entries in subtotal
+# Current number of cloud cover entries in subtotal
 number = 0
 # Set the current lat to false
 current_lat = None
 
-# Iterate through all of the (lat,cloud ice water content) elements and subtotal the same lat values
+
+# Iterate through all of the (lat,cloud cover) elements and subtotal the same lat values
 i = 0
+end = time.time()
+print(end - start)
+
+start = time.time()
 for item in combined:
 
     if current_lat is None:
@@ -86,10 +101,13 @@ for item in combined:
         """
         current_lat = item[0];
     
+#    if item[1] is None:
+#        pass
+    
     # If the lat is not the same as last time, then perform the average calc and reset everything
     if item[0] != current_lat:
         
-        # Find the average value.
+        # Find the average value. 1 - is the inverse of the 'cloud free' precentage.
         average = subtotal / number / 100
         #average = subtotal / number / 100
         """
@@ -104,7 +122,7 @@ for item in combined:
         print(number)
         """
         # Append the average
-        cccm_tciw_lat[i] = [current_lat, average]
+        cccm_tcc2_lat[i] = [current_lat, average]
         # Reset the subtotal
         subtotal = 0.0
         number = 0
@@ -119,12 +137,14 @@ for item in combined:
     
 # Catch the last entry in the for loop
 average = subtotal / number / 100
-cccm_tciw_lat[i] = [current_lat, average]
+#average = subtotal / number / 100
+cccm_tcc2_lat[i] = [current_lat, average]
 
-
+end = time.time()
+print(end - start)
 """
 print ("averages")
-# Iterate through all of the (lat,cloud ice water content) elements
+# Iterate through all of the (lat,cloud cover) elements
 for item in averages:
     print("[", end='')
     print(item[0], end='')
@@ -132,7 +152,18 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
-   
 plt.figure()
-plt.plot(cccm_tciw_lat[:,0],cccm_tciw_lat[:,1])
+fig, ax = plt.subplots()
+
+#ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], '-r', label='Derived from MODIS radiances by the enhanced cloud mask')
+#ax.plot(cccm_tcc1_lat[:,0],cccm_tcc1_lat[:,1], '--g', label='Derived from MODIS radiances by the standard CERES-MODIS cloud mask')
+ax.plot(cccm_tcc2_lat[:,0],cccm_tcc2_lat[:,1], '--b', label='MODIS')
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
+          ncol=4, fancybox=True, shadow=True);
+
+           
+ax.set_ylabel('Cloud Fraction', color='r')
+ax.set_xlabel('Latitude')
+
+plt.title('Global Cloud Fraction vs Latitude - 2010')
 plt.show()

@@ -34,7 +34,7 @@ for filename in os.listdir():
     tciw = tciw+f.select('Mean CloudSat radar only ice water content').get().tolist()
 
 if len(lat) != len(tciw):
-    exit('Invalid sizes of lat and cf data')
+    exit('Invalid sizes of lat and tciw data')
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 #print("round lats")
@@ -43,12 +43,9 @@ lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 lat = np.array(lat)
 tciw = np.array(tciw)
 
-#Set the large 'fill values' in the data to nan before averaging        
-tciw[tciw > 10.0] = 0
-
-# Average the ice water content over latitude and longitude for each altitude level 
+#Set the large 'fill values' in the data to 0 before averaging        
+tciw[tciw > 10.0] = None
 tciw = np.nanmean(tciw, axis=1)
-
 combined = np.vstack((lat, tciw)).T
 
 #print("get unique lats")
@@ -67,6 +64,9 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tciw_lat = np.empty((averages_total,2),dtype=float)
 
+i = 0
+     
+
 # Current subtotal of current lat
 subtotal = 0.0
 # Current number of cloud ice water content entries in subtotal
@@ -75,7 +75,7 @@ number = 0
 current_lat = None
 
 # Iterate through all of the (lat,cloud ice water content) elements and subtotal the same lat values
-i = 0
+
 for item in combined:
 
     if current_lat is None:
@@ -87,7 +87,7 @@ for item in combined:
         current_lat = item[0];
     
     # If the lat is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_lat:
+    if item[0] != current_lat and item[1] != None:
         
         # Find the average value.
         average = subtotal / number / 100
@@ -115,7 +115,7 @@ for item in combined:
 
     # Add the next value to the subtotal
     number+=1
-    subtotal+=item[1]
+    subtotal=np.nansum(item[1])
     
 # Catch the last entry in the for loop
 average = subtotal / number / 100
@@ -132,6 +132,8 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
+
+#cccm_tciw_lat[cccm_tciw_lat==0] = None
    
 plt.figure()
 plt.plot(cccm_tciw_lat[:,0],cccm_tciw_lat[:,1])

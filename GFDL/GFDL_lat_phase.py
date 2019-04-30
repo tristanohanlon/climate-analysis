@@ -15,24 +15,27 @@ gfdl_tciw_lat
 [:,0] = latitude
 [:,1] = cloud fraction
 """
-
-import datetime as dt  # Python standard library datetime  module
+import time
 import numpy as np
 from netCDF4 import Dataset  # http://code.google.com/p/netcdf4-python/
 import matplotlib.pyplot as plt
 
-dataset = Dataset('Data/clt_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+start = time.time()
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/clt_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
 lat = dataset.variables['lat'][:] #Extract latitude data
 gfdl_tcc = dataset.variables['clt'][:] #Extract total cloud cover, keyed to time, lon and lat
         
-dataset = Dataset('Data/clivi_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/clivi_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
 gfdl_tciw = dataset.variables['clivi'][:] #Extract ice water content (kg/m^2), keyed to time, lon and lat
 
-dataset = Dataset('Data/lwp_AERmon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/lwp_AERmon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
 gfdl_tclw = dataset.variables['lwp'][:] #Extract liquid water content (kg/m^2), keyed to time, lon and lat
+end = time.time()
+print('Importing data from files to lists took:', end - start, 's')
 
+start = time.time()
 #Select the months from 2010
-#gfdl_tc = np.take(gfdl_tcc, [361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372], axis=0)
+gfdl_tc = np.take(gfdl_tcc, [361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372], axis=0)
 
 tc = np.mean(gfdl_tcc, axis=0) # average total cloud cover data over time
 tcc = np.mean(tc, axis=1) # average total cloud cover data over longitude
@@ -54,6 +57,9 @@ tciw_data = (atciw/(atciw+atclw))*tcc
 gfdl_tclw_lat = np.vstack((lat, tclw_data)).T
 gfdl_tciw_lat = np.vstack((lat, tciw_data)).T
 #----------------------------#
+
+end = time.time()
+print('Averaging data and creating combined arrays took:', end - start, 's')
 
 plt.figure()
 fig, ax = plt.subplots()

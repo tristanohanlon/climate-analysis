@@ -25,16 +25,15 @@ import matplotlib.pyplot as plt
 plt.figure()
 
 fig, ax = plt.subplots()
-ax.plot(ceres_tcc_lat[:,0],ceres_tcc_lat[:,1], '-b', label='CERES')
-ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], '-y', label='CALIPSO-CloudSat')
-#ax.plot(ecmwf_tcc_lat[:,0],ecmwf_tcc_lat[:,1], '-r', label='ECMWF')
-#ax.plot(gfdl_tcc_lat[:,0],gfdl_tcc_lat[:,1], '-g', label='GFDL')
+ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], '-b', label='CCCM')
+ax.plot(ecmwf_tcc_lat[:,0],ecmwf_tcc_lat[:,1], '-r', label='ECMWF Reanalysis')
+ax.plot(gfdl_tcc_lat[:,0],gfdl_tcc_lat[:,1], '-g', label='GFDL.AM4')
 #ax.axis('equal')
 leg = ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
 
 plt.xlabel('Latitude')
-plt.ylabel('Cloud Cover')
+plt.ylabel('Cloud Cover Fraction')
 plt.title('Total Cloud Fraction vs Latitude - 2010')
 plt.grid(True)
 plt.show()

@@ -18,7 +18,7 @@ datasets_dic = f.datasets()
 for idx,sds in enumerate(datasets_dic.keys()):
     print (idx,sds)
     
-sds_obj = f.select('Mean CloudSat radar only ice water content') # select sds
+sds_obj = f.select('Cloud optical depth weight enhanced') # select sds
 
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
