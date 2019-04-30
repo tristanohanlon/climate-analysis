@@ -139,6 +139,12 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
+
+#Select latitudes over the southern ocean
+#cccm_tcc_lat = cccm_tcc_lat[cccm_tcc_lat[:,0]>=-70]
+#cccm_tcc_lat = cccm_tcc_lat[cccm_tcc_lat[:,0]<=-50]
+
+
 plt.figure()
 fig, ax = plt.subplots()
 

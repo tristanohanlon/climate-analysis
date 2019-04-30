@@ -34,7 +34,7 @@ leg = ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
 
 plt.xlabel('Latitude')
 plt.ylabel('Cloud Cover Fraction')
-plt.title('Total Cloud Fraction vs Latitude - 2010')
+plt.title('Total Cloud Fraction vs Latitude - Southern Ocean - 2010')
 plt.grid(True)
 plt.show()
 

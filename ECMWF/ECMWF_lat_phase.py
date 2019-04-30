@@ -61,6 +61,10 @@ ecmwf_tciw_lat = np.vstack((lat, tciw_data)).T
 end = time.time()
 print('Averaging data and creating combined arrays took:', end - start, 's')
 
+#Select latitudes over the southern ocean
+#ecmwf_tcc_lat = ecmwf_tcc_lat[ecmwf_tcc_lat[:,0]>=-70]
+#ecmwf_tcc_lat = ecmwf_tcc_lat[ecmwf_tcc_lat[:,0]<=-50]
+
 plt.figure()
 fig, ax = plt.subplots()
 ax.plot(ecmwf_tcc_lat[:,0],ecmwf_tcc_lat[:,1], '-r', label='Cloud Fraction')
