@@ -9,18 +9,20 @@ Data is stored in a 2D array cccm_tclw_lat
 [:,0] = latitude
 [:,1] = total cloud liquid water content
 """
-
+import time
+import math
 import numpy as np
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
 
-tclw=[] # create a blank array to add cloud liquid water content data
-lat=[] # create a blank array to add latitude data
-counter=0
+lat = [] # create a blank array to add latitude data
+tclw = [] # create a blank array to add cloud liquid water content data
 
-# The directory where your HDF files are stored
-os.chdir('2010/') 
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
+os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
+
+start = time.time()
 
 # Load every file in the directory
 for filename in os.listdir(): 
@@ -28,48 +30,54 @@ for filename in os.listdir():
     # Load the file
     f = SD.SD(filename)
     
-    
     # Get the latitude data as a list
     lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
     # Get the cloud liquid water content data as a list. (25536, 113) 'units': 'grams per cubic meter'
     tclw = tclw+f.select('Mean CloudSat radar only liquid water content').get().tolist()
 
-if len(lat) != len(cf):
-    exit('Invalid sizes of lat and cf data')
+if len(lat) != len(tclw):
+    exit('Invalid sizes of lat and tclw data')
 
-# Join the two lists as if they were two columns side by side, into a list of two elements each
-#print("round lats")
+end = time.time()
+print('Importing data from files to lists took:', end - start, 's')
+
+start = time.time()
+
 lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#print("round lats")
 
 lat = np.array(lat)
 tclw = np.array(tclw)
 
-#Set the large 'fill values' in the data to 0 before averaging        
-for index, item in np.ndenumerate(tclw):
-    if (item >15): # 20g/m^3 is the upper range limit of the ice water content data
-        tclw[index] = 0     
+#Set the large 'fill values' in the data to nan before averaging        
+tclw[tclw > 10.0] = None
 
 # Average the ice water content over latitude and longitude for each altitude level 
-tclw = np.mean(tclw, axis=1)
+tclw = np.nanmean(tclw, axis=1)
 
+# Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, tclw)).T
+#print ("combined")
+#print (combined)
 
 #print("get unique lats")
 unique = np.unique(lat)
 #print(unique)
 
-#print ("combined")
-#print (combined)
-
-#print ("sorted")
 # Add a column for every additional column, -1 will sort by the first column
 combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#print ("sorted")
 #print (combined)
 
-# Averages of (lat,cloud liquid water content) array
+# Averages of (lat,cloud liquid water content) empty array
 averages_total = unique.size
 cccm_tclw_lat = np.empty((averages_total,2),dtype=float)
+
+end = time.time()
+print('Create arrays and combined array took:', end - start, 's')
+
+start = time.time()
 
 # Current subtotal of current lat
 subtotal = 0.0
@@ -125,10 +133,11 @@ for item in combined:
 average = subtotal / number / 100
 cccm_tclw_lat[i] = [current_lat, average]
 
-
+end = time.time()
+print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
-# Iterate through all of the (lat,cloud liquid water content) elements
+# Iterate through all of the (lat,cloud ice water content) elements
 for item in averages:
     print("[", end='')
     print(item[0], end='')
@@ -136,7 +145,25 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
+# Make the data a fraction of the total ice and liquid contribution - multiplied by the total cloud fraction
+# cccm_tclw_frac_lat =  cccm_tclw_lat
+# cccm_tclw_frac_lat[:,1] = (cccm_tclw_lat[:,1]  / (cccm_tciw_lat[:,1] + cccm_tclw_lat[:,1])) * cccm_tcc_lat[:,1]
+
+#Select latitudes over the southern ocean
+#cccm_tclw_lat = cccm_tclw_lat[cccm_tclw_lat[:,0]>=-70]
+#cccm_tclw_lat = cccm_tclw_lat[cccm_tclw_lat[:,0]<=-50]
    
 plt.figure()
-plt.plot(cccm_tclw_lat[:,0],cccm_tclw_lat[:,1])
+fig, ax = plt.subplots()
+
+#ax.plot(cccm_tclw_frac_lat[:,0],cccm_tclw_frac_lat[:,1], 'g', label='CCCM')
+ax.plot(cccm_tclw_lat[:,0],cccm_tclw_lat[:,1], 'g', label='CCCM')
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
+          ncol=4, fancybox=True, shadow=True);
+
+#ax.set_ylabel('Cloud Liquid Water Content Fraction', color='r')                   
+ax.set_ylabel('Cloud Liquid Water Content ($gm^{-3}$)', color='r')
+ax.set_xlabel('Latitude')
+
+plt.title('Cloud Liquid Water Content vs Latitude - 2010')
 plt.show()

@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 lat = []
 tciw = []
 
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/Test') 
 
 # Load every file in the directory

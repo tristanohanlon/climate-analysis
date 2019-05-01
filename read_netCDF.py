@@ -15,4 +15,4 @@ import matplotlib.cm as cm
 #dataset = Dataset('../Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 dataset = Dataset('../Data/ECMWF/1979-03.2019_ECMWF_amon_tcc_tciw_tclw.nc', 'r')
 print (dataset.variables)
-tcc = dataset.variables['tcc'][:]
+tcc = dataset.variables['latitude'][:]

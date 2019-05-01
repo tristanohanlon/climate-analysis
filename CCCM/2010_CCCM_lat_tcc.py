@@ -20,7 +20,8 @@ lat=[] # create a blank array to add latitude data
 counter=0
 
 # The directory where your HDF files are stored
-os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010') 
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
+os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
 
 start = time.time()
 # Load every file in the directory
@@ -28,7 +29,6 @@ for filename in os.listdir():
     
     # Load the file
     f = SD.SD(filename)
-    
     
     # Get the latitude data as a list
     lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
@@ -44,27 +44,28 @@ print('Importing data from files to lists took:', end - start, 's')
 
 
 start = time.time()
-# Join the two lists as if they were two columns side by side, into a list of two elements each
-#print("round lats")
+
 lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#print("round lats")
 
 lat = np.array(lat)
 cf = np.array(cf)
+
+# Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, cf)).T
+#print ("combined")
+#print (combined)
 
 #print("get unique lats")
 unique = np.unique(lat)
 #print(unique)
 
-#print ("combined")
-#print (combined)
-
-#print ("sorted")
 # Add a column for every additional column, -1 will sort by the first column
 combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#print ("sorted")
 #print (combined)
 
-# Averages of (lat,cloud cover) array
+# Averages of (lat,cloud cover) empty array
 averages_total = unique.size
 cccm_tcc_lat = np.empty((averages_total,2),dtype=float)
 
@@ -148,8 +149,6 @@ for item in averages:
 plt.figure()
 fig, ax = plt.subplots()
 
-#ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], '-r', label='Derived from MODIS radiances by the enhanced cloud mask')
-#ax.plot(cccm_tcc1_lat[:,0],cccm_tcc1_lat[:,1], '--g', label='Derived from MODIS radiances by the standard CERES-MODIS cloud mask')
 ax.plot(cccm_tcc_lat[:,0],cccm_tcc_lat[:,1], 'b', label='CCCM')
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);

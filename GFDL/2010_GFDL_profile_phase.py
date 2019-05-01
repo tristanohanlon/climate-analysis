@@ -6,13 +6,11 @@ Spyder Editor
 
 This will create a dataset of time averaged global cloud cover, liquid water cloud fraction and ice water cloud fraction with altitude.
 The code can select either global or southern ocean data.
-
 Data is stored in the 2D arrays: 
 
-ecmwf_tcc_plevel
-ecmwf_tclw_plevel
-ecmwf_tciw_plevel
-ecmwf_temp_plevel
+gfdl_tcc_alt
+gfdl_tclw_alt
+gfdl_tciw_alt
 
 [:,0] = alt
 [:,1] = cloud fraction
@@ -25,9 +23,9 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
 # Uni Laptop
-#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/GFDL/', 'r')
 # Home PC
-dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/', 'r')
 
 start = time.time()
 
@@ -142,10 +140,10 @@ print('Averaging temp data took:', end - start, 's')
 start = time.time()
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-ecmwf_tcc_plevel = np.vstack((plevel, tcc)).T 
-ecmwf_tclw_plevel = np.vstack((plevel, tclw)).T
-ecmwf_tciw_plevel = np.vstack((plevel, tciw)).T
-ecmwf_temp_plevel = np.vstack((plevel, temp)).T
+gfdl_tcc_alt = np.vstack((plevel, tcc)).T 
+gfdl_tclw_alt = np.vstack((plevel, tclw)).T
+gfdl_tciw_alt = np.vstack((plevel, tciw)).T
+gfdl_temp_alt = np.vstack((plevel, temp)).T
 
 end = time.time()
 print('Creating the combined arrays took:', end - start, 's')
@@ -156,9 +154,9 @@ plt.figure()
 fig, ax1 = plt.subplots()
 
 ax2 = ax1.twiny()
-ax1.plot(ecmwf_tcc_plevel[:,1],ecmwf_tcc_plevel[:,0], '-r', label='Fraction Cloud Cover')
-ax2.plot(ecmwf_tclw_plevel[:,1],ecmwf_tclw_plevel[:,0], '-b', label='Specific Cloud Liquid Water Content')
-ax2.plot(ecmwf_tciw_plevel[:,1],ecmwf_tciw_plevel[:,0], '--b', label='Specific Cloud Ice Water Content')
+ax1.plot(gfdl_tcc_alt[:,1],gfdl_tcc_alt[:,0], '-r', label='Fraction Cloud Cover')
+ax2.plot(gfdl_tclw_alt[:,1],gfdl_tclw_alt[:,0], '-b', label='Specific Cloud Liquid Water Content')
+ax2.plot(gfdl_tciw_alt[:,1],gfdl_tciw_alt[:,0], '--b', label='Specific Cloud Ice Water Content')
 
 #ax.axis('equal')
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
@@ -167,7 +165,7 @@ ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
 ax1.set_xlabel('Cloud Fraction')
 ax2.set_xlabel('Specific Cloud Liquid and Ice Water Content (kg/kg) x $10^{-4}$')
 ax1.set_ylabel('Pressure Level (hPa)')
-plt.title('Cloud Fraction and Phase vs Pressure Level ECMWF 2010')
+plt.title('Cloud Fraction and Phase vs Pressure Level GFDL.AM4 2010')
 plt.gca().invert_yaxis()
 
 plt.grid(True)
