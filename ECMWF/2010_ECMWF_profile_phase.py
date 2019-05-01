@@ -59,7 +59,7 @@ tcc = tcc[tcc[:,0]<=-50]
 #Split the combined array into just the tcc data, eliminating the first coloumn of latitude
 tcc = tcc[:,1:38]
 """
-tcc = np.mean(tcc, axis=0) #Average fraction of cloud cover over latitude
+tcc = np.mean(tcc, axis=-1) #Average fraction of cloud cover over latitude
 ecmwf_tcc_plevel = np.vstack((plevel, tcc)).T 
 
 end = time.time()
@@ -161,9 +161,11 @@ ax2.plot(ecmwf_tclw_plevel[:,1],ecmwf_tclw_plevel[:,0], '-b', label='Specific Cl
 ax2.plot(ecmwf_tciw_plevel[:,1],ecmwf_tciw_plevel[:,0], '--b', label='Specific Cloud Ice Water Content')
 
 #ax.axis('equal')
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
+ax1.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
-
+#ax.axis('equal')
+ax2.legend(loc='lower center', bbox_to_anchor=(0.5, -0.4),
+          ncol=4, fancybox=True, shadow=True);
 ax1.set_xlabel('Cloud Fraction')
 ax2.set_xlabel('Specific Cloud Liquid and Ice Water Content (kg/kg) x $10^{-4}$')
 ax1.set_ylabel('Pressure Level (hPa)')
@@ -172,4 +174,3 @@ plt.gca().invert_yaxis()
 
 plt.grid(True)
 plt.show()
-"""

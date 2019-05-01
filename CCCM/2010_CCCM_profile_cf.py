@@ -33,16 +33,16 @@ for filename in os.listdir():
     # Get the cloud fraction data data which is a (25535, 113) array per file. Axis = 0 is added to for each file.  
     cf = cf+f.select('Cloud fraction profile').get().tolist() # 113 levels, #25535 values each referenced to latitude and longitude
     # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
+#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
-lat = np.array(lat)
+#lat = np.array(lat)
 cf = np.array(cf) # Convert cloud fraction list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging        
@@ -52,12 +52,12 @@ cf[cf > 100] = None
 #        cf[index] = 0
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-combined = np.vstack((lat, cf)).T
+#combined = np.vstack((lat, cf)).T
 #print ("combined")
 #print (combined)
 
 # Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
@@ -70,6 +70,6 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 
 # Average the cloud fraction data over latitude and longitude for each altitude level        
 cf = np.nanmean(cf, axis=0)
-
+cf = np.vstack((alt_c, cf)).T
 end = time.time()
 print('Average data set creation took:', end - start, 's')

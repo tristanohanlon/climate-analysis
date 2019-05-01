@@ -33,16 +33,16 @@ for filename in os.listdir():
     # Get the ice water content data which is a (25535, 138) array per file. Axis = 0 is added to for each file.  
     iw = iw+f.select('Ice water content profile used').get().tolist() # 137 levels, 25536 values each referenced to latitude and longitude
     # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
+#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
-lat = np.array(lat)
+#lat = np.array(lat)
 alt = np.array(alt) / 1000 # Convert the altitude list to a numpy array and convery m to km
 iw = np.array(iw) # Convert ice water content list to a numpy array
 
@@ -53,12 +53,12 @@ iw[iw > 20] = None
 #        iw[index] = 0     
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-combined = np.vstack((lat, iw)).T
+#combined = np.vstack((lat, iw)).T
 #print ("combined")
 #print (combined)
 
 # Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
@@ -71,6 +71,6 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 
 # Average the ice water content over latitude and longitude for each altitude level 
 iw = np.nanmean(iw, axis=0)
-
+iw = np.vstack((alt, iw)).T
 end = time.time()
 print('Average data set creation took:', end - start, 's')

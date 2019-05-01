@@ -6,18 +6,22 @@ Created on Tue Mar  5 09:26:33 2019
 """
 import matplotlib.pyplot as plt
 import h5py
-p = h5py.File('2010_CCCM_global_cloud_phase_profile_data.h5', 'r')
-f = h5py.File('2010_CCCM_global_temp_pressure_profile_data.h5', 'r')
+#f = h5py.File('2010_CCCM_SO_cloud_phase_temp_pressure_profile.h5', 'r')
+f = h5py.File('2010_CCCM_global_cloud_phase_temp_pressure_profile.h5', 'r')
 
-cf = p['Cloud Fraction Profile'][:]
-lw = p['Liquid Water Content Profile'][:]
-iw = p['Ice Water Content Height Profile'][:]
-alt = p['Liquid and Ice Content Height Profile'][:]
-alt_c = p['Cloud Height Profile'][:]
-alt_t = f['Temperature and Pressure Height Profile'][:]
+cf = f['Cloud Fraction Profile'][:]
+lw = f['Liquid Water Content Profile'][:]
+iw = f['Ice Water Content Profile'][:]
 temp = f['Temperature Profile'][:]
 pressure = f['Pressure Profile'][:]
 
+#Select only data between 0 and 20km
+cf = cf[cf[:,0]<=20]
+cf = cf[cf[:,0]>=0]
+lw = lw[lw[:,0]<=20]
+lw = lw[lw[:,0]>=0]
+iw = iw[iw[:,0]<=20]
+iw = iw[iw[:,0]>=0]
 
 # Plot cloud fraction, liquid and ice water content vs altitude.
 plt.figure()
@@ -25,9 +29,9 @@ fig, ax1 = plt.subplots()
 
 ax2 = ax1.twiny()
 
-ax1.plot(cf[20:113],alt_c[20:113], '-r', label='Cloud Fraction')
-ax2.plot(lw[40:135], alt[40:135], '--g', label='Liquid Water')
-ax2.plot(iw[40:135], alt[40:135], '--b', label='Ice Water')
+ax1.plot(cf[:,1],cf[:,0], '-r', label='Cloud Fraction')
+ax2.plot(lw[:,1], lw[:,0], '--g', label='Liquid Water Content')
+ax2.plot(iw[:,1], iw[:,0], '--b', label='Ice Water Content')
 #ax.axis('equal')
 ax1.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
@@ -51,8 +55,8 @@ fig, ax1 = plt.subplots()
 
 ax2 = ax1.twiny()
 
-ax1.plot(temp[1:130],alt_t[1:130], '-r', label='Temperature')
-ax2.plot(pressure[1:130], alt_t[1:130], '-b', label='Pressure')
+ax1.plot(temp[:,1],temp[:,0], '-r', label='Temperature')
+ax2.plot(pressure[:,1], pressure[:,0], '-b', label='Pressure')
 #ax.axis('equal')
 ax1.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);

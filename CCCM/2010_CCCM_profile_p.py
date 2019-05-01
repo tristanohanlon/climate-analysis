@@ -20,8 +20,8 @@ lat = []
 start = time.time()
 
 # The directory where your HDF files are stored
-os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
-#os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
+os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
 
 # Load every file in the directory
 for filename in os.listdir(): 
@@ -33,16 +33,16 @@ for filename in os.listdir():
     #Get the pressure data which is a (25535, 138) array per file. Axis = 0 is added to for each file.
     pressure = pressure+f.select('Pressure profile').get().tolist()
     # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
+#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
-lat = np.array(lat)
+#lat = np.array(lat)
 alt_t = np.array(alt_t) / 1000 # Convert the altitude list to a numpy array and convery m to km
 pressure = np.array(pressure) # Convert pressure list to a numpy array
 
@@ -53,12 +53,12 @@ pressure[pressure > 1100] = None
 #        pressure[index] = 0
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-combined = np.vstack((lat, pressure)).T
+#combined = np.vstack((lat, pressure)).T
 #print ("combined")
 #print (combined)
 
 # Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
@@ -67,10 +67,10 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the iw data, eliminating the first coloumn of latitude
-pressure = pressure[:,1:139]
+#pressure = pressure[:,1:139]
 
 # Average the pressure over latitude and longitude for each altitude level 
 pressure = np.nanmean(pressure, axis=0)
-
+pressure = np.vstack((alt_t, pressure)).T
 end = time.time()
 print('Average data set creation took:', end - start, 's')
