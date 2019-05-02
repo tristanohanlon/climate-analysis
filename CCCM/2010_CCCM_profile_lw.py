@@ -14,9 +14,9 @@ import os
 from pyhdf import SD
 
 #Empty lists
-alt = []
+#alt = []
 lw =[]
-lat = []
+#lat = []
 
 start = time.time()
 
@@ -30,7 +30,7 @@ for filename in os.listdir():
     # Load the file
     f = SD.SD(filename)
     # Get the altitude levels which corespond to the liquid water content data. Only store the last file's values
-    alt = f.select('Irradiance layer center height profile').get().tolist() #137 levels for ice and liquid water profiles
+#    alt = f.select('Irradiance layer center height profile').get().tolist() #137 levels for ice and liquid water profiles
     # Get the liquid water content data data which is a (25535, 137) array per file. Axis = 0 is added to for each file.  
     lw = lw+f.select('Liquid water content profile used').get().tolist() # 137 levels, 25536 values each referenced to latitude and longitude
     # Get the latitude data as a list
@@ -44,7 +44,7 @@ start = time.time()
 #lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 #lat = np.array(lat)
-alt = np.array(alt) / 1000 # Convert the altitude list to a numpy array and convery m to km
+#alt = np.array(alt) / 1000 # Convert the altitude list to a numpy array and convery m to km
 lw = np.array(lw) # Convert liquid water content list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging
@@ -54,24 +54,27 @@ lw[lw > 20] = None
 #        lw[index] = 0     
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-#combined = np.vstack((lat, lw)).T
+#lat = np.vstack(lat)
+combined = np.hstack((lat, lw))
 #print ("combined")
 #print (combined)
 
 # Add a column for every additional column, -1 will sort by the first column
-#combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
 #Select latitudes over the southern ocean
-#combined = combined[combined[:,0]>=-70]
-#combined = combined[combined[:,0]<=-50]
+combined = combined[combined[:,0]>=-70]
+combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the lw data, eliminating the first coloumn of latitude
-#lw = lw[:,1:138]
+lw = lw[:,1:138]
+#alt = alt[0:136] #scale alt if necessary
 
 # Average the liquid water content over latitude and longitude for each altitude level 
 lw = np.nanmean(lw, axis=0)
 lw = np.vstack((alt, lw)).T
+lw = lw[25:133] #only get values above 0 and above ground level
 end = time.time()
 print('Average data set creation took:', end - start, 's')

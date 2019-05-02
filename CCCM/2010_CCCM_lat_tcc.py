@@ -16,7 +16,7 @@ from pyhdf import SD
 import matplotlib.pyplot as plt
 
 cf=[] # create a blank array to add cloud amount data
-lat=[] # create a blank array to add latitude data
+#lat=[] # create a blank array to add latitude data
 counter=0
 
 # The directory where your HDF files are stored
@@ -31,7 +31,7 @@ for filename in os.listdir():
     f = SD.SD(filename)
     
     # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
+#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
     # Get the cloud cover data as a list. Since this is the 'cloud free' data, need to invert later
     cf = cf+f.select('Cloud area enhanced').get().tolist()
@@ -45,11 +45,14 @@ print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 
-lat = np.array(lat)
+#lat = np.array(lat)
 cf = np.array(cf)
+
+#Set the large 'fill values' in the data to nan before averaging        
+cf[cf > 100] = np.nan
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, cf)).T
@@ -83,6 +86,9 @@ current_lat = None
 # Iterate through all of the (lat,cloud cover) elements and subtotal the same lat values
 i = 0
 for item in combined:
+    
+    if np.isnan(item[1]):
+        continue
 
     if current_lat is None:
         """
@@ -95,7 +101,7 @@ for item in combined:
     # If the lat is not the same as last time, then perform the average calc and reset everything
     if item[0] != current_lat:
         
-        # Find the average value. 1 - is the inverse of the 'cloud free' precentage.
+        # Find the average value.
         average = subtotal / number / 100
         #average = subtotal / number / 100
         """

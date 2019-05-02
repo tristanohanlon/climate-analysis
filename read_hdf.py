@@ -24,3 +24,15 @@ data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
 
 pprint.pprint( sds_obj.attributes() ) # print data attributes
+
+
+"""
+#read hdf5
+
+import h5py
+h5f = h5py.File("2010_CCCM_SO_profile_data.h5", "r")
+
+for index,key in enumerate(h5f.keys()):
+    print (index, key)
+
+"""

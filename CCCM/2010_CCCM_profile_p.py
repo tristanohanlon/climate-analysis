@@ -14,8 +14,8 @@ from pyhdf import SD
 
 #Empty lists
 pressure = []
-alt_t = []
-lat = []
+#alt_t = []
+#lat = []
 
 start = time.time()
 
@@ -29,7 +29,7 @@ for filename in os.listdir():
     # Load the file
     f = SD.SD(filename)
     # Get the altitude levels which corespond to the pressure data. Only store the last file's values
-    alt_t = f.select('Irradiance level height profile').get().tolist() #138 altitude levels pressure. 
+#    alt_t = f.select('Irradiance level height profile').get().tolist() #138 altitude levels pressure. 
     #Get the pressure data which is a (25535, 138) array per file. Axis = 0 is added to for each file.
     pressure = pressure+f.select('Pressure profile').get().tolist()
     # Get the latitude data as a list
@@ -43,7 +43,7 @@ start = time.time()
 #lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 #lat = np.array(lat)
-alt_t = np.array(alt_t) / 1000 # Convert the altitude list to a numpy array and convery m to km
+#alt_t = np.array(alt_t) / 1000 # Convert the altitude list to a numpy array and convery m to km
 pressure = np.array(pressure) # Convert pressure list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging
@@ -53,7 +53,7 @@ pressure[pressure > 1100] = None
 #        pressure[index] = 0
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-#combined = np.vstack((lat, pressure)).T
+combined = np.hstack((lat, pressure))
 #print ("combined")
 #print (combined)
 
@@ -63,14 +63,16 @@ pressure[pressure > 1100] = None
 #print (combined)
 
 #Select latitudes over the southern ocean
-#combined = combined[combined[:,0]>=-70]
-#combined = combined[combined[:,0]<=-50]
+combined = combined[combined[:,0]>=-70]
+combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the iw data, eliminating the first coloumn of latitude
-#pressure = pressure[:,1:139]
+pressure = pressure[:,1:139]
+#alt_t = alt_t[0:137] #scale alt if necessary
 
 # Average the pressure over latitude and longitude for each altitude level 
 pressure = np.nanmean(pressure, axis=0)
 pressure = np.vstack((alt_t, pressure)).T
+pressure = pressure[0:134]
 end = time.time()
 print('Average data set creation took:', end - start, 's')

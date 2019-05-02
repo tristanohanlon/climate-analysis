@@ -16,11 +16,12 @@ import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
 
-lat = [] # create a blank array to add latitude data
+#lat = [] # create a blank array to add latitude data
 tclw = [] # create a blank array to add cloud liquid water content data
 
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
+#os.chdir('../Data/CCCM')  # Laptop
 
 start = time.time()
 
@@ -31,10 +32,11 @@ for filename in os.listdir():
     f = SD.SD(filename)
     
     # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
+#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
-    # Get the cloud liquid water content data as a list. (25536, 113) 'units': 'grams per cubic meter'
-    tclw = tclw+f.select('Mean CloudSat radar only liquid water content').get().tolist()
+    # Get the cloud liquid water content data as a list. (25536, 137) 'units': 'grams per cubic meter'
+#    tclw = tclw+f.select('Mean CloudSat radar only liquid water content').get().tolist() #113 levels
+    tclw = tclw+f.select('Liquid water content profile used').get().tolist() #same as profile plots
 
 if len(lat) != len(tclw):
     exit('Invalid sizes of lat and tclw data')
@@ -44,14 +46,14 @@ print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 
-lat = np.array(lat)
+#lat = np.array(lat)
 tclw = np.array(tclw)
 
 #Set the large 'fill values' in the data to nan before averaging        
-tclw[tclw > 10.0] = None
+tclw[tclw > 15.0] = np.nan
 
 # Average the ice water content over latitude and longitude for each altitude level 
 tclw = np.nanmean(tclw, axis=1)
@@ -89,6 +91,9 @@ current_lat = None
 # Iterate through all of the (lat,cloud liquid water content) elements and subtotal the same lat values
 i = 0
 for item in combined:
+    
+    if np.isnan(item[1]):
+        continue
 
     if current_lat is None:
         """
@@ -102,8 +107,8 @@ for item in combined:
     if item[0] != current_lat:
         
         # Find the average value.
-        average = subtotal / number / 100
-        #average = subtotal / number / 100
+        average = subtotal / number
+
         """
         print("--------")
         print("lat: ", end='')
@@ -130,7 +135,7 @@ for item in combined:
     subtotal+=item[1]
     
 # Catch the last entry in the for loop
-average = subtotal / number / 100
+average = subtotal / number
 cccm_tclw_lat[i] = [current_lat, average]
 
 end = time.time()

@@ -15,7 +15,7 @@ from pyhdf import SD
 #Empty lists
 cf = []
 alt_c = []
-lat = []
+#lat = []
 
 # The directory where your HDF files are stored
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
@@ -43,6 +43,7 @@ start = time.time()
 #lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 #lat = np.array(lat)
+alt_c = np.array(alt_c)
 cf = np.array(cf) # Convert cloud fraction list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging        
@@ -52,24 +53,29 @@ cf[cf > 100] = None
 #        cf[index] = 0
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-#combined = np.vstack((lat, cf)).T
+#lat = np.vstack(lat)
+combined = np.hstack((lat, cf))
 #print ("combined")
 #print (combined)
+#Note: np.append(cf, lat, axis = 1) should work but will add the lat values to the end of the array
 
 # Add a column for every additional column, -1 will sort by the first column
-#combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
 #Select latitudes over the southern ocean
-#combined = combined[combined[:,0]>=-70]
-#combined = combined[combined[:,0]<=-50]
+combined = combined[combined[:,0]>=-70]
+combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the cf data, eliminating the first coloumn of latitude
-#cf = cf[:,1:114]
+cf = cf[:,1:115] #only get values above 0 and above ground level
+alt_c = alt_c[0:112] #scale alt if necessary
 
 # Average the cloud fraction data over latitude and longitude for each altitude level        
 cf = np.nanmean(cf, axis=0)
 cf = np.vstack((alt_c, cf)).T
+
+cf = cf[10:109] #only get values above 0 and above ground level
 end = time.time()
 print('Average data set creation took:', end - start, 's')
