@@ -18,7 +18,7 @@ datasets_dic = f.datasets()
 for idx,sds in enumerate(datasets_dic.keys()):
     print (idx,sds)
     
-sds_obj = f.select('Liquid water content profile used') # select sds
+sds_obj = f.select('Mean cloud effective temperature for multilayer') # select sds
 
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
