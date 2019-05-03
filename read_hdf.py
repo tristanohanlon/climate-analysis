@@ -9,6 +9,7 @@ import datetime as dt  # Python standard library datetime  module
 import numpy as np
 from pyhdf import SD
 import pprint
+import os
 
 # Specify hdf file
 f = SD.SD('../Data/CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf')
@@ -28,9 +29,12 @@ pprint.pprint( sds_obj.attributes() ) # print data attributes
 
 """
 #read hdf5
-
 import h5py
-h5f = h5py.File("2010_CCCM_SO_profile_data.h5", "r")
+import os
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets')
+
+
+h5f = h5py.File("2010_CCCM_global_latitude.h5", "r")
 
 for index,key in enumerate(h5f.keys()):
     print (index, key)
