@@ -12,7 +12,9 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 # Specify nc file
-#dataset = Dataset('../Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
-dataset = Dataset('../Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/pfull_AERmon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r') #Home PC
+#dataset = Dataset('C:/Users/tristan/University/University/MSc/Models/Data/GFDL/clt_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r') #Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/GFDL/cli_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r') #Uni Laptop
+
 print (dataset.variables)
-tcc = dataset.variables['cc'][:]
+#tcc = dataset.variables['tclw'][:]

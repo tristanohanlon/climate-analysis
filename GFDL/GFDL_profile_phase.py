@@ -22,19 +22,27 @@ import numpy as np
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
-# Uni Laptop
-#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/GFDL/', 'r')
-# Home PC
-dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/', 'r')
+#Home PC
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/GFDL/', 'r') # Uni Laptop
 
-start = time.time()
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/cl_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+cf = dataset.variables['cl'][:] #Extract cloud_area_fraction_in_atmosphere_layer, keyed to time, lev, lon and lat (420, 33, 180, 288)
 
-lat = dataset.variables['latitude'][:] #Extract latitude data (721)
-plevel = dataset.variables['level'][:] #Extract pressure (millibars) level data (37 levels)
-tcc = dataset.variables['cc'][:] #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-tciw = dataset.variables['ciwc'][:] #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-tclw = dataset.variables['clwc'][:] #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-temp = dataset.variables['t'][:] #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/clw_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+lw = dataset.variables['clw'][:] #Extract Mass Fraction of Cloud Liquid Water (kg/kg), keyed to time, level, lon and lat (420, 33, 180, 288)
+
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/cli_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+iw = dataset.variables['cli'][:] #Extract Mass Fraction of Cloud Ice (kg/kg), keyed to time, level, lon and lat (420, 33, 180, 288)
+
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/ta_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+temp = dataset.variables['ta'][:] #Extract air temperature, keyed to time, plev, lon and lat (420, 19, 180, 288)
+plev = dataset.variables['plev'][:] #Extract air pressure corresponding to temperature (19,)
+
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/pfull_AERmon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+pressure = dataset.variables['pfull'][:] #Extract air pressure, keyed to time, level, lon and lat (420, 33, 180, 288)
+
+dataset = Dataset('E:/University/University/MSc/Models/Data/GFDL/pfull_AERmon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r')
+ps = dataset.variables['ps'][:] #Extract surface air pressure, keyed to time, lon and lat (420, 180, 288)
 
 end = time.time()
 print('Importing data took:', end - start, 's')
@@ -42,9 +50,9 @@ print('Importing data took:', end - start, 's')
 #---------------tcc-------------#
 start = time.time()
 
-tcc = np.array(tcc)
-tcc = np.mean(tcc, axis=0) #Average fraction of cloud cover over time
-tcc = np.mean(tcc, axis=-1) #Average fraction of cloud cover over longitude
+cf = np.array(tcc)
+cf= np.mean(cf, axis=0) #Average fraction of cloud cover over time
+cf = np.mean(cf, axis=-1) #Average fraction of cloud cover over longitude
 """
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
@@ -57,8 +65,8 @@ tcc = tcc[tcc[:,0]<=-50]
 #Split the combined array into just the tcc data, eliminating the first coloumn of latitude
 tcc = tcc[:,1:38]
 """
-tcc = np.mean(tcc, axis=0) #Average fraction of cloud cover over latitude
-ecmwf_tcc_plevel = np.vstack((plevel, tcc)).T 
+tcc = np.mean(tcc, axis=-1) #Average fraction of cloud cover over latitude
+ecmwf_tcc_plevel = np.vstack((alt, cf)).T 
 
 end = time.time()
 print('Averaging tcc data took:', end - start, 's')
@@ -170,4 +178,3 @@ plt.gca().invert_yaxis()
 
 plt.grid(True)
 plt.show()
-"""

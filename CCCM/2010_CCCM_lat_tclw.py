@@ -4,19 +4,20 @@ Created on Tue Mar  5 09:26:33 2019
 
 @author: Tristan O'Hanlon
 
-This will create a datasset of global total cloud liquid water content with latitude.
+This will create a datasset of global specific cloud liquid water content (kg/kg) with latitude.
 Data is stored in a 2D array cccm_tclw_lat 
 [:,0] = latitude
-[:,1] = total cloud liquid water content
+[:,1] = specific cloud liquid water content
 """
 import time
 import math
 import numpy as np
+from scipy import integrate
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
 
-#lat = [] # create a blank array to add latitude data
+lat = [] # create a blank array to add latitude data
 tclw = [] # create a blank array to add cloud liquid water content data
 
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
@@ -32,8 +33,7 @@ for filename in os.listdir():
     f = SD.SD(filename)
     
     # Get the latitude data as a list
-#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
-    
+    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist() 
     # Get the cloud liquid water content data as a list. (25536, 137) 'units': 'grams per cubic meter'
 #    tclw = tclw+f.select('Mean CloudSat radar only liquid water content').get().tolist() #113 levels
     tclw = tclw+f.select('Liquid water content profile used').get().tolist() #same as profile plots
@@ -44,22 +44,27 @@ if len(lat) != len(tclw):
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
-start = time.time()
+#start = time.time()
 
-#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
+lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
 
-#lat = np.array(lat)
+lat = np.array(lat)
 tclw = np.array(tclw)
 
 #Set the large 'fill values' in the data to nan before averaging        
 tclw[tclw > 15.0] = np.nan
 
+#computing the total cloud liquid water cloud content (LWP) kg/kg
+
+s_tclw = integrate.trapz(tclw, alt) # integrate across total altitude
+a_tclw = s_tclw/ap # divide by total air path
+
 # Average the ice water content over latitude and longitude for each altitude level 
-tclw = np.nanmean(tclw, axis=1)
+#tclw = np.nansum(tclw, axis=1)
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-combined = np.vstack((lat, tclw)).T
+combined = np.vstack((lat, a_tclw)).T
 #print ("combined")
 #print (combined)
 
@@ -76,10 +81,10 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tclw_lat = np.empty((averages_total,2),dtype=float)
 
-end = time.time()
-print('Create arrays and combined array took:', end - start, 's')
+#end = time.time()
+#print('Create arrays and combined array took:', end - start, 's')
 
-start = time.time()
+#start = time.time()
 
 # Current subtotal of current lat
 subtotal = 0.0
@@ -150,14 +155,10 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
-# Make the data a fraction of the total ice and liquid contribution - multiplied by the total cloud fraction
-# cccm_tclw_frac_lat =  cccm_tclw_lat
-# cccm_tclw_frac_lat[:,1] = (cccm_tclw_lat[:,1]  / (cccm_tciw_lat[:,1] + cccm_tclw_lat[:,1])) * cccm_tcc_lat[:,1]
+cccm_tclw_lat = cccm_tclw_lat[0:262]
+cccm_tclw_lat[cccm_tclw_lat[:,1] == 0] = np.nan #convert 0 values to nan
+cccm_tclw_lat = cccm_tclw_lat[~np.isnan(cccm_tclw_lat).any(axis=1)] # remove nan values from the data
 
-#Select latitudes over the southern ocean
-#cccm_tclw_lat = cccm_tclw_lat[cccm_tclw_lat[:,0]>=-70]
-#cccm_tclw_lat = cccm_tclw_lat[cccm_tclw_lat[:,0]<=-50]
-   
 plt.figure()
 fig, ax = plt.subplots()
 
@@ -167,8 +168,8 @@ ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
 
 #ax.set_ylabel('Cloud Liquid Water Content Fraction', color='r')                   
-ax.set_ylabel('Cloud Liquid Water Content ($gm^{-3}$)', color='r')
+ax.set_ylabel('Specific Cloud Liquid Water Content (kg/kg)', color='r')
 ax.set_xlabel('Latitude')
 
-plt.title('Cloud Liquid Water Content vs Latitude - 2010')
+plt.title('Specific Cloud Liquid Water Content vs Latitude - 2010')
 plt.show()

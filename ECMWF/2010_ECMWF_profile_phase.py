@@ -25,13 +25,14 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 
 #https://www.mide.com/pages/air-pressure-at-altitude-calculator
-alt = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 15.734, 14.272, 13.418, 12.709, 12.088, 11.531, 11.026, 8.024, 7.291, 6.652, 6.049, 5.467, 4.901, 4.351, 3.817, 3.299, 2.798, 2.314, 2.078, 1.845, 1.615, 1.389, 1.167, 0.949, 0.734, 0.522, 0.314, 0.108]
+#https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
+alt = [39.92, 38.01, 35.4, 31.99, 30.09, 28.50, 26.06, 23.90, 20.64, 18.50, 16.23, 14.81, 13.64, 12.66, 11.531, 11.026, 8.024, 7.291, 6.652, 6.049, 5.467, 4.901, 4.351, 3.817, 3.299, 2.798, 2.314, 2.078, 1.845, 1.615, 1.389, 1.167, 0.949, 0.734, 0.522, 0.314, 0.108]
 alt = np.array(alt)
 
 # Uni Laptop
-dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
-#dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
+dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF/pressure_levels/2010_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
 start = time.time()
 
@@ -87,7 +88,7 @@ tciw = tciw[tciw[:,0]<=-50]
 #Split the combined array into just the tciw data, eliminating the first coloumn of latitude
 tciw = tciw[:,1:38]
 
-tciw = np.mean(tciw, axis=0) * 10000 #Average specific cloud ice water content (kg/kg) over latitude, scale up by 10000
+tciw = np.mean(tciw, axis=0) #Average specific cloud ice water content (kg/kg) over latitude
 
 end = time.time()
 print('Averaging tciw data took:', end - start, 's')
@@ -111,7 +112,7 @@ tclw = tclw[tclw[:,0]<=-50]
 #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
 tclw = tclw[:,1:38]
 
-tclw = np.mean(tclw, axis=0) * 10000 #Average specific cloud liquid water content (kg/kg) over latitude, scale up by 10000
+tclw = np.mean(tclw, axis=0) #Average specific cloud liquid water content (kg/kg) over latitude
 
 end = time.time()
 print('Averaging tclw data took:', end - start, 's')
@@ -169,8 +170,8 @@ fig, ax1 = plt.subplots()
 
 ax2 = ax1.twiny()
 ax1.plot(ecmwf_tcc_alt[:,1],ecmwf_tcc_alt[:,0], '-r', label='Fraction Cloud Cover')
-ax2.plot(ecmwf_tclw_alt[:,1],ecmwf_tclw_alt[:,0], '-b', label='Specific Cloud Liquid Water Content')
-ax2.plot(ecmwf_tciw_alt[:,1],ecmwf_tciw_alt[:,0], '--b', label='Specific Cloud Ice Water Content')
+ax2.plot(ecmwf_tclw_alt[:,1]*10000,ecmwf_tclw_alt[:,0], '-b', label='Specific Cloud Liquid Water Content')
+ax2.plot(ecmwf_tciw_alt[:,1]*10000,ecmwf_tciw_alt[:,0], '--b', label='Specific Cloud Ice Water Content')
 
 #ax.axis('equal')
 ax1.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
@@ -181,7 +182,7 @@ ax2.legend(loc='lower center', bbox_to_anchor=(0.5, -0.4),
 ax1.set_xlabel('Cloud Fraction')
 ax2.set_xlabel('Specific Cloud Liquid and Ice Water Content (kg/kg) x $10^{-4}$')
 ax1.set_ylabel('Altitude (km)')
-plt.title(' Southern Ocean Cloud Fraction and Phase vs Altitude ECMWF 2010')
+plt.title('Southern Ocean Cloud Fraction and Phase vs Altitude ECMWF 2010')
 #plt.gca().invert_yaxis()
 
 plt.grid(True)

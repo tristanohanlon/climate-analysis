@@ -4,7 +4,7 @@ Created on Tue Mar  5 09:26:33 2019
 
 @author: Tristan O'Hanlon
 
-This will create a datasset of specific cloud ice water content (kg/kg) with latitude.
+This will create a datasset of global average specific cloud ice water content (kg/kg) with latitude.
 Data is stored in a 2D array cccm_tciw_lat 
 [:,0] = latitude
 [:,1] = specific cloud ice water content
@@ -54,14 +54,14 @@ tciw[tciw > 20] = np.nan
 
 #computing the total cloud liquid water cloud content (LWP) kg/kg
 
-s_tciw = integrate.trapz(tciw, alt) # integrate across total altitude
-a_tciw = s_tciw/ap # divide by total air path
+a_tciw = tciw / air_density # divide by air density at each altitude
 
 # Average the ice water content over latitude and longitude for each altitude level 
-#tciw = np.nanmean(tciw, axis=1)
+
+s_tciw = np.nanmean(a_tciw, axis=1)
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-combined = np.vstack((lat, a_tciw)).T
+combined = np.vstack((lat, s_tciw)).T
 #print ("combined")
 #print (combined)
 
@@ -78,10 +78,10 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tciw_lat = np.empty((averages_total,2),dtype=float)
 
-end = time.time()
-print('Create arrays and combined array took:', end - start, 's')
+#end = time.time()
+#print('Create arrays and combined array took:', end - start, 's')
 
-start = time.time()
+#start = time.time()
 
 # Current subtotal of current lat
 subtotal = 0.0
@@ -139,8 +139,8 @@ for item in combined:
 average = subtotal / number
 cccm_tciw_lat[i] = [current_lat, average]
 
-end = time.time()
-print('Average data set creation took:', end - start, 's')
+#end = time.time()
+#print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud ice water content) elements
@@ -152,9 +152,9 @@ for item in averages:
     print("]\n", end='')
 """
 
-cccm_tciw_lat = cccm_tciw_lat[0:262]
-cccm_tciw_lat[cccm_tciw_lat[:,1] == 0] = np.nan #convert 0 values to nan
-cccm_tciw_lat = cccm_tciw_lat[~np.isnan(cccm_tciw_lat).any(axis=1)] # remove nan values from the data
+#cccm_tciw_lat = cccm_tciw_lat[0:262]
+#cccm_tciw_lat[cccm_tciw_lat[:,1] == 0] = np.nan #convert 0 values to nan
+#cccm_tciw_lat = cccm_tciw_lat[~np.isnan(cccm_tciw_lat).any(axis=1)] # remove nan values from the data
 
 #Select latitudes over the southern ocean
 #cccm_tciw_lat = cccm_tciw_lat[cccm_tciw_lat[:,0]>=-70]
