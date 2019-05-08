@@ -13,10 +13,10 @@ os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCC
 # specify path and file name to create 
 with h5py.File('2010_CCCM_global_latitude.h5', 'w') as p:
     p.create_dataset('Cloud Fraction', data=cf)
-    p.create_dataset('Specific Liquid Water Content', data=cccm_tclw_lat)
-    p.create_dataset('Specific Ice Water Content', data=cccm_tciw_lat)
-    p.create_dataset('Mean Specific Liquid Water Content', data=cccm_tclw_av_lat)
-    p.create_dataset('Mean Specific Ice Water Content', data=cccm_tciw_av_lat)
+    p.create_dataset('Specific Liquid Water Content', data=lw)
+    p.create_dataset('Specific Ice Water Content', data=iw)
+#    p.create_dataset('Mean Specific Liquid Water Content', data=cccm_tclw_av_lat)
+#    p.create_dataset('Mean Specific Ice Water Content', data=cccm_tciw_av_lat)
     p.close()
 """ 
 import h5py

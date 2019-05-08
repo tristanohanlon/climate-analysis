@@ -70,8 +70,9 @@ lw = np.mean(lw, axis=-1)
 iw = np.mean(iw, axis=-1)
 temp = np.mean(temp, axis=-1)
 pressure = np.mean(pressure, axis=-1)
-#Select Southern ocean Latitudes
 
+#Select Southern ocean Latitudes
+"""
 tcf = np.vstack((lat, cf)).T #creates a (180,34) array
 tcf = tcf[tcf[:,0]>=-70]
 tcf = tcf[tcf[:,0]<=-50]
@@ -91,13 +92,13 @@ tcp = np.vstack((lat, pressure)).T #creates a (180,34) array
 tcp = tcp[tcp[:,0]>=-70]
 tcp = tcp[tcp[:,0]<=-50]
 pressure = tcp[:,1:34] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
-
-#Average over latitude
-cf = np.mean(cf, axis=0) / 100
-lw = np.mean(lw, axis=0)
-iw = np.mean(iw, axis=0)
+"""
+#Average over latitude - change axis to 0 if getting southern ocean data
+cf = np.mean(cf, axis=-1) / 100
+lw = np.mean(lw, axis=-1)
+iw = np.mean(iw, axis=-1)
 temp = np.mean(temp, axis=-1)
-pressure = np.mean(pressure, axis=0) / 100
+pressure = np.mean(pressure, axis=-1) / 100
 
 #---convert pressure levels to altitude---#
 i = 0
@@ -122,23 +123,22 @@ alt_strat = alt_strat / 1000
 alt_trop = alt_trop[0:20]       
 alt_strat = alt_strat[20:33]  
 alt = np.concatenate((alt_trop, alt_strat), axis = 0)
-"""
+
 #---get comparison altitude from smaller temp and plev arrays---#
 i = 0
-alt_comp_trop = np.empty(gplev.size)
+alt_comp_trop = np.empty(plev.size)
 
-for value in gplev:
+for value in plev:
     altc = (288.19 - 288.08*math.pow((value/101290), (1/5.256))) / 0.00649  
     alt_comp_trop[i] = altc
     i+=1
-alt_comp_trop = alt_comp_trop / 1000    
 alt_comp_trop = alt_comp_trop[0:9]  
 
 i = 0
-alt_comp_strat = np.empty(gplev.size)    
+alt_comp_strat = np.empty(plev.size)    
 
-for value in gplev:
-    altc = ((1.73 - math.log(value/22650)) / 0.000157) / 1000  
+for value in plev:
+    altc = ((1.73 - math.log(value/22650)) / 0.000157)
     alt_comp_strat[i] = altc
     i+=1
 alt_comp_strat=alt_comp_strat[9:15]  
@@ -150,19 +150,21 @@ air_density = [] #create empty list
 #calculate air density at each pressure layer
 air_density = (plev) / (286.9 * temp)
 
+air_density = air_density[0:15]
+
 ap = integrate.trapz(air_density, alt_comp) #mass of air path (kg/m^2)
-"""
+
 #---create temperature profile---#
 #troposphere from pressure data
 #stratosphere assumed from Earth Atmosphere Model 
 #https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
 
-temp_profile = 288.19 - 6.49*alt
+#temp_profile = 288.19 - 6.49*alt
 
 #manually add on 216.69K values to altitudes above 11km to 25km 
 
 ###############################################################################
-
+"""
 #---create datasets---#
 
 cf = np.vstack((alt, cf)).T
@@ -201,7 +203,7 @@ plt.title('Cloud Fraction and Phase vs Altitude GFDL.AM4 2010')
 
 plt.grid(True)
 plt.show()
-
+"""
 
 
 

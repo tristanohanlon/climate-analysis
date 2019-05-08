@@ -35,7 +35,7 @@ import os
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/') #Uni Laptop
 
 
-h5f = h5py.File("2010_CCCM_tclw_av_latitude.h5", "r")
+h5f = h5py.File("2010_CCCM_SO_profile_data_test1.h5", "r")
 
 for index,key in enumerate(h5f.keys()):
     print (index, key)

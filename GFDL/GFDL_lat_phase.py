@@ -50,14 +50,14 @@ gfdl_tciw = np.take(gfdl_tciw, [361, 362, 363, 364, 365, 366, 367, 368, 369, 370
 gfdl_tciw = np.mean(gfdl_tciw, axis=0) # ice water content average over time
 gfdl_tciw = np.mean(gfdl_tciw, axis=1) # ice water content average over longitude
 #convert IWP to specific liquid water content (kg/kg) - divide by total air path
-gfdl_tciw = gfdl_tciw / ap / 100
+gfdl_tciw = gfdl_tciw / ap
 
 #Select the months from 2010
 gfdl_tclw = np.take(gfdl_tclw, [361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372], axis=0)
 gfdl_tclw = np.mean(gfdl_tclw, axis=0) # liquid water content average over time
 gfdl_tclw = np.mean(gfdl_tclw, axis=1) # liquid water content average over longitude
 #convert IWP to specific liquid water content (kg/kg) - divide by total air path
-gfdl_tclw = gfdl_tclw / ap / 100
+gfdl_tclw = gfdl_tclw / ap
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 gfdl_tclw_lat = np.vstack((lat, gfdl_tclw)).T

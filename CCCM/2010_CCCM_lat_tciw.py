@@ -12,6 +12,7 @@ Data is stored in a 2D array cccm_tciw_lat
 import time
 import numpy as np
 from scipy import integrate
+from sklearn.impute import SimpleImputer
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
@@ -41,7 +42,7 @@ if len(lat) != len(tciw):
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
-start = time.time()
+#start = time.time()
 
 lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
 #print("round lats")
@@ -52,6 +53,23 @@ tciw = np.array(tciw)
 #Set the large 'fill values' in the data to nan before averaging        
 tciw[tciw > 20] = np.nan
 
+####################
+
+#fit ann nan values to average
+
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp.fit(np.transpose(tciw))  
+a = imp.transform(np.transpose(tciw))
+tciw = np.transpose(a)
+
+"""
+#ignore nans in fit
+x = np.array(x)
+y = np.array(y)
+index = ~(np.isnan(x) | np.isnan(y))
+m_best = fit(m_init, x[index], y[index])
+"""
+####################
 #computing the total cloud liquid water cloud content (LWP) kg/kg
 
 s_tciw = integrate.trapz(tciw, alt) # integrate across total altitude
@@ -78,10 +96,10 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tciw_lat = np.empty((averages_total,2),dtype=float)
 
-end = time.time()
-print('Create arrays and combined array took:', end - start, 's')
+#end = time.time()
+#print('Create arrays and combined array took:', end - start, 's')
 
-start = time.time()
+#start = time.time()
 
 # Current subtotal of current lat
 subtotal = 0.0
@@ -139,8 +157,8 @@ for item in combined:
 average = subtotal / number
 cccm_tciw_lat[i] = [current_lat, average]
 
-end = time.time()
-print('Average data set creation took:', end - start, 's')
+#end = time.time()
+#print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud ice water content) elements
@@ -152,14 +170,7 @@ for item in averages:
     print("]\n", end='')
 """
 
-cccm_tciw_lat = cccm_tciw_lat[0:262]
-cccm_tciw_lat[cccm_tciw_lat[:,1] == 0] = np.nan #convert 0 values to nan
-cccm_tciw_lat = cccm_tciw_lat[~np.isnan(cccm_tciw_lat).any(axis=1)] # remove nan values from the data
-
-#Select latitudes over the southern ocean
-#cccm_tciw_lat = cccm_tciw_lat[cccm_tciw_lat[:,0]>=-70]
-#cccm_tciw_lat = cccm_tciw_lat[cccm_tciw_lat[:,0]<=-50]
-   
+ 
 plt.figure()
 fig, ax = plt.subplots()
 #ax.plot(cccm_tciw_frac_lat[:,0],cccm_tciw_frac_lat[:,1], 'g', label='CCCM')
@@ -173,19 +184,12 @@ ax.set_xlabel('Latitude')
 
 plt.title('Cloud Ice Water Content vs Latitude - 2010')
 plt.show()
-"""
+
 import h5py
 
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
 # specify path and file name to create 
-with h5py.File('2010_CCCM_SO_profile_data_test1.h5', 'w') as p:
-    pcf = p.create_dataset('Cloud Fraction', data=cccm_tcc_lat)
-    pcf.attrs['title'] = "Cloud Fraction"
-    plw = p.create_dataset('Liquid Water Content', data=cccm_tclw_lat)
-    plw.attrs['title'] = "Cloud Liquid Water Content"
-    plw.attrs['units'] = "gm^-3" 
-    piw = p.create_dataset('Ice Water Content', data=cccm_tciw_lat)
-    piw.attrs['title'] = "Cloud Ice Water Content"
-    piw.attrs['units'] = "gm^-3"     
+with h5py.File('2010_CCCM_tciw_lat', 'w') as p:
+    p.create_dataset('Specific Ice Water Content', data=cccm_tciw_lat)
+   
     p.close()
-"""

@@ -12,6 +12,7 @@ Data is stored in a 2D array cccm_tclw_lat
 import time
 import math
 import numpy as np
+from sklearn.impute import SimpleImputer
 from scipy import integrate
 import os
 from pyhdf import SD
@@ -55,13 +56,17 @@ tclw = np.array(tclw)
 #Set the large 'fill values' in the data to nan before averaging        
 tclw[tclw > 15.0] = np.nan
 
+#fit all nan values to average
+
+imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+imp.fit(np.transpose(tclw))  
+a = imp.transform(np.transpose(tclw))
+tclw = np.transpose(a)     
+
 #computing the total cloud liquid water cloud content (LWP) kg/kg
 
 s_tclw = integrate.trapz(tclw, alt) # integrate across total altitude
 a_tclw = s_tclw/ap # divide by total air path
-
-# Average the ice water content over latitude and longitude for each altitude level 
-#tclw = np.nansum(tclw, axis=1)
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, a_tclw)).T
@@ -143,8 +148,8 @@ for item in combined:
 average = subtotal / number
 cccm_tclw_lat[i] = [current_lat, average]
 
-end = time.time()
-print('Average data set creation took:', end - start, 's')
+#end = time.time()
+#print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud ice water content) elements
@@ -155,14 +160,10 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
-cccm_tclw_lat = cccm_tclw_lat[0:262]
-cccm_tclw_lat[cccm_tclw_lat[:,1] == 0] = np.nan #convert 0 values to nan
-cccm_tclw_lat = cccm_tclw_lat[~np.isnan(cccm_tclw_lat).any(axis=1)] # remove nan values from the data
 
 plt.figure()
 fig, ax = plt.subplots()
 
-#ax.plot(cccm_tclw_frac_lat[:,0],cccm_tclw_frac_lat[:,1], 'g', label='CCCM')
 ax.plot(cccm_tclw_lat[:,0],cccm_tclw_lat[:,1], 'g', label='CCCM')
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
@@ -173,3 +174,11 @@ ax.set_xlabel('Latitude')
 
 plt.title('Specific Cloud Liquid Water Content vs Latitude - 2010')
 plt.show()
+
+import h5py
+
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+# specify path and file name to create 
+with h5py.File('2010_CCCM_tclw_lat.h5', 'w') as p:
+    p.create_dataset('Specific Liquid Water Content', data=cccm_tclw_lat)
+    p.close()
