@@ -17,7 +17,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-
+"""
 # Uni Laptop
 #ECMWF Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets')
@@ -56,7 +56,7 @@ os.chdir('E:/University/University/MSc/Models/climate-analysis/GFDL/reduced_data
 gpg = h5py.File('2010_gfdl_global_profile.h5', 'r')
 gpso = h5py.File('2010_gfdl_so_profile.h5', 'r')
 glg = h5py.File('2010_gfdl_global_latitude.h5', 'r')
-"""
+
 """
 # Laptop
 #ECMWF Data
@@ -151,7 +151,7 @@ cccm_tciw_lat_so = cccm_tciw_lat_so[cccm_tciw_lat_so[:,0]<=-50] # kg/kg
 #---CCCM Global Profile---#
 
 cccm_tcc_alt_g = cpg['Cloud Fraction'][12:109] # 0-1
-cccm_tclw_alt_g = cpg['Specific Liquid Water Content'][27:133] #kg/kg
+cccm_tclw_alt_g = cpg['Specific Liquid Water Content'][70:133] #kg/kg
 cccm_tciw_alt_g = cpg['Specific Ice Water Content'][36:133] #kg/kg
 cccm_temp_alt_g = cpg['Temperature Profile'][:] #K
 cccm_plevel_alt_g = cpg['Pressure Profile'][:] #hPa
@@ -167,8 +167,8 @@ cccm_tciw_plevel_g = cpg['Specific Ice Water Content with Pressure'][36:134] #kg
 #---CCCM Southern Ocean Profile---#
 
 cccm_tcc_alt_so = cpso['Cloud Fraction'][:] # 0-1
-cccm_tclw_alt_so = cpso['Specific Liquid Water Content'][:] #kg/kg
-cccm_tciw_alt_so = cpso['Specific Ice Water Content'][10:] #kg/kg
+cccm_tclw_alt_so = cpso['Specific Liquid Water Content'][53:] #kg/kg
+cccm_tciw_alt_so = cpso['Specific Ice Water Content'][22:] #kg/kg
 cccm_temp_alt_so = cpso['Temperature Profile'][:] #K
 cccm_plevel_alt_so = cpso['Pressure Profile'][:] #hPa
 
@@ -201,7 +201,7 @@ gfdl_tciw_lat_so = gfdl_tciw_lat_so[gfdl_tciw_lat_so[:,0]<=-50] # kg/kg
 
 #---gfdl Global Profile---#
 
-gfdl_tcc_alt_g = gpg['Cloud Fraction'][:] # 0-1
+gfdl_tcc_alt_g = gpg['Cloud Fraction'][:26] # 0-1
 gfdl_tclw_alt_g = gpg['Specific Liquid Water Content'][:21] #kg/kg
 gfdl_tciw_alt_g = gpg['Specific Ice Water Content'][:25] #kg/kg
 gfdl_temp_alt_g = gpg['Temperature Profile'][:] #K
@@ -246,12 +246,11 @@ print('Importing data took:', end - start, 's')
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tcc_lat_g[:,0],ecmwf_tcc_lat_g[:,1], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tcc_lat_g[:,0],gfdl_tcc_lat_g[:,1], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], '-r', label='CCCM')
+ax.plot(ecmwf_tcc_lat_g[:,0],ecmwf_tcc_lat_g[:,1], '-b', label='ECMWF')
+ax.plot(gfdl_tcc_lat_g[:,0],gfdl_tcc_lat_g[:,1], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
 ax.set_ylabel('Cloud Fraction')
@@ -259,6 +258,7 @@ ax.set_ylabel('Cloud Fraction')
 plt.title('2010 Global Cloud Fraction vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tcc_lat_g.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
@@ -270,17 +270,18 @@ fig, ax = plt.subplots()
 
 ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-r', label='CCCM')
 ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='ECMWF')
-ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='gfdl')
+ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid Water Content vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_lat_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -290,19 +291,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='CCCM - Satellite')
-ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='gfdl.AM4 - Model')
+ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='CCCM')
+ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='ECMWF')
+ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.2),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Ice Water Content vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tciw_lat_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -312,25 +314,98 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-r', label='Liquid - CCCM - Satellite')
-ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='Liquid - ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='Liquid - gfdl.AM4 - Model')
-ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='Ice - CCCM - Satellite')
-ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='Ice - ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='Ice - gfdl.AM4 - Model')
+ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid and Ice Water Content vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_tciw_lat_g.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
+#---Plot CCCM Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], '-r', label='Cloud Fraction')
+ax2.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 CCCM Global Cloud Fraction and Phase Content vs Latitude')
+
+plt.grid(True)
+plt.savefig("2010_CCCM_lat_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
+#---Plot ECMWF Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(ecmwf_tcc_lat_g[:,0],ecmwf_tcc_lat_g[:,1], '-r', label='Cloud Fraction')
+ax2.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 ECMWF Global Cloud Fraction and Phase Content vs Latitude')
+
+plt.grid(True)
+plt.savefig("2010_ECMWF_lat_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+#---Plot GFDL Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(gfdl_tcc_lat_g[:,0],gfdl_tcc_lat_g[:,1], '-r', label='Cloud Fraction')
+ax2.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 GFDL Global Cloud Fraction and Phase Content vs Latitude')
+
+plt.grid(True)
+plt.savefig("2010_GFDL_lat_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 ############################################################################### Southern Ocean Latitude Plots
 
 #---Plot Southern Ocean Cloud Fraction with Latitude---#
@@ -339,12 +414,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tcc_lat_so[:,0],cccm_tcc_lat_so[:,1], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tcc_lat_so[:,0],ecmwf_tcc_lat_so[:,1], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tcc_lat_so[:,0],gfdl_tcc_lat_so[:,1], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tcc_lat_so[:,0],cccm_tcc_lat_so[:,1], '-r', label='CCCM')
+ax.plot(ecmwf_tcc_lat_so[:,0],ecmwf_tcc_lat_so[:,1], '-b', label='ECMWF')
+ax.plot(gfdl_tcc_lat_so[:,0],gfdl_tcc_lat_so[:,1], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
 ax.set_ylabel('Cloud Fraction')
@@ -352,6 +426,7 @@ ax.set_ylabel('Cloud Fraction')
 plt.title('2010 Southern Ocean Cloud Fraction vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tcc_lat_so.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
@@ -361,19 +436,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-r', label='CCCM - Satellite')
-ax.plot(ecmwf_tclw_lat_so[:,0],ecmwf_tclw_lat_so[:,1]*10000, '-b', label='ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tclw_lat_so[:,0],gfdl_tclw_lat_so[:,1]*10000, '-g', label='gfdl.AM4 - Model')
+ax.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-r', label='CCCM')
+ax.plot(ecmwf_tclw_lat_so[:,0],ecmwf_tclw_lat_so[:,1]*10000, '-b', label='ECMWF')
+ax.plot(gfdl_tclw_lat_so[:,0],gfdl_tclw_lat_so[:,1]*10000, '-g', label='GFDL')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid Water Content vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_lat_so.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
@@ -383,19 +459,21 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--r', label='CCCM - Satellite')
-ax.plot(ecmwf_tciw_lat_so[:,0],ecmwf_tciw_lat_so[:,1]*10000, '--b', label='ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tciw_lat_so[:,0],gfdl_tciw_lat_so[:,1]*10000, '--g', label='gfdl.AM4 - Model')
+ax.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--r', label='CCCM')
+ax.plot(ecmwf_tciw_lat_so[:,0],ecmwf_tciw_lat_so[:,1]*10000, '--b', label='ECMWF')
+ax.plot(gfdl_tciw_lat_so[:,0],gfdl_tciw_lat_so[:,1]*10000, '--g', label='GFDL')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Ice Water Content vs Latitude')
 
 plt.grid(True)
+plt.savefig("2010_tciw_lat_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -405,25 +483,98 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-r', label='Liquid - CCCM - Satellite')
-ax.plot(ecmwf_tclw_lat_so[:,0],ecmwf_tclw_lat_so[:,1]*10000, '-b', label='Liquid - ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tclw_lat_so[:,0],gfdl_tclw_lat_so[:,1]*10000, '-g', label='Liquid - gfdl.AM4 - Model')
-ax.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--r', label='Ice - CCCM - Satellite')
-ax.plot(ecmwf_tciw_lat_so[:,0],ecmwf_tciw_lat_so[:,1]*10000, '--b', label='Ice - ECMWF.ERA5 Reanalysis - Model')
-ax.plot(gfdl_tciw_lat_so[:,0],gfdl_tciw_lat_so[:,1]*10000, '--g', label='Ice - gfdl.AM4 - Model')
+ax.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_lat_so[:,0],ecmwf_tclw_lat_so[:,1]*10000, '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_lat_so[:,0],gfdl_tclw_lat_so[:,1]*10000, '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_lat_so[:,0],ecmwf_tciw_lat_so[:,1]*10000, '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_lat_so[:,0],gfdl_tciw_lat_so[:,1]*10000, '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid and Ice Water Content vs Latitude')
 
 plt.grid(True)
+
+plt.savefig("2010_tclw_tciw_lat_so.svg", format="svg", bbox_inches='tight')
+
+plt.show()
+"""
+#---Plot CCCM Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(cccm_tcc_lat_so[:,0],cccm_tcc_lat_so[:,1], '-r', label='Cloud Fraction')
+ax2.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 CCCM Southern Ocean Cloud Fraction and Phase Content vs Latitude')
+
+
+plt.savefig("2010_CCCM_lat_so.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
+#---Plot ECMWF Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(ecmwf_tcc_lat_so[:,0],ecmwf_tcc_lat_so[:,1], '-r', label='Cloud Fraction')
+ax2.plot(ecmwf_tclw_lat_so[:,0],ecmwf_tclw_lat_so[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(ecmwf_tciw_lat_so[:,0],ecmwf_tciw_lat_so[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 ECMWF Southern Ocean Cloud Fraction and Phase Content vs Latitude')
+
+
+plt.savefig("2010_ECMWF_lat_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+#---Plot GFDL Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(gfdl_tcc_lat_so[:,0],gfdl_tcc_lat_so[:,1], '-r', label='Cloud Fraction')
+ax2.plot(gfdl_tclw_lat_so[:,0],gfdl_tclw_lat_so[:,1]*10000, '-b', label='Liquid Content')
+ax2.plot(gfdl_tciw_lat_so[:,0],gfdl_tciw_lat_so[:,1]*10000, '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 GFDL Southern Ocean Cloud Fraction and Phase Content vs Latitude')
+
+plt.savefig("2010_GFDL_lat_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 
 
 
@@ -435,12 +586,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tcc_alt_g[:,1],cccm_tcc_alt_g[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tcc_alt_g[:,1],ecmwf_tcc_alt_g[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tcc_alt_g[:,1],gfdl_tcc_alt_g[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tcc_alt_g[:,1],cccm_tcc_alt_g[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tcc_alt_g[:,1],ecmwf_tcc_alt_g[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tcc_alt_g[:,1],gfdl_tcc_alt_g[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Cloud Fraction')
@@ -448,6 +598,9 @@ ax.set_xlabel('Cloud Fraction')
 plt.title('2010 Global Cloud Fraction vs Altitude')
 
 plt.grid(True)
+
+plt.savefig("2010_tcc_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -457,19 +610,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -479,19 +633,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='gfdl.AM4 Model')
+ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='CCCM')
+ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='ECMWF')
+ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Ice Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tciw_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -501,22 +656,23 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='Liquid - gfdl.AM4 Model')
-ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='Ice - gfdl.AM4 Model')
+ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid and Ice Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_tciw_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -526,12 +682,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_temp_alt_g[:,1]*10000,cccm_temp_alt_g[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_temp_alt_g[:,1]*10000,ecmwf_temp_alt_g[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_temp_alt_g[:,1]*10000,gfdl_temp_alt_g[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_temp_alt_g[:,1],cccm_temp_alt_g[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_temp_alt_g[:,1],ecmwf_temp_alt_g[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_temp_alt_g[:,1],gfdl_temp_alt_g[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Temperature (K)')
@@ -539,6 +694,8 @@ ax.set_xlabel('Temperature (K)')
 plt.title('2010 Global Temperature vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_T_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -548,12 +705,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_plevel_alt_g[:,1]*10000,cccm_plevel_alt_g[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_plevel_alt_g[:,1]*10000,ecmwf_plevel_alt_g[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_plevel_alt_g[:,1]*10000,gfdl_plevel_alt_g[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_plevel_alt_g[:,1],cccm_plevel_alt_g[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_plevel_alt_g[:,1],ecmwf_plevel_alt_g[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_plevel_alt_g[:,1],gfdl_plevel_alt_g[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Pressure (hPa)')
@@ -561,6 +717,8 @@ ax.set_xlabel('Pressure (hPa)')
 plt.title('2010 Global Temperature vs Altitude')
 #plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_P_alt_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -570,19 +728,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tclw_T_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -592,19 +751,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='gfdl.AM4 Model')
+ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='CCCM')
+ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='ECMWF')
+ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Ice Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tciw_T_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -614,24 +774,30 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='Liquid - gfdl.AM4 Model')
-ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='Ice - gfdl.AM4 Model')
+ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Global Specific Liquid and Ice Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tclw_tciw_T_g.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
+#---Plot CCCM Cloud Fraction and Phase Profile---#
+
+#---Plot ECMWF Cloud Fraction and Phase Profile---#
+
+#---Plot GFDL Cloud Fraction and Phase Profile---#
 
 ############################################################################### Southern Ocean Altitude Plots
 
@@ -641,12 +807,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tcc_alt_so[:,1],cccm_tcc_alt_so[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tcc_alt_so[:,1],ecmwf_tcc_alt_so[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tcc_alt_so[:,1],gfdl_tcc_alt_so[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tcc_alt_so[:,1],cccm_tcc_alt_so[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tcc_alt_so[:,1],ecmwf_tcc_alt_so[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tcc_alt_so[:,1],gfdl_tcc_alt_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Cloud Fraction')
@@ -654,6 +819,8 @@ ax.set_xlabel('Cloud Fraction')
 plt.title('2010 Southern Ocean Cloud Fraction vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tcc_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -663,19 +830,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -685,19 +853,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='gfdl.AM4 Model')
+ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='CCCM')
+ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='ECMWF')
+ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Ice Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tciw_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -707,22 +876,23 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='Liquid - gfdl.AM4 Model')
-ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='Ice - gfdl.AM4 Model')
+ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Altitude (km)')
-ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid and Ice Water Content vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_tclw_tciw_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -732,12 +902,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_temp_alt_so[:,1],cccm_temp_alt_so[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_temp_alt_so[:,1],ecmwf_temp_alt_so[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_temp_alt_so[:,1],gfdl_temp_alt_so[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_temp_alt_so[:,1],cccm_temp_alt_so[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_temp_alt_so[:,1],ecmwf_temp_alt_so[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_temp_alt_so[:,1],gfdl_temp_alt_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Temperature (K)')
@@ -745,6 +914,8 @@ ax.set_xlabel('Temperature (K)')
 plt.title('2010 Southern Ocean Temperature vs Altitude')
 
 plt.grid(True)
+plt.savefig("2010_T_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -754,12 +925,11 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_plevel_alt_so[:,1],cccm_plevel_alt_so[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_plevel_alt_so[:,1],ecmwf_plevel_alt_so[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_plevel_alt_so[:,1],gfdl_plevel_alt_so[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_plevel_alt_so[:,1],cccm_plevel_alt_so[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_plevel_alt_so[:,1],ecmwf_plevel_alt_so[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_plevel_alt_so[:,1],gfdl_plevel_alt_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Pressure (hPa)')
@@ -767,6 +937,8 @@ ax.set_xlabel('Pressure (hPa)')
 plt.title('2010 Southern Ocean Temperature vs Altitude')
 #plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_P_alt_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -776,19 +948,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='gfdl.AM4 Model')
+ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='CCCM')
+ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='ECMWF')
+ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tclw_T_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -798,19 +971,20 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='gfdl.AM4 Model')
+ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='CCCM')
+ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='ECMWF')
+ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Ice Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tciw_T_so.svg", format="svg", bbox_inches='tight')
+
 plt.show()
 """
 
@@ -821,24 +995,31 @@ plt.figure()
 fig, ax = plt.subplots()
 
 
-ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='Liquid - gfdl.AM4 Model')
-ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
-ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='Ice - gfdl.AM4 Model')
+ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Temperature (K)')
-ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
+ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
 
 plt.title('2010 Southern Ocean Specific Liquid and Ice Water Content vs Temperature Profile')
 plt.gca().invert_yaxis()
 plt.grid(True)
+plt.savefig("2010_tclw_tciw_T_so.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
+
+#---Plot CCCM Cloud Fraction and Phase Profile---#
+
+#---Plot ECMWF Cloud Fraction and Phase Profile---#
+
+#---Plot GFDL Cloud Fraction and Phase Profile---#
+
 
 #---Plot Global and Southern Ocean Comparison Specific Liquid and Ice Water Content vs Altitude---#
 
@@ -848,19 +1029,18 @@ fig, ax = plt.subplots()
 
 #ax.plot(cccm_tclw_alt_g[:,1],cccm_tclw_alt_g[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tclw_alt_g[:,1],ecmwf_tclw_alt_g[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tclw_alt_g[:,1],gfdl_tclw_alt_g[:,0], '-g', label='Liquid - gfdl.AM4 Model')
+#ax.plot(gfdl_tclw_alt_g[:,1],gfdl_tclw_alt_g[:,0], '-g', label='Liquid - GFDL')
 #ax.plot(cccm_tciw_alt_g[:,1],cccm_tciw_alt_g[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tciw_alt_g[:,1],ecmwf_tciw_alt_g[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tciw_alt_g[:,1],gfdl_tciw_alt_g[:,0], '--g', label='Ice - gfdl.AM4 Model')
+#ax.plot(gfdl_tciw_alt_g[:,1],gfdl_tciw_alt_g[:,0], '--g', label='Ice - GFDL')
 #ax.plot(cccm_tclw_alt_so[:,1],cccm_tclw_alt_so[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tclw_alt_so[:,1],ecmwf_tclw_alt_so[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tclw_alt_so[:,1],gfdl_tclw_alt_so[:,0], '-g', label='Liquid - gfdl.AM4 Model')
+#ax.plot(gfdl_tclw_alt_so[:,1],gfdl_tclw_alt_so[:,0], '-g', label='Liquid - GFDL')
 #ax.plot(cccm_tciw_alt_so[:,1],cccm_tciw_alt_so[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tciw_alt_so[:,1],ecmwf_tciw_alt_so[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tciw_alt_so[:,1],gfdl_tciw_alt_so[:,0], '--g', label='Ice - gfdl.AM4 Model')
+#ax.plot(gfdl_tciw_alt_so[:,1],gfdl_tciw_alt_so[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
@@ -878,19 +1058,18 @@ fig, ax = plt.subplots()
 
 #ax.plot(cccm_tclw_temp_g[:,1],cccm_tclw_temp_g[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tclw_temp_g[:,1],ecmwf_tclw_temp_g[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tclw_temp_g[:,1],gfdl_tclw_temp_g[:,0], '-g', label='Liquid - gfdl.AM4 Model')
+#ax.plot(gfdl_tclw_temp_g[:,1],gfdl_tclw_temp_g[:,0], '-g', label='Liquid - GFDL')
 #ax.plot(cccm_tciw_temp_g[:,1],cccm_tciw_temp_g[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tciw_temp_g[:,1],ecmwf_tciw_temp_g[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tciw_temp_g[:,1],gfdl_tciw_temp_g[:,0], '--g', label='Ice - gfdl.AM4 Model')
+#ax.plot(gfdl_tciw_temp_g[:,1],gfdl_tciw_temp_g[:,0], '--g', label='Ice - GFDL')
 #ax.plot(cccm_tclw_temp_so[:,1],cccm_tclw_temp_so[:,0], '-r', label='Liquid - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tclw_temp_so[:,1],ecmwf_tclw_temp_so[:,0], '-b', label='Liquid - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tclw_temp_so[:,1],gfdl_tclw_temp_so[:,0], '-g', label='Liquid - gfdl.AM4 Model')
+#ax.plot(gfdl_tclw_temp_so[:,1],gfdl_tclw_temp_so[:,0], '-g', label='Liquid - GFDL')
 #ax.plot(cccm_tciw_temp_so[:,1],cccm_tciw_temp_so[:,0], '--r', label='Ice - CCCM Merged Satellite Dataset')
 ax.plot(ecmwf_tciw_temp_so[:,1],ecmwf_tciw_temp_so[:,0], '--b', label='Ice - ECMWF.ERA5 Reanalysis Model')
-#ax.plot(gfdl_tciw_temp_so[:,1],gfdl_tciw_temp_so[:,0], '--g', label='Ice - gfdl.AM4 Model')
+#ax.plot(gfdl_tciw_temp_so[:,1],gfdl_tciw_temp_so[:,0], '--g', label='Ice - GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_ylabel('Temperature (K)')
 ax.set_xlabel('Specific Liquid and Ice Water Content $(kg/kg) x 10^{-4}$')
