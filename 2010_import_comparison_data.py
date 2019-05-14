@@ -17,7 +17,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-"""
+
 # Uni Laptop
 #ECMWF Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets')
@@ -56,7 +56,7 @@ os.chdir('E:/University/University/MSc/Models/climate-analysis/GFDL/reduced_data
 gpg = h5py.File('2010_gfdl_global_profile.h5', 'r')
 gpso = h5py.File('2010_gfdl_so_profile.h5', 'r')
 glg = h5py.File('2010_gfdl_global_latitude.h5', 'r')
-
+"""
 """
 # Laptop
 #ECMWF Data
@@ -83,8 +83,8 @@ glg = h5py.File('2010_gfdl_global_latitude.h5', 'r')
 #---ECMWF Global Latitude Data---#
 
 ecmwf_tcc_lat_g = elg['Cloud Fraction'][:] # 0-1
-ecmwf_tclw_lat_g = elg['Specific Liquid Water Content'][:] #kg/kg
-ecmwf_tciw_lat_g = elg['Specific Ice Water Content'][:] #kg/kg
+ecmwf_tclw_lat_g = elg['Liquid Water Content'][:] #kg/kg
+ecmwf_tciw_lat_g = elg['Ice Water Content'][:] #kg/kg
 
 #---ECMWF Southern Ocean Latitude Data---#
 
@@ -134,8 +134,8 @@ ecmwf_tciw_plevel_so = epso['Specific Ice Water Content with Pressure'][11:37] #
 #---CCCM Global Latitude Data---#
 
 cccm_tcc_lat_g = clg['Cloud Fraction'][:] # 0-1
-cccm_tclw_lat_g = clg['Specific Liquid Water Content'][:] #kg/kg
-cccm_tciw_lat_g = clg['Specific Ice Water Content'][:] #kg/kg
+cccm_tclw_lat_g = clg['Liquid Water Content'][:] #kg/kg
+cccm_tciw_lat_g = clg['Ice Water Content'][:] #kg/kg
 
 #---CCCM Southern Ocean Latitude Data---#
 
@@ -185,8 +185,8 @@ cccm_tciw_plevel_so = cpso['Specific Ice Water Content with Pressure'][:] #kg/kg
 #---gfdl Global Latitude Data---#
 
 gfdl_tcc_lat_g = glg['Cloud Fraction'][:] # 0-1
-gfdl_tclw_lat_g = glg['Specific Liquid Water Content'][:] #kg/kg
-gfdl_tciw_lat_g = glg['Specific Ice Water Content'][:] #kg/kg
+gfdl_tclw_lat_g = glg['Liquid Water Content'][:] #kg/kg
+gfdl_tciw_lat_g = glg['Ice Water Content'][:] #kg/kg
 
 #---gfdl Southern Ocean Latitude Data---#
 
@@ -268,16 +268,16 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-r', label='CCCM')
-ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='ECMWF')
-ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='GFDL')
+ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1], '-r', label='CCCM')
+ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1], '-b', label='ECMWF')
+ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1], '-g', label='GFDL')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Cloud Content $kgm^{-2}$')
 
-plt.title('2010 Global Specific Liquid Water Content vs Latitude')
+plt.title('2010 Global Liquid Water Content vs Latitude')
 
 plt.grid(True)
 plt.savefig("2010_tclw_lat_g.svg", format="svg", bbox_inches='tight')
@@ -291,16 +291,16 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='CCCM')
-ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='ECMWF')
-ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='GFDL')
+ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1], '--r', label='CCCM')
+ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1], '--b', label='ECMWF')
+ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1], '--g', label='GFDL')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Cloud Content $kgm^{-2}$')
 
-plt.title('2010 Global Specific Ice Water Content vs Latitude')
+plt.title('2010 Global Ice Water Content vs Latitude')
 
 plt.grid(True)
 plt.savefig("2010_tciw_lat_g.svg", format="svg", bbox_inches='tight')
@@ -314,19 +314,19 @@ plt.show()
 plt.figure()
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-r', label='Liquid - CCCM')
-ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1]*10000, '-b', label='Liquid - ECMWF')
-ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1]*10000, '-g', label='Liquid - GFDL')
-ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--r', label='Ice - CCCM')
-ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1]*10000, '--b', label='Ice - ECMWF')
-ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1]*10000, '--g', label='Ice - GFDL')
+ax.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1], '-r', label='Liquid - CCCM')
+ax.plot(ecmwf_tclw_lat_g[:,0],ecmwf_tclw_lat_g[:,1], '-b', label='Liquid - ECMWF')
+ax.plot(gfdl_tclw_lat_g[:,0],gfdl_tclw_lat_g[:,1], '-g', label='Liquid - GFDL')
+ax.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1], '--r', label='Ice - CCCM')
+ax.plot(ecmwf_tciw_lat_g[:,0],ecmwf_tciw_lat_g[:,1], '--b', label='Ice - ECMWF')
+ax.plot(gfdl_tciw_lat_g[:,0],gfdl_tciw_lat_g[:,1], '--g', label='Ice - GFDL')
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
 ax.set_xlabel('Latitude')
-ax.set_ylabel('Specific Content $(kg/kg) x 10^{-4}$')
+ax.set_ylabel('Cloud Content $kgm^{-2}$')
 
-plt.title('2010 Global Specific Liquid and Ice Water Content vs Latitude')
+plt.title('2010 Global Liquid and Ice Water Content vs Latitude')
 
 plt.grid(True)
 plt.savefig("2010_tclw_tciw_lat_g.svg", format="svg", bbox_inches='tight')
@@ -795,9 +795,77 @@ plt.show()
 """
 #---Plot CCCM Cloud Fraction and Phase Profile---#
 
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twiny()
+ax1.plot(cccm_tcc_alt_g[:,1],cccm_tcc_alt_g[:,0], '-r', label='Cloud Fraction')
+ax2.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 CCCM Global Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_CCCM_alt_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 #---Plot ECMWF Cloud Fraction and Phase Profile---#
 
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twiny()
+ax1.plot(ecmwf_tcc_alt_g[:,1],ecmwf_tcc_alt_g[:,0], '-r', label='Cloud Fraction')
+ax2.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='Liquid Content')
+ax2.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 ECMWF Global Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_ECMWF_alt_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
 #---Plot GFDL Cloud Fraction and Phase Profile---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twiny()
+ax1.plot(gfdl_tcc_alt_g[:,1],gfdl_tcc_alt_g[:,0], '-r', label='Cloud Fraction')
+ax2.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-b', label='Liquid Content')
+ax2.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 GFDL Global Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_GFDL_alt_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 
 ############################################################################### Southern Ocean Altitude Plots
 
@@ -1015,10 +1083,77 @@ plt.show()
 """
 
 #---Plot CCCM Cloud Fraction and Phase Profile---#
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
 
+ax2 = ax1.twiny()
+ax1.plot(cccm_tcc_alt_so[:,1],cccm_tcc_alt_so[:,0], '-r', label='Cloud Fraction')
+ax2.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 CCCM Southern Ocean Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_CCCM_alt_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 #---Plot ECMWF Cloud Fraction and Phase Profile---#
 
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twiny()
+ax1.plot(ecmwf_tcc_alt_so[:,1],ecmwf_tcc_alt_so[:,0], '-r', label='Cloud Fraction')
+ax2.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='Liquid Content')
+ax2.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 ECMWF Southern Ocean Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_ECMWF_alt_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
 #---Plot GFDL Cloud Fraction and Phase Profile---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twiny()
+ax1.plot(gfdl_tcc_alt_so[:,1],gfdl_tcc_alt_so[:,0], '-r', label='Cloud Fraction')
+ax2.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-b', label='Liquid Content')
+ax2.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Cloud Fraction')
+ax2.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('2010 GFDL Southern Ocean Cloud Fraction and Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("2010_GFDL_alt_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 
 
 #---Plot Global and Southern Ocean Comparison Specific Liquid and Ice Water Content vs Altitude---#

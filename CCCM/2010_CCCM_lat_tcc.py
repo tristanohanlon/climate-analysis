@@ -14,41 +14,33 @@ import numpy as np
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
+import h5py
+
+#---get latitude---#
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+f = h5py.File('2010_CCCM_profile_variables.h5', 'r')
+
+lat = f['lat'][:]
 
 cf=[] # create a blank array to add cloud amount data
-#lat=[] # create a blank array to add latitude data
+
 counter=0
 
 # The directory where your HDF files are stored
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
 
-start = time.time()
+#start = time.time()
 # Load every file in the directory
 for filename in os.listdir(): 
     
     # Load the file
     f = SD.SD(filename)
-    
-    # Get the latitude data as a list
-#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
-    
     # Get the cloud cover data as a list. Since this is the 'cloud free' data, need to invert later
     cf = cf+f.select('Cloud area enhanced').get().tolist()
 
 if len(lat) != len(cf):
     exit('Invalid sizes of lat and cf data')
     
-end = time.time()
-print('Importing data from files to lists took:', end - start, 's')
-
-
-start = time.time()
-
-#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
-#print("round lats")
-
-#lat = np.array(lat)
 cf = np.array(cf)
 
 #Set the large 'fill values' in the data to nan before averaging        
@@ -72,10 +64,7 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 averages_total = unique.size
 cccm_tcc_lat = np.empty((averages_total,2),dtype=float)
 
-end = time.time()
-print('Create arrays and combined array took:', end - start, 's')
 
-start = time.time()
 # Current subtotal of current lat
 subtotal = 0.0
 # Current number of cloud cover entries in subtotal
@@ -134,8 +123,6 @@ average = subtotal / number / 100
 #average = subtotal / number / 100
 cccm_tcc_lat[i] = [current_lat, average]
 
-end = time.time()
-print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud cover) elements
@@ -146,11 +133,6 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
-
-#Select latitudes over the southern ocean
-#cccm_tcc_lat = cccm_tcc_lat[cccm_tcc_lat[:,0]>=-70]
-#cccm_tcc_lat = cccm_tcc_lat[cccm_tcc_lat[:,0]<=-50]
-
 
 plt.figure()
 fig, ax = plt.subplots()
@@ -165,3 +147,9 @@ ax.set_xlabel('Latitude')
 
 plt.title('Global Cloud Fraction vs Latitude - 2010')
 plt.show()
+
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+# specify path and file name to create 
+with h5py.File('2010_CCCM_tcc_lat.h5', 'w') as p:
+    p.create_dataset('tcc', data=cccm_tcc_lat)
+    p.close()

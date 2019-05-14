@@ -11,16 +11,28 @@ import time
 import numpy as np
 import os
 from pyhdf import SD
+import h5py
 
 #Empty lists
-#alt = []
 iw =[]
-#lat = []
+
+#Import altitude and latitude data from reduced datasets
+
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+p = h5py.File('2010_CCCM_profile_variables.h5', 'r')
+
+alt = p['alt'][:]
+lat = p['lat'][:]
+air_density_g = p['air_density_g'][:]
+air_density_so = p['air_density_so'][:]
+
+
+###############################################################################
 
 start = time.time()
 
 # The directory where your HDF files are stored
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
 
 # Load every file in the directory
@@ -28,33 +40,25 @@ for filename in os.listdir():
     
     # Load the file
     f = SD.SD(filename)
-    # Get the altitude levels which corespond to the ice water content data. Only store the last file's values
-#    alt = f.select('Irradiance layer center height profile').get().tolist() #137 levels for ice and liquid water profiles
-    # Get the ice water content data which is a (25535, 138) array per file. Axis = 0 is added to for each file.  
+    # Get the ice water content (gm^-3) data which is a (lat, alt) array per file. Axis = 0 is added to for each file.  
     iw = iw+f.select('Ice water content profile used').get().tolist() # 137 levels, 25536 values each referenced to latitude and longitude
-    # Get the latitude data as a list
-#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
-#print("round lats")
-#lat = np.array(lat)
-#alt = np.array(alt) / 1000 # Convert the altitude list to a numpy array and convery m to km
 iw = np.array(iw) # Convert ice water content list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging
 iw[iw > 20] = None        
-#for index, item in np.ndenumerate(iw):
-#    if (item > 20): # 20g/m^3 is the upper range limit of the ice water content data
-#        iw[index] = 0     
+
+###############################################################################
+#---Get Southern Ocean Data - Remember to get Latitude Data---#
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-#lat = np.vstack(lat)
-combined = np.hstack((lat, iw))
+a = np.vstack(lat)
+combined = np.hstack((a, iw))
 #print ("combined")
 #print (combined)
 
@@ -68,12 +72,40 @@ combined = combined[combined[:,0]>=-70]
 combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the iw data, eliminating the first coloumn of latitude
-iw = iw[:,1:138]
+iw_so = combined[:,1:138]
 #alt = alt[0:137] #scale alt if necessary
+
+
+###############################################################################
 
 # Average the ice water content over latitude and longitude for each altitude level 
 iw = np.nanmean(iw, axis=0)
+iw_so = np.nanmean(iw_so, axis=0)
+
+###############################################################################
+
+#Calculate density profile and divide IWC to get specific IWC at each profile level
+
+iw = iw / air_density_g #kg/kg Global
+
+iw_so = iw_so / air_density_so #kg/kg Southern Ocean
+
+
+###############################################################################
+
 iw = np.vstack((alt, iw)).T
-iw = iw[24:133] #only get values above 0 and above ground level
+iw_so = np.vstack((alt, iw_so)).T
+
 end = time.time()
 print('Average data set creation took:', end - start, 's')
+
+
+###############################################################################
+import h5py
+
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+# specify path and file name to create 
+with h5py.File('2010_CCCM_tciw_alt.h5', 'w') as p:
+    p.create_dataset('iw', data=iw)
+    p.create_dataset('iw_so', data=iw_so)
+    p.close()

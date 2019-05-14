@@ -4,69 +4,69 @@ Created on Tue Mar  5 09:26:33 2019
 
 @author: Tristan O'Hanlon
 
-This will create a datasset of global specific cloud liquid water content (kg/kg) with latitude.
+This will create a datasset of specific cloud liquid water content (kgm^-2) with latitude.
 Data is stored in a 2D array cccm_tclw_lat 
 [:,0] = latitude
-[:,1] = specific cloud liquid water content
+[:,1] = LWP
 """
 import time
-import math
 import numpy as np
-from sklearn.impute import SimpleImputer
 from scipy import integrate
+from sklearn.impute import SimpleImputer
 import os
 from pyhdf import SD
 import matplotlib.pyplot as plt
+import h5py
 
-lat = [] # create a blank array to add latitude data
+#---get altitude in km---#
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+f = h5py.File('2010_CCCM_profile_variables.h5', 'r')
+
+lat = f['lat'][:]
+alt = f['alt'][:]
+
+alt = alt*1000
+
+#------------------------#
+
 tclw = [] # create a blank array to add cloud liquid water content data
 
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
-#os.chdir('../Data/CCCM')  # Laptop
 
 start = time.time()
-
 # Load every file in the directory
 for filename in os.listdir(): 
     
     # Load the file
     f = SD.SD(filename)
-    
-    # Get the latitude data as a list
-    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist() 
     # Get the cloud liquid water content data as a list. (25536, 137) 'units': 'grams per cubic meter'
-#    tclw = tclw+f.select('Mean CloudSat radar only liquid water content').get().tolist() #113 levels
     tclw = tclw+f.select('Liquid water content profile used').get().tolist() #same as profile plots
-
+    
 if len(lat) != len(tclw):
     exit('Invalid sizes of lat and tclw data')
-
+    
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
-#start = time.time()
-
-lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
-#print("round lats")
-
-lat = np.array(lat)
 tclw = np.array(tclw)
 
 #Set the large 'fill values' in the data to nan before averaging        
-tclw[tclw > 15.0] = np.nan
+tclw[tclw > 20] = np.nan
+
+####################
 
 #fit all nan values to average
 
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
 imp.fit(np.transpose(tclw))  
 a = imp.transform(np.transpose(tclw))
-tclw = np.transpose(a)     
+tclw = np.transpose(a)
 
-#computing the total cloud liquid water cloud content (LWP) kg/kg
+####################
+#computing the total cloud liquid water cloud content (LWP) kgm^-2
 
 s_tclw = integrate.trapz(tclw, alt) # integrate across total altitude
-a_tclw = s_tclw/ap # divide by total air path
+a_tclw = -s_tclw / 1000 #convert g to kg
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, a_tclw)).T
@@ -82,14 +82,9 @@ combined = combined[np.lexsort(np.transpose(combined)[:-1])]
 #print ("sorted")
 #print (combined)
 
-# Averages of (lat,cloud liquid water content) empty array
+# Averages of (lat, cloud liquid water content) empty array
 averages_total = unique.size
 cccm_tclw_lat = np.empty((averages_total,2),dtype=float)
-
-#end = time.time()
-#print('Create arrays and combined array took:', end - start, 's')
-
-#start = time.time()
 
 # Current subtotal of current lat
 subtotal = 0.0
@@ -98,7 +93,7 @@ number = 0
 # Set the current lat to false
 current_lat = None
 
-# Iterate through all of the (lat,cloud liquid water content) elements and subtotal the same lat values
+# Iterate through all of the (lat, cloud liquid water content) elements and subtotal the same lat values
 i = 0
 for item in combined:
     
@@ -118,7 +113,6 @@ for item in combined:
         
         # Find the average value.
         average = subtotal / number
-
         """
         print("--------")
         print("lat: ", end='')
@@ -148,11 +142,9 @@ for item in combined:
 average = subtotal / number
 cccm_tclw_lat[i] = [current_lat, average]
 
-#end = time.time()
-#print('Average data set creation took:', end - start, 's')
 """
 print ("averages")
-# Iterate through all of the (lat,cloud ice water content) elements
+# Iterate through all of the (lat,cloud liquid water content) elements
 for item in averages:
     print("[", end='')
     print(item[0], end='')
@@ -161,24 +153,25 @@ for item in averages:
     print("]\n", end='')
 """
 
+ 
 plt.figure()
 fig, ax = plt.subplots()
-
+#ax.plot(cccm_tclw_frac_lat[:,0],cccm_tclw_frac_lat[:,1], 'g', label='CCCM')
 ax.plot(cccm_tclw_lat[:,0],cccm_tclw_lat[:,1], 'g', label='CCCM')
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
           ncol=4, fancybox=True, shadow=True);
 
-#ax.set_ylabel('Cloud Liquid Water Content Fraction', color='r')                   
-ax.set_ylabel('Specific Cloud Liquid Water Content (kg/kg)', color='r')
+#ax.set_ylabel('Cloud liquid Water Content Fraction', color='r')           
+ax.set_ylabel('Cloud liquid Water Content kg$m^{-2}$', color='r')
 ax.set_xlabel('Latitude')
 
-plt.title('Specific Cloud Liquid Water Content vs Latitude - 2010')
+plt.title('LWP vs Latitude - 2010')
 plt.show()
 
-import h5py
+#import h5py
 
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
 # specify path and file name to create 
 with h5py.File('2010_CCCM_tclw_lat.h5', 'w') as p:
-    p.create_dataset('Specific Liquid Water Content', data=cccm_tclw_lat)
+    p.create_dataset('tclw', data=cccm_tclw_lat)
     p.close()

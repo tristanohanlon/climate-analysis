@@ -7,21 +7,31 @@ Created on Tue Mar  5 09:26:33 2019
 This will extract the global liquid water content profile against altitude. 
 The liquid water content is averaged over all longitude and latitude at each altitude layer.
 """
-
 import time
 import numpy as np
 import os
 from pyhdf import SD
+import h5py
 
 #Empty lists
-#alt = []
 lw =[]
-#lat = []
+
+#Import altitude and latitude data from reduced datasets
+
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+p = h5py.File('2010_CCCM_profile_variables.h5', 'r')
+
+alt = p['alt'][:]
+lat = p['lat'][:]
+air_density_g = p['air_density_g'][:]
+air_density_so = p['air_density_so'][:]
+
+
+###############################################################################
 
 start = time.time()
 
 # The directory where your HDF files are stored
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2010')  # Uni Laptop
 os.chdir('E:/University/University/MSc/Models/Data/CCCM/2010')  # Home PC
 
 # Load every file in the directory
@@ -29,33 +39,25 @@ for filename in os.listdir():
     
     # Load the file
     f = SD.SD(filename)
-    # Get the altitude levels which corespond to the liquid water content data. Only store the last file's values
-#    alt = f.select('Irradiance layer center height profile').get().tolist() #137 levels for ice and liquid water profiles
-    # Get the liquid water content data data which is a (25535, 137) array per file. Axis = 0 is added to for each file.  
+    # Get the liquid water content (gm^-3) data which is a (lat, alt) array per file. Axis = 0 is added to for each file.  
     lw = lw+f.select('Liquid water content profile used').get().tolist() # 137 levels, 25536 values each referenced to latitude and longitude
-    # Get the latitude data as a list
-#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist()
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
 
 start = time.time()
 
-#lat[:] = [(round(v*2,0)/2-90)*-1 for v in lat]
-#print("round lats")
-#lat = np.array(lat)
-#alt = np.array(alt) / 1000 # Convert the altitude list to a numpy array and convery m to km
 lw = np.array(lw) # Convert liquid water content list to a numpy array
 
 #Set the large 'fill values' in the data to nan before averaging
 lw[lw > 20] = None        
-#for index, item in np.ndenumerate(lw):
-#    if (item > 20): # 20g/m^3 is the upper range limit of the liquid water content data
-#        lw[index] = 0     
+
+###############################################################################
+#---Get Southern Ocean Data - Remember to get Latitude Data---#
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
-#lat = np.vstack(lat)
-combined = np.hstack((lat, lw))
+a = np.vstack(lat)
+combined = np.hstack((a, lw))
 #print ("combined")
 #print (combined)
 
@@ -69,12 +71,40 @@ combined = combined[combined[:,0]>=-70]
 combined = combined[combined[:,0]<=-50]
 
 #Split the combined array into just the lw data, eliminating the first coloumn of latitude
-lw = lw[:,1:138]
-#alt = alt[0:136] #scale alt if necessary
+lw_so = combined[:,1:138]
+#alt = alt[0:137] #scale alt if necessary
+
+
+###############################################################################
 
 # Average the liquid water content over latitude and longitude for each altitude level 
 lw = np.nanmean(lw, axis=0)
+lw_so = np.nanmean(lw_so, axis=0)
+
+###############################################################################
+
+#Calculate density profile and divide LWC to get specific lwC at each profile level
+
+lw = lw / air_density_g #kg/kg Global
+
+lw_so = lw_so / air_density_so #kg/kg Southern Ocean
+
+
+###############################################################################
+
 lw = np.vstack((alt, lw)).T
-lw = lw[25:133] #only get values above 0 and above ground level
+lw_so = np.vstack((alt, lw_so)).T
+
 end = time.time()
 print('Average data set creation took:', end - start, 's')
+
+
+###############################################################################
+import h5py
+
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+# specify path and file name to create 
+with h5py.File('2010_CCCM_tclw_alt.h5', 'w') as p:
+    p.create_dataset('lw', data=lw)
+    p.create_dataset('lw_so', data=lw_so)
+    p.close()

@@ -1,0 +1,38 @@
+2006 - Data is from 01.07 to 31.12
+2011 - Data is from 01.02 to 30.04
+
+From Annual Datasets:
+
+lat = full latitude dataset in sequence - for future use if needed
+
+tcc = (latitude, total cloud fraction)
+tclw = (latitude, liquid water path (kg/m^2)
+tciw = (latitude, ice water path (kg/m^2)
+
+alt = Irradiance layer center height profile (km), 137 levels for ice and liquid water profiles
+alt_c = Layer center height profile (clouds and aerosol) (km), 113 levels for clouds
+alt_t = Irradiance level height profile (km), 138 altitude levels for pressure and temperature. 
+
+air_density_g = (g/m^3) 137 altitude levels
+air_density_so = (g/m^3) 137 altitude levels
+
+cf = (alt_c, cloud fraction profile)
+cf_so = (alt_c, cloud fraction profile over southern ocean)
+lw = (alt, specific liquid water content (kg/kg))
+lw_so = (alt, specific liquid water content (kg/kg) over southern ocean)
+iw = (alt, specific ice water content (kg/kg))
+iw_so = (alt, specific ice water content (kg/kg) over southern ocean)
+
+temp = (alt_t, temperature (K))
+temp_so = (alt_t, temperature (K) over southern ocean)
+pressure = (alt_t, pressure(hPa))
+pressure_so = (alt_t, pressure(hPa) over southern ocean)
+
+cf_t = (temperature (K), cloud fraction profile)
+cf_t_so = (temperature (K), cloud fraction profile over southern ocean)
+lw_t = (temperature (K), specific liquid water content (kg/kg))
+lw_t_so = (temperature (K), specific liquid water content (kg/kg) over southern ocean)
+iw_t = (temperature (K), specific ice water content (kg/kg))
+iw_t_so = (temperature (K), specific ice water content (kg/kg) over southern ocean)
+
+
