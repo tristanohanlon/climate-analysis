@@ -17,7 +17,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-
+"""
 # Uni Laptop
 #ECMWF Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets')
@@ -27,9 +27,7 @@ elg = h5py.File('2010_ECMWF_global_latitude.h5', 'r')
 
 #CCCM Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets')
-cpg = h5py.File('2010_CCCM_global_profile.h5', 'r')
-cpso = h5py.File('2010_CCCM_so_profile.h5', 'r')
-clg = h5py.File('2010_CCCM_global_latitude.h5', 'r')
+c = h5py.File('2010_CCCM.h5', 'r')
 
 #GFDL Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/gfdl/reduced_datasets')
@@ -47,16 +45,14 @@ elg = h5py.File('2010_ECMWF_global_latitude.h5', 'r')
 
 #CCCM Data
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets')
-cpg = h5py.File('2010_CCCM_global_profile.h5', 'r')
-cpso = h5py.File('2010_CCCM_so_profile.h5', 'r')
-clg = h5py.File('2010_CCCM_global_latitude.h5', 'r')
+c = h5py.File('2010_CCCM.h5', 'r')
 
 #GFDL Data
 os.chdir('E:/University/University/MSc/Models/climate-analysis/GFDL/reduced_datasets')
 gpg = h5py.File('2010_gfdl_global_profile.h5', 'r')
 gpso = h5py.File('2010_gfdl_so_profile.h5', 'r')
 glg = h5py.File('2010_gfdl_global_latitude.h5', 'r')
-"""
+
 """
 # Laptop
 #ECMWF Data
@@ -67,9 +63,7 @@ epso = h5py.File('2010_ECMWF_so_profile.h5', 'r')
 
 #CCCM Data
 #os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets')
-#cpg = h5py.File('2010_CCCM_global_profile.h5', 'r')
-#cpso = h5py.File('2010_CCCM_so_profile.h5', 'r')
-#clg = h5py.File('2010_CCCM_global_latitude.h5', 'r')
+c = h5py.File('2010_CCCM.h5', 'r')
 
 #GFDL Data
 #os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/gfdl/reduced_datasets')
@@ -133,9 +127,9 @@ ecmwf_tciw_plevel_so = epso['Specific Ice Water Content with Pressure'][11:37] #
 
 #---CCCM Global Latitude Data---#
 
-cccm_tcc_lat_g = clg['Cloud Fraction'][:] # 0-1
-cccm_tclw_lat_g = clg['Liquid Water Content'][:] #kg/kg
-cccm_tciw_lat_g = clg['Ice Water Content'][:] #kg/kg
+cccm_tcc_lat_g = c['tcc'][:] # 0-1
+cccm_tclw_lat_g = c['tclw'][:] #kg/kg
+cccm_tciw_lat_g = c['tciw'][:] #kg/kg
 
 #---CCCM Southern Ocean Latitude Data---#
 
@@ -150,35 +144,35 @@ cccm_tciw_lat_so = cccm_tciw_lat_so[cccm_tciw_lat_so[:,0]<=-50] # kg/kg
 
 #---CCCM Global Profile---#
 
-cccm_tcc_alt_g = cpg['Cloud Fraction'][12:109] # 0-1
-cccm_tclw_alt_g = cpg['Specific Liquid Water Content'][70:133] #kg/kg
-cccm_tciw_alt_g = cpg['Specific Ice Water Content'][36:133] #kg/kg
-cccm_temp_alt_g = cpg['Temperature Profile'][:] #K
-cccm_plevel_alt_g = cpg['Pressure Profile'][:] #hPa
+cccm_tcc_alt_g = c['cf'][12:109] # 0-1
+cccm_tclw_alt_g = c['lw'][70:133] #kg/kg
+cccm_tciw_alt_g = c['iw'][36:133] #kg/kg
+cccm_temp_alt_g = c['temp'][:] #K
+cccm_plevel_alt_g = c['pressure'][:] #hPa
 
-cccm_tcc_temp_g = cpg['Cloud Fraction with Temperature'][12:110] # 0-1
-cccm_tclw_temp_g = cpg['Specific Liquid Water Content with Temperature'][27:134] #kg/kg
-cccm_tciw_temp_g = cpg['Specific Ice Water Content with Temperature'][26:134] #kg/kg
+cccm_tcc_temp_g = c['cf_t'][:] # 0-1
+cccm_tclw_temp_g = c['lw_t'][:] #kg/kg
+cccm_tciw_temp_g = c['iw_t'][:] #kg/kg
 
-cccm_tcc_plevel_g = cpg['Cloud Fraction with Pressure'][12:110] # 0-1
-cccm_tclw_plevel_g = cpg['Specific Liquid Water Content with Pressure'][27:134] #kg/kg
-cccm_tciw_plevel_g = cpg['Specific Ice Water Content with Pressure'][36:134] #kg/kg
+#cccm_tcc_plevel_g = c['Cloud Fraction with Pressure'][12:110] # 0-1
+#cccm_tclw_plevel_g = c['Specific Liquid Water Content with Pressure'][27:134] #kg/kg
+#cccm_tciw_plevel_g = c['Specific Ice Water Content with Pressure'][36:134] #kg/kg
 
 #---CCCM Southern Ocean Profile---#
 
-cccm_tcc_alt_so = cpso['Cloud Fraction'][:] # 0-1
-cccm_tclw_alt_so = cpso['Specific Liquid Water Content'][53:] #kg/kg
-cccm_tciw_alt_so = cpso['Specific Ice Water Content'][22:] #kg/kg
-cccm_temp_alt_so = cpso['Temperature Profile'][:] #K
-cccm_plevel_alt_so = cpso['Pressure Profile'][:] #hPa
+cccm_tcc_alt_so = c['cf_so'][:] # 0-1
+cccm_tclw_alt_so = c['lw_so'][53:] #kg/kg
+cccm_tciw_alt_so = c['iw_so'][22:] #kg/kg
+cccm_temp_alt_so = c['temp_so'][:] #K
+cccm_plevel_alt_so = c['pressure_so'][:] #hPa
 
-cccm_tcc_temp_so = cpso['Cloud Fraction with Temperature'][:] # 0-1
-cccm_tclw_temp_so = cpso['Specific Liquid Water Content with Temperature'][:] #kg/kg
-cccm_tciw_temp_so = cpso['Specific Ice Water Content with Temperature'][:] #kg/kg
+cccm_tcc_temp_so = c['cf_t_so'][:] # 0-1
+cccm_tclw_temp_so = c['lw_t_so'][:] #kg/kg
+cccm_tciw_temp_so = c['iw_t_so'][:] #kg/kg
 
-cccm_tcc_plevel_so = cpso['Cloud Fraction with Pressure'][:] # 0-1
-cccm_tclw_plevel_so = cpso['Specific Liquid Water Content with Pressure'][:] #kg/kg
-cccm_tciw_plevel_so = cpso['Specific Ice Water Content with Pressure'][:] #kg/kg
+#cccm_tcc_plevel_so = c['Cloud Fraction with Pressure'][:] # 0-1
+#cccm_tclw_plevel_so = c['Specific Liquid Water Content with Pressure'][:] #kg/kg
+#cccm_tciw_plevel_so = c['Specific Ice Water Content with Pressure'][:] #kg/kg
 
 ############################################################################### gfdl Data
 
@@ -341,8 +335,8 @@ fig, ax1 = plt.subplots()
 
 ax2 = ax1.twinx()
 ax1.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], '-r', label='Cloud Fraction')
-ax2.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1]*10000, '-b', label='Liquid Content')
-ax2.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1]*10000, '--b', label='Ice Content')
+ax2.plot(cccm_tclw_lat_g[:,0],cccm_tclw_lat_g[:,1], '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_lat_g[:,0],cccm_tciw_lat_g[:,1], '--b', label='Ice Content')
 
 ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
 ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
@@ -511,8 +505,8 @@ fig, ax1 = plt.subplots()
 
 ax2 = ax1.twinx()
 ax1.plot(cccm_tcc_lat_so[:,0],cccm_tcc_lat_so[:,1], '-r', label='Cloud Fraction')
-ax2.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1]*10000, '-b', label='Liquid Content')
-ax2.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1]*10000, '--b', label='Ice Content')
+ax2.plot(cccm_tclw_lat_so[:,0],cccm_tclw_lat_so[:,1], '-b', label='Liquid Content')
+ax2.plot(cccm_tciw_lat_so[:,0],cccm_tciw_lat_so[:,1], '--b', label='Ice Content')
 
 ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
 ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));

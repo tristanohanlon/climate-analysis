@@ -9,60 +9,73 @@ Spyder Editor
 
 import h5py
 import os
+import numpy as np
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM') # Home PC
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM') #Uni Laptop
+#os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/CCCM') #Laptop
 
-#For seperate latitude files
-g = h5py.File('2006_CCCM_tcc_lat.h5', 'r')
+
+g = h5py.File('raw_datasets/2011_CCCM_tcc_lat.h5', 'r')
 tcc = g['tcc'][:]
 
-f = h5py.File('2006_CCCM_tclw_lat.h5', 'r')
+f = h5py.File('raw_datasets/2011_CCCM_tclw_lat.h5', 'r')
 tclw = f['tclw'][:]
 
-h = h5py.File('2006_CCCM_tciw_lat.h5', 'r')
+h = h5py.File('raw_datasets/2011_CCCM_tciw_lat.h5', 'r')
 tciw = h['tciw'][:]
 
 
-b = h5py.File('2006_CCCM_profile_variables.h5', 'r')
+b = h5py.File('raw_datasets/2011_CCCM_profile_variables.h5', 'r')
 lat = b['lat'][:]
 alt = b['alt'][:]
 alt_c = b['alt_c'][:]
 alt_t = b['alt_t'][:]
 air_density_g = b['air_density_g'][:]
 air_density_so = b['air_density_so'][:]
-temp = b['temp'][:]
-temp_so = b['temp_so'][:]
-pressure = b['pressure'][:]
-alt_t = b['pressure_so'][:]
+temp = b['temp_g_alt'][:]
+temp_so = b['temp_so_alt'][:]
+pressure = b['pressure_g_alt'][:]
+pressure_so = b['pressure_so_alt'][:]
 
-c = h5py.File('2006_CCCM_profile_cf.h5', 'r')
+c = h5py.File('raw_datasets/2011_CCCM_tcc_alt.h5', 'r')
 cf = c['cf'][:]
 cf_so = c['cf_so'][:]
 
-d = h5py.File('2006_CCCM_profile_lw.h5', 'r')
+d = h5py.File('raw_datasets/2011_CCCM_tclw_alt.h5', 'r')
 lw = d['lw'][:]
 lw_so = d['lw_so'][:]
 
-e = h5py.File('2006_CCCM_profile_iw.h5', 'r')
+e = h5py.File('raw_datasets/2011_CCCM_tciw_alt.h5', 'r')
 iw = e['iw'][:]
 iw_so = e['iw_so'][:]
 
-cf_t = np.vstack((temp[:,1], cf[:,1])).T
-cf_t_so = np.vstack((temp_so[:,1], cf_so[:,1])).T
-lw_t = np.vstack((temp[:,1], lw[:,1])).T
-lw_t_so = np.vstack((temp_so[:,1], lw_so[:,1])).T
-iw_t = np.vstack((temp[:,1], iw[:,1])).T
-iw_t_so = np.vstack((temp_so[:,1], iw_so[:,1])).T
+#---Fit temperture data to cloud fraction and phase---#
+
+cf_scale = cf[12:109]
+cf_scale_so = cf_so[12:109]
+
+t_scale_c = temp[:,1]
+t_scale_c = t_scale_c[36:133]
+
+t_scale_liw = temp[:,1]
+t_scale_liw = t_scale_liw[0:137]
+
+cf_t = np.vstack((t_scale_c, cf_scale[:,1])).T
+cf_t_so = np.vstack((t_scale_c, cf_scale_so[:,1])).T
+lw_t = np.vstack((t_scale_liw, lw[:,1])).T
+lw_t_so = np.vstack((t_scale_liw, lw_so[:,1])).T
+iw_t = np.vstack((t_scale_liw, iw[:,1])).T
+iw_t_so = np.vstack((t_scale_liw, iw_so[:,1])).T
 
 ###############################################################################
     
 
 import h5py
 import os
-#os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM') # Home PC
-os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
 
-with h5py.File('2006_CCCM.h5', 'w') as p:
+with h5py.File('2011_CCCM.h5', 'w') as p:
     p.create_dataset('lat', data=lat)
     
     p.create_dataset('tcc', data=tcc)

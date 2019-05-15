@@ -18,7 +18,7 @@ os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
 f = h5py.File('2010_CCCM_profile_variables.h5', 'r')
 
 lat = f['lat'][:]
-alt_c = f['alt'][:]
+alt_c = f['alt_c'][:]
 
 #Empty lists
 cf = []

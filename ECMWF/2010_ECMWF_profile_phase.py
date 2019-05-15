@@ -55,16 +55,17 @@ tcc = np.mean(tcc, axis=-1) #Average fraction of cloud cover over longitude
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-tcc = np.vstack((lat, tcc)).T #creates a (721,38) array
+tcc_so = np.vstack((lat, tcc)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-tcc = tcc[tcc[:,0]>=-70]
-tcc = tcc[tcc[:,0]<=-50]
+tcc_so = tcc_so[tcc_so[:,0]>=-70]
+tcc_so = tcc_so[tcc_so[:,0]<=-50]
 
 #Split the combined array into just the tcc data, eliminating the first coloumn of latitude
-tcc = tcc[:,1:38]
+tcc_so = tcc_so[:,1:38]
 
-tcc = np.mean(tcc, axis=0) #Average fraction of cloud cover over latitude
+tcc = np.mean(tcc, axis=-1) #Average fraction of cloud cover over latitude
+tcc_so = np.mean(tcc_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
 
 end = time.time()
 print('Averaging tcc data took:', end - start, 's')
@@ -79,16 +80,17 @@ tciw = np.mean(tciw, axis=-1) #Average specific cloud ice water content (kg/kg) 
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-tciw = np.vstack((lat, tciw)).T #creates a (721,38) array
+tciw_so = np.vstack((lat, tciw)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-tciw = tciw[tciw[:,0]>=-70]
-tciw = tciw[tciw[:,0]<=-50]
+tciw_so = tciw_so[tciw_so[:,0]>=-70]
+tciw_so = tciw_so[tciw_so[:,0]<=-50]
 
 #Split the combined array into just the tciw data, eliminating the first coloumn of latitude
-tciw = tciw[:,1:38]
+tciw_so = tciw_so[:,1:38]
 
-tciw = np.mean(tciw, axis=0) #Average specific cloud ice water content (kg/kg) over latitude
+tciw = np.mean(tciw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
+tciw_so = np.mean(tciw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
 
 end = time.time()
 print('Averaging tciw data took:', end - start, 's')
@@ -103,16 +105,17 @@ tclw = np.mean(tclw, axis=-1) #Average specific cloud liquid water content (kg/k
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-tclw = np.vstack((lat, tclw)).T #creates a (721,38) array
+tclw_so = np.vstack((lat, tclw)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-tclw = tclw[tclw[:,0]>=-70]
-tclw = tclw[tclw[:,0]<=-50]
+tclw_so = tclw_so[tclw_so[:,0]>=-70]
+tclw_so = tclw_so[tclw_so[:,0]<=-50]
 
 #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
-tclw = tclw[:,1:38]
+tclw_so = tclw_so[:,1:38]
 
-tclw = np.mean(tclw, axis=0) #Average specific cloud liquid water content (kg/kg) over latitude
+tclw = np.mean(tclw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
+tclw_so = np.mean(tclw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
 
 end = time.time()
 print('Averaging tclw data took:', end - start, 's')
@@ -127,16 +130,17 @@ temp = np.mean(temp, axis=-1) #Average air temperature over longitude
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-temp = np.vstack((lat, temp)).T #creates a (721,38) array
+temp_so = np.vstack((lat, temp)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-temp = temp[temp[:,0]>=-70]
-temp = temp[temp[:,0]<=-50]
+temp_so = temp_so[temp_so[:,0]>=-70]
+temp_so = temp_so[temp_so[:,0]<=-50]
 
 #Split the combined array into just the temp data, eliminating the first coloumn of latitude
-temp = temp[:,1:38]
+temp_so = temp_so[:,1:38]
 
-temp = np.mean(temp, axis=0)  #Average air temperature over latitude
+temp = np.mean(temp, axis=-1) #Average air temperature over latitude
+temp_so = np.mean(temp_so, axis=0)  #Average southern ocean air temperature over latitude
 
 end = time.time()
 print('Averaging temp data took:', end - start, 's')
@@ -156,9 +160,19 @@ ecmwf_tcc_temp = np.vstack((temp, tcc)).T
 ecmwf_tclw_temp = np.vstack((temp, tclw)).T
 ecmwf_tciw_temp = np.vstack((temp, tciw)).T
 
-ecmwf_tcc_plevel = np.vstack((plevel, tcc)).T 
-ecmwf_tclw_plevel = np.vstack((plevel, tclw)).T
-ecmwf_tciw_plevel = np.vstack((plevel, tciw)).T
+ecmwf_tcc_alt_so = np.vstack((alt, tcc_so)).T 
+ecmwf_tclw_alt_so = np.vstack((alt, tclw_so)).T
+ecmwf_tciw_alt_so = np.vstack((alt, tciw_so)).T
+ecmwf_temp_alt_so = np.vstack((alt, temp_so)).T
+ecmwf_plevel_alt_so = np.vstack((alt, plevel)).T
+
+ecmwf_tcc_temp_so = np.vstack((temp_so, tcc_so)).T 
+ecmwf_tclw_temp_so = np.vstack((temp_so, tclw_so)).T
+ecmwf_tciw_temp_so = np.vstack((temp_so, tciw_so)).T
+
+#ecmwf_tcc_plevel = np.vstack((plevel, tcc)).T 
+#ecmwf_tclw_plevel = np.vstack((plevel, tclw)).T
+#ecmwf_tciw_plevel = np.vstack((plevel, tciw)).T
 
 end = time.time()
 print('Creating the combined arrays took:', end - start, 's')
@@ -187,3 +201,33 @@ plt.title('Southern Ocean Cloud Fraction and Phase vs Altitude ECMWF 2010')
 
 plt.grid(True)
 plt.show()
+
+###############################################################################
+import h5py
+import os
+os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Uni Laptop
+
+with h5py.File('2010_ECMWF_global_profile.h5', 'w') as p:
+    
+    p.create_dataset('cf', data=ecmwf_tcc_alt)
+    p.create_dataset('cf_so', data=ecmwf_tcc_alt_so)
+    p.create_dataset('lw', data=ecmwf_tclw_alt)
+    p.create_dataset('lw_so', data=ecmwf_tclw_alt_so)
+    p.create_dataset('iw', data=ecmwf_tciw_alt)
+    p.create_dataset('iw_so', data=ecmwf_tciw_alt_so)
+
+    p.create_dataset('temp', data=ecmwf_temp_alt)
+    p.create_dataset('temp_so', data=ecmwf_temp_alt_so)
+    p.create_dataset('pressure', data=ecmwf_plevel_alt)
+    p.create_dataset('pressure_so', data=ecmwf_plevel_alt)
+
+    p.create_dataset('cf_t', data=ecmwf_tcc_temp)
+    p.create_dataset('cf_t_so', data=ecmwf_tcc_temp_so)
+    p.create_dataset('lw_t', data=ecmwf_tclw_temp)
+    p.create_dataset('lw_t_so', data=ecmwf_tclw_temp_so)
+    p.create_dataset('iw_t', data=ecmwf_tciw_temp)
+    p.create_dataset('iw_t_so', data=ecmwf_tciw_temp_so)
+
+    p.close()
+
