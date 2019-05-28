@@ -19,6 +19,7 @@ alt_c = []
 alt_t = []
 temp = []
 pressure = []
+cff = []
 
 ###############################################################################
 
@@ -45,6 +46,7 @@ for filename in os.listdir():
     pressure = pressure+f.select('Pressure profile').get().tolist()
     #Get the temperature (K) data which is a (lat, alt_t) array per file. Axis = 0 is added to for each file.
     temp = temp+f.select('Temperature profile').get().tolist()
+    cff = cff+f.select('Cloud free area percent coverage (CALIPSO-CloudSat)').get().tolist() #25536 values each referenced to latitude and longitude
 
     end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
@@ -59,7 +61,10 @@ alt_t = np.array(alt_t) / 1000 # Convert the altitude list to a numpy array and 
 alt_c = np.array(alt_c)
 pressure = np.array(pressure)
 temp = np.array(temp)
+cff = np.array(cff) 
 
+#Set the large 'fill values' in the data to nan before averaging
+cff[cff > 100] = None        
 pressure[pressure > 1100] = None   
 temp[temp > 400] = None   
 
@@ -162,10 +167,97 @@ print('Create southern ocean air density data set took:', end - start, 's')
 
 ###############################################################################
 
+combined = np.vstack((lat, cff)).T
+#print ("combined")
+#print (combined)
 
+#print("get unique lats")
+unique = np.unique(lat)
+#print(unique)
+
+# Add a column for every additional column, -1 will sort by the first column
+combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+#print ("sorted")
+#print (combined)
+
+# Averages of (lat,cloud cover) empty array
+averages_total = unique.size
+cff_lat = np.empty((averages_total,2),dtype=float)
+
+# Current subtotal of current lat
+subtotal = 0.0
+# Current number of cloud cover entries in subtotal
+number = 0
+# Set the current lat to false
+current_lat = None
+
+# Iterate through all of the (lat,cloud cover) elements and subtotal the same lat values
+i = 0
+for item in combined:
+    
+    if np.isnan(item[1]):
+        continue
+
+    if current_lat is None:
+        """
+        print("setting current_lat to item[0]")
+        print("(current_lat == item[0]) = ", end='')
+        print(current_lat == item[0]) 
+        """
+        current_lat = item[0];
+    
+    # If the lat is not the same as last time, then perform the average calc and reset everything
+    if item[0] != current_lat:
+        
+        # Find the average value.
+        #average = subtotal / number
+        average = subtotal / number / 100
+        """
+        print("--------")
+        print("lat: ", end='')
+        print(current_lat, end='')
+        print(", avg: ", end='')
+        print(average, end='')
+        print(", subtotal: ", end='')
+        print(subtotal, end='')
+        print(", number: ", end='')
+        print(number)
+        """
+        # Append the average
+        cff_lat[i] = [current_lat, average]
+        # Reset the subtotal
+        subtotal = 0.0
+        number = 0
+        # Set the current latitude
+        current_lat = item[0]
+        # Move to the next index in the averages array
+        i+=1
+
+    # Add the next value to the subtotal
+    number+=1
+    subtotal+=item[1]
+    
+# Catch the last entry in the for loop
+#average = subtotal / number
+average = subtotal / number / 100
+cff_lat[i] = [current_lat, average]
+
+cffa = cff_lat[:,1]
+cffb = 1 - cffa
+cff = tciw[:,1]*cffb
+
+#Select latitudes over the southern ocean
+co = cff_lat[cff_lat[:,0]>=-70]
+co = co[co[:,0]<=-50]
+
+#Split the combined array into just the iw data, eliminating the first coloumn of latitude
+cff_so = co[:,1]
+cff_so = 1 - cff_so
+
+###############################################################################
 import h5py
 
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets')
 # specify path and file name to create 
 with h5py.File('2006_CCCM_profile_variables.h5', 'w') as p:
     p.create_dataset('lat', data=lat)
@@ -178,6 +270,8 @@ with h5py.File('2006_CCCM_profile_variables.h5', 'w') as p:
     p.create_dataset('pressure_so_alt', data=pressure_so_alt)
     p.create_dataset('air_density_g', data=air_density_g)
     p.create_dataset('air_density_so', data=air_density_so)  
+    p.create_dataset('cff', data=cff) 
+    p.create_dataset('cff_so', data=cff)  
     p.close()
     
     

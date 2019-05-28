@@ -19,11 +19,12 @@ import matplotlib.pyplot as plt
 import h5py
 
 #---get altitude in km---#
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
 f = h5py.File('2006_CCCM_profile_variables.h5', 'r')
 
 lat = f['lat'][:]
 alt = f['alt'][:]
+cff = f['cff'][:]
 
 alt = alt*1000
 
@@ -67,6 +68,8 @@ tclw = np.transpose(a)
 
 s_tclw = integrate.trapz(tclw, alt) # integrate across total altitude
 a_tclw = -s_tclw / 1000 #convert g to kg
+
+
 
 # Join the two lists as if they were two columns side by side, into a list of two elements each
 combined = np.vstack((lat, a_tclw)).T
@@ -153,6 +156,8 @@ for item in averages:
     print("]\n", end='')
 """
 
+cccm_tclw_lat = cccm_tclw_lat[:,1]*cff
+cccm_tclw_lat = np.vstack((unique,cccm_tclw_lat)).T
  
 plt.figure()
 fig, ax = plt.subplots()
@@ -170,8 +175,8 @@ plt.show()
 
 #import h5py
 
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM')
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets')
 # specify path and file name to create 
-with h5py.File('2006_CCCM_tclw_lat.h5', 'w') as p:
+with h5py.File('2006_CCCM_tclw_lata.h5', 'w') as p:
     p.create_dataset('tclw', data=cccm_tclw_lat)
     p.close()

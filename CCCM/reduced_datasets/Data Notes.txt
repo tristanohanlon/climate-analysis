@@ -6,8 +6,10 @@ From Annual Datasets:
 lat = full latitude dataset in sequence - for future use if needed
 
 tcc = (latitude, total cloud fraction)
-tclw = (latitude, liquid water path (kg/m^2)
-tciw = (latitude, ice water path (kg/m^2)
+tclw = (latitude, liquid water path (kg/m^2)  mean value over entire CERES footprint - see CCCM-85 note
+tciw = (latitude, ice water path (kg/m^2) mean value over entire CERES footprint - see CCCM-86 note
+
+tclw_frac
 
 alt = Irradiance layer center height profile (km), 137 levels for ice and liquid water profiles
 alt_c = Layer center height profile (clouds and aerosol) (km), 113 levels for clouds
@@ -34,5 +36,9 @@ lw_t = (temperature (K), specific liquid water content (kg/kg))
 lw_t_so = (temperature (K), specific liquid water content (kg/kg) over southern ocean)
 iw_t = (temperature (K), specific ice water content (kg/kg))
 iw_t_so = (temperature (K), specific ice water content (kg/kg) over southern ocean)
+
+For Raw Datasets:
+
+cff = CCCM-21 used for finding total mean over CERES footprint - see CCCM-85 and 86 note
 
 

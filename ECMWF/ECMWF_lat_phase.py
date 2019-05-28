@@ -91,7 +91,7 @@ ecmwf_tciw_lat = np.vstack((lat, ecmwf_tciw_lat)).T
 #----------------------------#
 end = time.time()
 print('Averaging data and creating combined arrays took:', end - start, 's')
-
+"""
 plt.figure()
 fig, ax1 = plt.subplots()
 ax2 = ax1.twinx()
@@ -128,3 +128,4 @@ with h5py.File('2006_2011_ECMWF_global_latitude.h5', 'w') as p:
     p.create_dataset('tciw', data=ecmwf_tciw_lat)
     
     p.close()
+"""

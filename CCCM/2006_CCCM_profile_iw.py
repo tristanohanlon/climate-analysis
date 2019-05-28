@@ -19,7 +19,7 @@ iw =[]
 #Import altitude and latitude data from reduced datasets
 
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/') #Home PC
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
 p = h5py.File('2006_CCCM_profile_variables.h5', 'r')
 
 alt = p['alt'][:]

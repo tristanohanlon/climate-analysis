@@ -22,7 +22,7 @@ datasets_dic = f.datasets()
 for idx,sds in enumerate(datasets_dic.keys()):
     print (idx,sds)
     
-sds_obj = f.select('Temperature profile') # select sds
+sds_obj = f.select('Ice water content profile used') # select sds
 
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
@@ -33,11 +33,11 @@ pprint.pprint( sds_obj.attributes() ) # print data attributes
 #read hdf5
 import h5py
 import os
-os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Home PC
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/war_datasets') #Uni Laptop
 
 
-h5f = h5py.File("2010_ECMWF_so_profile.h5", "r")
+h5f = h5py.File("2006_CCCM_profile_variables.h5", "r")
 
 for index,key in enumerate(h5f.keys()):
     print (index, key)

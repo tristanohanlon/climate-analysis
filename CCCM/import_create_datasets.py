@@ -75,7 +75,7 @@ import os
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
 
-with h5py.File('2011_CCCM.h5', 'w') as p:
+with h5py.File('2006_CCCM.h5', 'w') as p:
     p.create_dataset('lat', data=lat)
     
     p.create_dataset('tcc', data=tcc)
