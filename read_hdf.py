@@ -33,11 +33,11 @@ pprint.pprint( sds_obj.attributes() ) # print data attributes
 #read hdf5
 import h5py
 import os
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
+os.chdir('E:/University/University/MSc/Models/climate-analysis/gfdl/reduced_datasets') #Home PC
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/war_datasets') #Uni Laptop
 
 
-h5f = h5py.File("2006_CCCM_profile_variables.h5", "r")
+h5f = h5py.File("07.2006_04.2011_gfdl.h5", "r")
 
 for index,key in enumerate(h5f.keys()):
     print (index, key)

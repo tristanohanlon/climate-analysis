@@ -179,15 +179,15 @@ cccm_tciw_temp_g = c['iw_t'][:100] #kg/kg
 
 #---CCCM Southern Ocean Profile---#
 
-cccm_tcc_alt_so = c['cf_so'][:] # 0-1
-cccm_tclw_alt_so = c['lw_so'][53:] #kg/kg
-cccm_tciw_alt_so = c['iw_so'][22:] #kg/kg
+cccm_tcc_alt_so = c['cf_so'][4:75] # 0-1
+cccm_tclw_alt_so = c['lw_so'][4:68] #kg/kg
+cccm_tciw_alt_so = c['iw_so'][4:65] #kg/kg
 cccm_temp_alt_so = c['temp_so'][:] #K
 cccm_plevel_alt_so = c['pressure_so'][:] #hPa
 
-cccm_tcc_temp_so = c['cf_t_so'][:] # 0-1
-cccm_tclw_temp_so = c['lw_t_so'][:] #kg/kg
-cccm_tciw_temp_so = c['iw_t_so'][:] #kg/kg
+cccm_tcc_temp_so = c['cf_t_so'][:58] # 0-1
+cccm_tclw_temp_so = c['lw_t_so'][:100] #kg/kg
+cccm_tciw_temp_so = c['iw_t_so'][:100] #kg/kg
 
 #cccm_tcc_plevel_so = c['Cloud Fraction with Pressure'][:] # 0-1
 #cccm_tclw_plevel_so = c['Specific Liquid Water Content with Pressure'][:] #kg/kg
@@ -212,13 +212,23 @@ gfdl_tclw_lat_so = gfdl_tclw_lat_so[gfdl_tclw_lat_so[:,0]<=-50] #kgm^-2
 gfdl_tciw_lat_so = gfdl_tciw_lat_g[gfdl_tciw_lat_g[:,0]>=-70]
 gfdl_tciw_lat_so = gfdl_tciw_lat_so[gfdl_tciw_lat_so[:,0]<=-50] #kgm^-2
 
-#---CCCM Phase Fractions---#
+#---gfdl Phase Fractions---#
 
 gfdl_tclw_frac_lat_g = (gfdl_tclw_lat_g[:,1] / (gfdl_tclw_lat_g[:,1] + gfdl_tciw_lat_g[:,1])) * gfdl_tcc_lat_g[:,1]
 gfdl_tciw_frac_lat_g = (gfdl_tciw_lat_g[:,1] / (gfdl_tclw_lat_g[:,1] + gfdl_tciw_lat_g[:,1])) * gfdl_tcc_lat_g[:,1]
 
 gfdl_tclw_frac_lat_g = np.vstack((gfdl_tclw_lat_g[:,0], gfdl_tclw_frac_lat_g)).T
 gfdl_tciw_frac_lat_g = np.vstack((gfdl_tciw_lat_g[:,0], gfdl_tciw_frac_lat_g)).T
+
+#---gfdl lat-alt contour data---#
+
+gfdl_tclw_alt_lat = b['lw_alt_lat'][:] #kg/kg
+gfdl_tciw_alt_lat = b['iw_alt_lat'][:] #kg/kg
+gfdl_tclw_alt_lat_so = b['lw_alt_lat_so'][:] #kg/kg
+gfdl_tciw_alt_lat_so = b['iw_alt_lat_so'][:] #kg/kg
+gfdl_lat = b['lat'][:]
+gfdl_lat_so = b['lat_so'][:]
+gfdl_alt = b['alt'][:]
 
 
 #---gfdl Global Profile---#
@@ -285,19 +295,22 @@ cam_tciw_frac_lat_g = np.vstack((cam_tciw_lat_g[:,0], cam_tciw_frac_lat_g)).T
 cam_tclw_alt_lat = d['lw_alt_lat'][:] #kg/kg
 cam_tciw_alt_lat = d['iw_alt_lat'][:] #kg/kg
 cam_lat = d['lat'][:]
+cam_lat = np.hstack(cam_lat)
 cam_alt = d['alt'][:]
+cam_alt = np.hstack(cam_alt)
+
 
 #---CAM5 Global Profile---#
 
 #cam_tcc_alt_g = d['cf'][8:] # 0-1
-cam_tclw_alt_g = d['lw'][:] #kg/kg
-cam_tciw_alt_g = d['iw'][:] #kg/kg
+cam_tclw_alt_g = d['lw'][13:29] #kg/kg
+cam_tciw_alt_g = d['iw'][7:29] #kg/kg
 cam_temp_alt_g = d['temp'][:] #K
 cam_plevel_alt_g = d['pressure'][:] #hPa
 
 #cam_tcc_temp_g = d['cf_t'][13:] # 0-1
-cam_tclw_temp_g = d['lw_t'][:] #kg/kg
-cam_tciw_temp_g = d['iw_t'][:] #kg/kg
+cam_tclw_temp_g = d['lw_t'][18:29] #kg/kg
+cam_tciw_temp_g = d['iw_t'][10:29] #kg/kg
 
 #cam_tcc_plevel_g = d['Cloud Fraction with Pressure'][8:37] # 0-1
 #cam_tclw_plevel_g = d['Specific Liquid Water Content with Pressure'][16:37] #kg/kg
@@ -306,14 +319,14 @@ cam_tciw_temp_g = d['iw_t'][:] #kg/kg
 #---CAM5 Southern Ocean Profile---#
 
 #cam_tcc_alt_so = d['cf_so'][11:] # 0-1
-cam_tclw_alt_so = d['lw_so'][:] #kg/kg
-cam_tciw_alt_so = d['iw_so'][:] #kg/kg
-cam_temp_alt_so = d['temp_so'][:] #K
+cam_tclw_alt_so = d['lw_so'][13:29] #kg/kg
+cam_tciw_alt_so = d['iw_so'][10:29] #kg/kg
+cam_temp_alt_so = d['temp_so'][19:29] #K
 #cam_plevel_alt_so = d['pressure_so'][:] #hPa
 
 #cam_tcc_temp_so = d['cf_t_so'][11:] # 0-1
-cam_tclw_temp_so = d['lw_t_so'][:] #kg/kg
-cam_tciw_temp_so = d['iw_t_so'][:] #kg/kg
+cam_tclw_temp_so = d['lw_t_so'][20:29] #kg/kg
+cam_tciw_temp_so = d['iw_t_so'][11:29] #kg/kg
 
 #cam_tcc_plevel_so = d['Cloud Fraction with Pressure'][12:37] # 0-1
 #cam_tclw_plevel_so = d['Specific Liquid Water Content with Pressure'][18:37] #kg/kg
@@ -326,7 +339,83 @@ print('Importing data took:', end - start, 's')
 
 os.chdir('E:/University/University/MSc/Models/Images')
 
+############################################################################### Contour plots
 
+#---Plot GFDL Specific Liquid Water Content---#
+
+"""
+plt.figure()
+fig, ax = plt.subplots()
+
+ax.contourf(gfdl_lat, gfdl_alt[0:18], gfdl_tclw_alt_lat[0:18])
+
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
+
+ax.set_xlabel('Latitude')
+ax.set_ylabel('Altitude (km)')
+
+plt.title('07.2006 to 04.2011 GFDL Specific Liquid Water Content')
+
+plt.savefig("07.2006_04.2011_contour_GFDL_tclw.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
+#---Plot GFDL Specific Ice Water Content---#
+
+"""
+plt.figure()
+fig, ax = plt.subplots()
+
+ax.contourf(gfdl_lat, gfdl_alt, gfdl_tciw_alt_lat)
+
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
+
+ax.set_xlabel('Latitude')
+ax.set_ylabel('Altitude (km)')
+
+plt.title('07.2006 to 04.2011 GFDL Specific Ice Water Content')
+
+plt.savefig("07.2006_04.2011_contour_GFDL_tciw.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
+#---Plot CAM5 Specific Liquid Water Content---#
+
+"""
+plt.figure()
+fig, ax = plt.subplots()
+
+ax.contourf(cam_lat, cam_alt[20:30], cam_tclw_alt_lat[20:30])
+
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
+
+ax.set_xlabel('Latitude')
+ax.set_ylabel('Altitude (km)')
+
+plt.title('07.2006 to 04.2011 CAM5 Specific Liquid Water Content')
+
+plt.savefig("07.2006_04.2011_contour_CAM5_tclw.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
+#---Plot CAM5 Specific Ice Water Content---#
+
+"""
+plt.figure()
+fig, ax = plt.subplots()
+
+ax.contourf(cam_lat, cam_alt[8:30], cam_tciw_alt_lat[8:30])
+
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
+
+ax.set_xlabel('Latitude')
+ax.set_ylabel('Altitude (km)')
+
+plt.title('07.2006 to 04.2011 CAM5 Specific Ice Water Content')
+
+plt.savefig("07.2006_04.2011_contour_CAM5_tciw.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 ############################################################################### Global Latitude Plots
 
 #---Plot Global Cloud Fraction with Latitude---#
@@ -749,6 +838,30 @@ plt.savefig("07.2006_04.2011_GFDL_lat_so.svg", format="svg", bbox_inches='tight'
 plt.show()
 """
 
+#---Plot CAM5 Cloud Fraction and Phase Content with Latitude---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(cam_tcc_lat_so[:,0],cam_tcc_lat_so[:,1], '-r', label='Cloud Fraction')
+ax2.plot(cam_tclw_lat_so[:,0],cam_tclw_lat_so[:,1], '-b', label='Liquid Content')
+ax2.plot(cam_tciw_lat_so[:,0],cam_tciw_lat_so[:,1], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+ax2.legend(loc='upper center', bbox_to_anchor=(0.7, -0.15));
+
+ax1.set_xlabel('Latitude')
+ax1.set_ylabel('Cloud Fraction')
+ax2.set_ylabel('Cloud Content $kgm^{-2}$')
+
+plt.title('07.2006 to 04.2011 CAM5 Southern Ocean Cloud Fraction and Phase Content vs Latitude')
+
+plt.savefig("07.2006_04.2011_CAM5_lat_so.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
+
 
 
 ############################################################################### Global Altitude Plots
@@ -762,8 +875,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tcc_alt_g[:,1],cccm_tcc_alt_g[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tcc_alt_g[:,1],ecmwf_tcc_alt_g[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tcc_alt_g[:,1],gfdl_tcc_alt_g[:,0], '-g', label='GFDL')
+#ax.plot(cam_tcc_alt_g[:,1],cam_tcc_alt_g[:,0], '-g', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Cloud Fraction')
@@ -786,8 +900,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='GFDL')
+ax.plot(cam_tclw_alt_g[:,1]*10000,cam_tclw_alt_g[:,0], '-m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
@@ -809,6 +924,7 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='CCCM')
 ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='ECMWF')
 ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='GFDL')
+ax.plot(cam_tciw_alt_g[:,1]*10000,cam_tciw_alt_g[:,0], '--m', label='CAM5')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
@@ -832,9 +948,12 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_alt_g[:,1]*10000,cccm_tclw_alt_g[:,0], '-r', label='Liquid - CCCM')
 ax.plot(ecmwf_tclw_alt_g[:,1]*10000,ecmwf_tclw_alt_g[:,0], '-b', label='Liquid - ECMWF')
 ax.plot(gfdl_tclw_alt_g[:,1]*10000,gfdl_tclw_alt_g[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cam_tclw_alt_g[:,1]*10000,cam_tclw_alt_g[:,0], '-m', label='Liquid - CAM5')
 ax.plot(cccm_tciw_alt_g[:,1]*10000,cccm_tciw_alt_g[:,0], '--r', label='Ice - CCCM')
 ax.plot(ecmwf_tciw_alt_g[:,1]*10000,ecmwf_tciw_alt_g[:,0], '--b', label='Ice - ECMWF')
 ax.plot(gfdl_tciw_alt_g[:,1]*10000,gfdl_tciw_alt_g[:,0], '--g', label='Ice - GFDL')
+ax.plot(cam_tciw_alt_g[:,1]*10000,cam_tciw_alt_g[:,0], '--m', label='Ice - CAM5')
+
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
@@ -858,8 +977,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_temp_alt_g[:,1],cccm_temp_alt_g[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_temp_alt_g[:,1],ecmwf_temp_alt_g[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_temp_alt_g[:,1],gfdl_temp_alt_g[:,0], '-g', label='GFDL')
+ax.plot(cam_temp_alt_g[:,1],cam_temp_alt_g[:,0], '-m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Temperature (K)')
@@ -881,6 +1001,7 @@ fig, ax = plt.subplots()
 ax.plot(cccm_plevel_alt_g[:,1],cccm_plevel_alt_g[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_plevel_alt_g[:,1],ecmwf_plevel_alt_g[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_plevel_alt_g[:,1],gfdl_plevel_alt_g[:,0], '-g', label='GFDL')
+ax.plot(cam_plevel_alt_g[:,1],cam_plevel_alt_g[:,0], '-m', label='CAM5')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
@@ -904,6 +1025,7 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='GFDL')
+ax.plot(cam_tclw_temp_g[:,1]*10000,cam_tclw_temp_g[:,0], '-m', label='CAM5')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
@@ -927,6 +1049,7 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='CCCM')
 ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='ECMWF')
 ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='GFDL')
+ax.plot(cam_tciw_temp_g[:,1]*10000,cam_tciw_temp_g[:,0], '--m', label='CAM5')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
@@ -950,9 +1073,13 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_temp_g[:,1]*10000,cccm_tclw_temp_g[:,0], '-r', label='Liquid - CCCM')
 ax.plot(ecmwf_tclw_temp_g[:,1]*10000,ecmwf_tclw_temp_g[:,0], '-b', label='Liquid - ECMWF')
 ax.plot(gfdl_tclw_temp_g[:,1]*10000,gfdl_tclw_temp_g[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cam_tclw_temp_g[:,1]*10000,cam_tclw_temp_g[:,0], '-m', label='Liquid - CAM5')
+
 ax.plot(cccm_tciw_temp_g[:,1]*10000,cccm_tciw_temp_g[:,0], '--r', label='Ice - CCCM')
 ax.plot(ecmwf_tciw_temp_g[:,1]*10000,ecmwf_tciw_temp_g[:,0], '--b', label='Ice - ECMWF')
 ax.plot(gfdl_tciw_temp_g[:,1]*10000,gfdl_tciw_temp_g[:,0], '--g', label='Ice - GFDL')
+ax.plot(cam_tciw_temp_g[:,1]*10000,cam_tciw_temp_g[:,0], '--m', label='Ice - CAM5')
+
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
@@ -1040,6 +1167,26 @@ plt.savefig("07.2006_04.2011_GFDL_alt_g.svg", format="svg", bbox_inches='tight')
 plt.show()
 """
 
+#---Plot CAM5 Cloud Fraction and Phase Profile---#
+
+"""
+plt.figure()
+fig, ax1 = plt.subplots()
+
+ax1.plot(cam_tclw_alt_g[:,1]*10000,cam_tclw_alt_g[:,0], '-b', label='Liquid Content')
+ax1.plot(cam_tciw_alt_g[:,1]*10000,cam_tciw_alt_g[:,0], '--b', label='Ice Content')
+
+ax1.legend(loc='upper center', bbox_to_anchor=(0.3, -0.15));
+
+ax1.set_ylabel('Altitude')
+ax1.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
+
+plt.title('07.2006 to 04.2011 CAM5 Global Cloud Phase Content vs Altitude')
+
+plt.grid(True)
+plt.savefig("07.2006_04.2011_CAM5_alt_g.svg", format="svg", bbox_inches='tight')
+plt.show()
+"""
 ############################################################################### Southern Ocean Altitude Plots
 
 #---Plot Southern Ocean Cloud Fraction Altitude Profile---#
@@ -1052,7 +1199,7 @@ ax.plot(cccm_tcc_alt_so[:,1],cccm_tcc_alt_so[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tcc_alt_so[:,1],ecmwf_tcc_alt_so[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tcc_alt_so[:,1],gfdl_tcc_alt_so[:,0], '-g', label='GFDL')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Cloud Fraction')
@@ -1074,8 +1221,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='GFDL')
+ax.plot(cam_tclw_alt_so[:,1]*10000,cam_tclw_alt_so[:,0], '-m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
@@ -1097,8 +1245,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='CCCM')
 ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='ECMWF')
 ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='GFDL')
+ax.plot(cam_tciw_alt_so[:,1]*10000,cam_tciw_alt_so[:,0], '--m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Altitude (km)')
 ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
@@ -1120,9 +1269,13 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_alt_so[:,1]*10000,cccm_tclw_alt_so[:,0], '-r', label='Liquid - CCCM')
 ax.plot(ecmwf_tclw_alt_so[:,1]*10000,ecmwf_tclw_alt_so[:,0], '-b', label='Liquid - ECMWF')
 ax.plot(gfdl_tclw_alt_so[:,1]*10000,gfdl_tclw_alt_so[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cam_tclw_alt_so[:,1]*10000,cam_tclw_alt_so[:,0], '-m', label='Liquid - CAM5')
+
 ax.plot(cccm_tciw_alt_so[:,1]*10000,cccm_tciw_alt_so[:,0], '--r', label='Ice - CCCM')
 ax.plot(ecmwf_tciw_alt_so[:,1]*10000,ecmwf_tciw_alt_so[:,0], '--b', label='Ice - ECMWF')
 ax.plot(gfdl_tciw_alt_so[:,1]*10000,gfdl_tciw_alt_so[:,0], '--g', label='Ice - GFDL')
+ax.plot(cam_tciw_alt_so[:,1]*10000,cam_tciw_alt_so[:,0], '--m', label='Ice - CAM5')
+
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 
@@ -1146,6 +1299,7 @@ fig, ax = plt.subplots()
 ax.plot(cccm_temp_alt_so[:,1],cccm_temp_alt_so[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_temp_alt_so[:,1],ecmwf_temp_alt_so[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_temp_alt_so[:,1],gfdl_temp_alt_so[:,0], '-g', label='GFDL')
+ax.plot(cam_temp_alt_so[:,1],cam_temp_alt_so[:,0], '-m', label='CAM5')
 
 ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
 
@@ -1192,8 +1346,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='CCCM')
 ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='ECMWF')
 ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='GFDL')
+ax.plot(cam_tclw_temp_so[:,1]*10000,cam_tclw_temp_so[:,0], '-m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Temperature (K)')
 ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
@@ -1215,8 +1370,9 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='CCCM')
 ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='ECMWF')
 ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='GFDL')
+ax.plot(cam_tciw_temp_so[:,1]*10000,cam_tciw_temp_so[:,0], '--m', label='CAM5')
 
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=3);
+ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 ax.set_ylabel('Temperature (K)')
 ax.set_xlabel('Specific Content $(kg/kg) x 10^{-4}$')
@@ -1239,9 +1395,12 @@ fig, ax = plt.subplots()
 ax.plot(cccm_tclw_temp_so[:,1]*10000,cccm_tclw_temp_so[:,0], '-r', label='Liquid - CCCM')
 ax.plot(ecmwf_tclw_temp_so[:,1]*10000,ecmwf_tclw_temp_so[:,0], '-b', label='Liquid - ECMWF')
 ax.plot(gfdl_tclw_temp_so[:,1]*10000,gfdl_tclw_temp_so[:,0], '-g', label='Liquid - GFDL')
+ax.plot(cam_tclw_temp_so[:,1]*10000,cam_tclw_temp_so[:,0], '-m', label='Liquid - CAM5')
+
 ax.plot(cccm_tciw_temp_so[:,1]*10000,cccm_tciw_temp_so[:,0], '--r', label='Ice - CCCM')
 ax.plot(ecmwf_tciw_temp_so[:,1]*10000,ecmwf_tciw_temp_so[:,0], '--b', label='Ice - ECMWF')
 ax.plot(gfdl_tciw_temp_so[:,1]*10000,gfdl_tciw_temp_so[:,0], '--g', label='Ice - GFDL')
+ax.plot(cam_tciw_temp_so[:,1]*10000,cam_tciw_temp_so[:,0], '--m', label='Ice - CAM5')
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.2, 1.0));
 

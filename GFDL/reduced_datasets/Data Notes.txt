@@ -1,0 +1,42 @@
+2006 - Data is from 01.07 to 31.12
+2011 - Data is from 01.02 to 30.04
+
+
+lat = full latitude dataset in sequence - for future use if needed
+lat_so = SO latitudes (20)
+
+tcc = (latitude, total cloud fraction)
+tclw = (latitude, liquid water path (kg/m^2)
+tciw = (latitude, ice water path (kg/m^2)
+
+alt = from converted plev (km), 33 levels
+
+air_density = (alt) kgm^-3
+
+cf = (alt, cloud fraction)
+cf_so = (alt, cloud fraction over southern ocean)
+lw = (alt, specific liquid water content (kg/kg))
+lw_so = (alt, specific liquid water content (kg/kg) over southern ocean)
+iw = (alt, specific ice water content (kg/kg))
+iw_so = (alt, specific ice water content (kg/kg) over southern ocean)
+
+lw_alt_lat = (alt, lat) (kg/kg) for contour plots
+iw_alt_lat = (alt, lat) (kg/kg) for contour plots
+lw_alt_lat_so = (alt, lat) (kg/kg) for contour plots
+iw_alt_lat_so = (alt, lat) (kg/kg) for contour plots
+
+temp = (alt, temperature (K))
+temp_so = (alt, temperature (K) over southern ocean)
+pressure = (alt, pressure(hPa))
+pressure_so = (alt, pressure(hPa))
+
+cf_t = (temperature (K), cloud fraction)
+cf_t_so = (temperature (K), cloud fraction over southern ocean)
+lw_t = (temperature (K), specific liquid water content (kg/kg))
+lw_t_so = (temperature (K), specific liquid water content (kg/kg) over southern ocean)
+iw_t = (temperature (K), specific ice water content (kg/kg))
+iw_t_so = (temperature (K), specific ice water content (kg/kg) over southern ocean)
+
+
+
+

@@ -19,18 +19,21 @@ import matplotlib.pyplot as plt
 import h5py
 
 #---get altitude in km---#
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
-f = h5py.File('2006_CCCM_profile_variables.h5', 'r')
+#os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets') #Lounge
+
+f = h5py.File('2008_CCCM_profile_variables.h5', 'r')
 
 lat = f['lat'][:]
 alt = f['alt'][:]
-
+lat = []
 
 #------------------------#
 
 tciw = [] # create a blank array to add cloud ice water content data
 #lat = []
-os.chdir('E:/University/University/MSc/Models/Data/CCCM/2006')  # Home PC
+#os.chdir('E:/University/University/MSc/Models/Data/CCCM/2006')  # Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CCCM/2008')  # Lounge
 
 start = time.time()
 # Load every file in the directory
@@ -40,15 +43,13 @@ for filename in os.listdir():
     f = SD.SD(filename)
     # Get the cloud ice water content data as a list. (25536, 137) 'units': 'grams per cubic meter'
     tciw = tciw+f.select('Ice water content profile used').get().tolist() #same as profile plots
-#    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist() #same as profile plots
+    lat = lat+f.select('Colatitude of subsatellite point at surface at observation').get().tolist() #same as profile plots
     
 if len(lat) != len(tciw):
     exit('Invalid sizes of lat and tciw data')
     
 end = time.time()
 print('Importing data from files to lists took:', end - start, 's')
-
-start = time.time()
 
 tciw = np.array(tciw)
 
@@ -66,7 +67,7 @@ a = imp.transform(np.transpose(tciw))
 tciw = np.transpose(a)
 """
 ####################
-
+start = time.time()
 #a_tciw = tciw / 1000 #convert g to kg
 a_lat = np.vstack(lat)
 
@@ -93,13 +94,11 @@ cccm_tciw_lat = np.empty((1,138),dtype=float)
 subtotal = np.zeros([1, 138])
 # Set the current lat to false
 current_lat = None
-
 end = time.time()
-print('Getting loop data ready:', end - start, 's')
-
-start = time.time()
-
+print('Get loop data ready:', end - start, 's')
 # Iterate through all of the (lat, cloud ice water content) elements and subtotal the same lat values
+
+start = time.time() 
 for item in combined:
 
     if current_lat is None:
@@ -144,8 +143,7 @@ cccm_tciw_lat = np.concatenate((cccm_tciw_lat, average))
 cccm_tciw_lat = cccm_tciw_lat[1:]
 
 end = time.time()
-print('Computing average data:', end - start, 's')
-
+print('Complete averages loop:', end - start, 's')
 """
 print ("averages")
 # Iterate through all of the (lat,cloud ice water content) elements
@@ -156,29 +154,29 @@ for item in averages:
     print(item[1], end='')
     print("]\n", end='')
 """
-"""
-cccm_tciw_lat = cccm_tciw_lat[:,1]*cff
-cccm_tciw_lat = np.vstack((unique,cccm_tciw_lat)).T
- """
+cccm_tciw_lat = cccm_tciw_lat[:,1:138]
+
+alt = alt[::-1]
+cccm_tciw_lat = np.transpose(cccm_tciw_lat)
+
 plt.figure()
 fig, ax = plt.subplots()
 #ax.plot(cccm_tciw_frac_lat[:,0],cccm_tciw_frac_lat[:,1], 'g', label='CCCM')
-ax.plot(cccm_tciw_lat[:,0],cccm_tciw_lat[:,1], 'g', label='CCCM')
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3),
-          ncol=4, fancybox=True, shadow=True);
+ax.contourf(unique ,alt, cccm_tciw_lat)
+
 
 #ax.set_ylabel('Cloud Ice Water Content Fraction', color='r')           
-ax.set_ylabel('Cloud Ice Water Content kg$m^{-2}$', color='r')
+ax.set_ylabel('Altitude', color='r')
 ax.set_xlabel('Latitude')
 
-plt.title('IWP vs Latitude - 2006')
+plt.title('IWP vs Latitude - 2008')
 plt.show()
 
 
 #import h5py
 
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/raw_datasets')
+os.chdir('C:/Users/Tristan/Desktop')
 # specify path and file name to create 
-with h5py.File('2006_CCCM_tciw_lat_alt.h5', 'w') as p:
+with h5py.File('2008_CCCM_tciw_lat_alt.h5', 'w') as p:
     p.create_dataset('tciw', data=cccm_tciw_lat)
     p.close()
