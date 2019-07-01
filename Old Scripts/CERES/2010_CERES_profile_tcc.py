@@ -9,10 +9,14 @@ The global cloud fraction is already averaged over all longitude and latitude at
 [:,0] = altitude
 [:,1] = cloud fraction
 """
-
+import time
 import numpy as np
 import os
 from pyhdf import SD
+import matplotlib.pyplot as plt
+import h5py
+import math
+from scipy import integrate
 
 cf=[] # create a blank array to add cloud amount data
 alt=[] # create a blank array to add altitude data

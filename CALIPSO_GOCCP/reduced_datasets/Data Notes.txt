@@ -1,0 +1,35 @@
+2006 - Data is from 01.07 to 31.12
+2011 - Data is from 01.02 to 30.04
+
+
+lat = full latitude dataset in sequence - for future use if needed
+alt = km, 40 levels
+alt_t  = K - keyed to _t_lat data - cut out temp below 220K
+
+tcc = (latitude, total cloud fraction)
+tclw_frac = (latitude, liquid cloud fraction)
+tciw_frac = (latitude, ice cloud fraction)
+
+cf_t_lat = (alt_t, lat)
+lw_t_lat = (alt_t, lat) as a fraction of cf
+iw_t_lat = (alt_t, lat) as a fraction of cf
+
+cf_t = (alt _t, cloud fraction)
+lw_t_frac = (alt_t, liquid cloud fraction) as a fraction of cf
+iw_t_frac = (alt_t, ice cloud fraction) as a fraction of cf
+
+cf = (alt, cloud fraction)
+lw_frac = (alt, liquid cloud fraction)
+iw_frac = (alt, ice cloud fraction)
+
+cf_alt_lat = (alt, lat)
+liq_frac_alt_lat = (alt, lat) as a fraction of cf
+ice_frac_alt_lat = (alt, lat) as a fraction of cf
+
+cf_so = (alt, cloud fraction) over southern ocean
+lw_frac_so = (alt, liquid cloud fraction) over southern ocean
+iw_frac_so = (alt, ice cloud fraction) over southern ocean
+
+cf_t_so = (alt _t, cloud fraction) over southern ocean
+lw_t_frac_so = (alt_t, liquid cloud fraction) over southern ocean
+iw_t_frac_so = (alt_t, ice cloud fraction) over southern ocean

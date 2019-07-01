@@ -4,32 +4,47 @@
 From Annual Datasets:
 
 lat = full latitude dataset in sequence - for future use if needed
-
-tcc = (latitude, total cloud fraction)
-tclw = (latitude, liquid water path (kg/m^2)  mean value over entire CERES footprint - see CCCM-85 note
-tciw = (latitude, ice water path (kg/m^2) mean value over entire CERES footprint - see CCCM-86 note
-
-tclw_frac
-
-alt = Irradiance layer center height profile (km), 137 levels for ice and liquid water profiles
-alt_c = Layer center height profile (clouds and aerosol) (km), 113 levels for clouds
-alt_t = Irradiance level height profile (km), 138 altitude levels for pressure and temperature. 
-
+alt = (km) cccm121 Layer center height profile (clouds and aerosol) (km), 113 levels for clouds
 air_density_g = (g/m^3) 137 altitude levels
 air_density_so = (g/m^3) 137 altitude levels
 
-cf = (alt_c, cloud fraction profile)
-cf_so = (alt_c, cloud fraction profile over southern ocean)
+tcc = (latitude, total cloud fraction) - (1 - cccm21)
+
+---mean value over entire CERES footprint - see CCCM-85 & CCCM-86 note (1 - cccm21)---
+tclw = (latitude, liquid water path (kg/m^2))
+tciw = (latitude, ice water path (kg/m^2)) 
+
+tclw_gcm3 = (latitude, liquid water content(g/m^3)) - mean lwc at latitude
+tciw_gcm3 = (latitude, ice water content(g/m^3)) - mean iwc at latitude
+
+---based on lwc and iwc fraction multiplied by tcc fraction---
+tclw_frac = (latitude, liquid water fraction)
+tciw_frac = (latitude, ice water fraction)
+
+
+cf = (alt, cloud fraction profile) - cccm52
+cf_so = (alt, cloud fraction profile over southern ocean)
+
+---CCCM-85 & CCCM-86 divided by air density at each altitude layer---
 lw = (alt, specific liquid water content (kg/kg))
 lw_so = (alt, specific liquid water content (kg/kg) over southern ocean)
 iw = (alt, specific ice water content (kg/kg))
 iw_so = (alt, specific ice water content (kg/kg) over southern ocean)
 
-temp = (alt_t, temperature (K))
-temp_so = (alt_t, temperature (K) over southern ocean)
-pressure = (alt_t, pressure(hPa))
-pressure_so = (alt_t, pressure(hPa) over southern ocean)
+---based on lwc and iwc (g/m^3) fraction multiplied by cf fraction---
+lw_frac = (alt, liquid water fraction)
+lw_frac_so = (alt, liquid water fraction over southern ocean)
+iw_frac = (alt, ice water fraction)
+iw_frac_so = (alt, ice water fraction over southern ocean)
 
+
+temp = (alt, temperature (K))
+temp_so = (alt, temperature (K) over southern ocean)
+pressure = (alt, pressure(hPa))
+pressure_so = (alt, pressure(hPa) over southern ocean)
+
+
+---CCCM-85 & CCCM-86 divided by air density at each altitude layer---
 cf_t = (temperature (K), cloud fraction profile)
 cf_t_so = (temperature (K), cloud fraction profile over southern ocean)
 lw_t = (temperature (K), specific liquid water content (kg/kg))
@@ -37,8 +52,16 @@ lw_t_so = (temperature (K), specific liquid water content (kg/kg) over southern 
 iw_t = (temperature (K), specific ice water content (kg/kg))
 iw_t_so = (temperature (K), specific ice water content (kg/kg) over southern ocean)
 
+---based on lwc and iwc (g/m^3) fraction multiplied by cf fraction---
+lw_frac_temp = (temp, liquid water fraction)
+lw_frac_temp_so = (temp_so, liquid water fraction over southern ocean)
+iw_frac_temp = (temp, ice water fraction)
+iw_frac_temp_so = (temp_so, ice water fraction over southern ocean)
+
 For Raw Datasets:
 
-cff = CCCM-21 used for finding total mean over CERES footprint - see CCCM-85 and 86 note
+cccm21_cloud_free_area (lat)
+cccm34_phase (lat, phase, cloud group)
+cccm52_cloud_fraction_profile (lat, alt)
 
 

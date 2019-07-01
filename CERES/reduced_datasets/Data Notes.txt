@@ -1,0 +1,16 @@
+2006 - Data is from 01.07 to 31.12
+2011 - Data is from 01.02 to 30.04
+
+lat = full latitude dataset in sequence - for future use if needed
+
+tcc = (latitude, total cloud fraction)
+tclw = (latitude, liquid water path (kg/m^2)
+tciw = (latitude, ice water path (kg/m^2)
+
+tclw_frac = (latitude, liquid water fraction) - base off lwc fraction multiplied by tcc
+tciw_frac = (latitude, ice water fraction) - base off iwc fraction multiplied by tcc
+
+
+
+
+
