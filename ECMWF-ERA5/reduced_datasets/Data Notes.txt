@@ -3,12 +3,19 @@
 
 
 lat = full latitude dataset in sequence - for future use if needed
+alt = from converted p (km), 37 levels
+temp = (alt, temperature (K)) , from interpolated p
+temp_so = (alt, temperature (K)), from interpolated p_so
+pressure = (alt(km), pressure(hPa))
 
 tcc = (latitude, total cloud fraction)
-tclw = (latitude, liquid water path (kg/m^2)
-tciw = (latitude, ice water path (kg/m^2)
+tclw = (latitude, liquid water path (kg/m^2))
+tciw = (latitude, ice water path (kg/m^2))
 
-alt = km, 32 levels
+---specific content fraction multiplied by cloud fraction tcc---
+tclw_frac = (latitude, liquid water fraction) 
+tciw_frac = (latitude, liquid water fraction)
+
 
 cf = (alt, cloud fraction)
 cf_so = (alt_so, cloud fraction over southern ocean)
@@ -17,23 +24,31 @@ lw_so = (alt_so, specific liquid water content (kg/kg) over southern ocean)
 iw = (alt, specific ice water content (kg/kg))
 iw_so = (alt_so, specific ice water content (kg/kg) over southern ocean)
 
+
+--- specific content fraction multiplied by cloud profile fraction cf and cf_so---
+lw_frac = (alt, liquid water fraction) 
+iw_frac = (alt, ice water fraction) 
+lw_frac_so = (alt_so, liquid water fraction over southern ocean) 
+iw_frac_so = (alt_so, ice water fraction over southern ocean) 
+
+
 cf_alt_lat = (alt, lat) for contour plots
 lw_alt_lat = (alt, lat) (kg/kg) for contour plots
 iw_alt_lat = (alt, lat) (kg/kg) for contour plots
 temp_alt_lat = (alt, lat) (K) for contour plots
 
-temp = (alt, temperature (K))
-temp_so = (alt_so, temperature (K) over southern ocean)
-pressure = (alt, pressure(hPa))
-pressure_so = (alt_so, pressure(hPa))
 
-cf_t = (temperature (K), cloud fraction)
-cf_t_so = (temperature (K), cloud fraction over southern ocean)
-lw_t = (temperature (K), specific liquid water content (kg/kg))
-lw_t_so = (temperature (K), specific liquid water content (kg/kg) over southern ocean)
-iw_t = (temperature (K), specific ice water content (kg/kg))
-iw_t_so = (temperature (K), specific ice water content (kg/kg) over southern ocean)
+cf_t = (temp (K), cloud fraction)
+cf_t_so = (temp_so (K), cloud fraction over southern ocean)
+lw_t = (temp (K), specific liquid water content (kg/kg))
+lw_t_so = (temp_so (K), specific liquid water content (kg/kg) over southern ocean)
+iw_t = (temp (K), specific ice water content (kg/kg))
+iw_t_so = (temp_so (K), specific ice water content (kg/kg) over southern ocean)
 
-
+--- specific content fraction multiplied by cloud profile fraction cf and cf_so---
+lw_frac_t = (temp (K), liquid water fraction) 
+iw_frac_t = (temp (K), ice water fraction) 
+lw_frac_t_so = (temp_so (K), liquid water fraction over southern ocean) 
+iw_frac_t_so = (temp_so (K), ice water fraction over southern ocean) 
 
 

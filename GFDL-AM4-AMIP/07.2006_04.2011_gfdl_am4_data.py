@@ -124,8 +124,8 @@ sys.exit(0)
 alt = alt_t
 
 """
-os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets') #Home PC
-b = h5py.File('2007_2008_gfdl_am4.h5', 'r')
+os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets/backup_reduced_datasets')
+b = h5py.File('07.2006_04.2011_gfdl_am4.h5', 'r')
 
 alt = b['alt'][:]
 b.close()
@@ -410,5 +410,5 @@ with h5py.File('07.2006_04.2011_gfdl_am4.h5', 'w') as p:
 
 """
 fig, ax1 = plt.subplots()
-ax1.plot(lw_so[:,1], alt_so, '-r', label='Total Cloud Fraction')
+ax1.plot(lw_frac_so[:,1], alt_so, '-r', label='Total Cloud Fraction')
 """

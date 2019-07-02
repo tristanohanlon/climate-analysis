@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 import h5py
 import math
 from scipy import integrate
+from scipy import interpolate
 
 
 #---get latitude and cf---#
-#os.chdir('E:/University/University/MSc/Models/Data/CMIP6/gfdl_am4') #Home PC
 os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6/') #Home PC
 
 f = Dataset('clt_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
@@ -33,11 +33,9 @@ lat = np.array(lat)
 
 tcc = np.mean(tcc, axis = 0) # average over time
 tcc = np.mean(tcc, axis = -1) # average over longitude
+f.close()
 
 #---get cf---#
-
-#os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/cf') #Home PC
-os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6') #Home PC
 
 f = Dataset('cl_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
 cf1 = np.array(f.variables['CLOUD'][678:732])
@@ -49,24 +47,39 @@ plev = np.array(f.variables['lev'][:]) #in hPa
 a = np.array(f.variables['hyam'][:]) #in hPa
 b = np.array(f.variables['hybm'][:]) #in hPa
 p0 = np.array(f.variables['P0'][:]) #in hPa
+f.close()
 
 
 
 #---get surface pressure---#
-
-os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6') #Home PC
 
 f = Dataset('ps_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
 ps1 = np.array(f.variables['PS'][678:732]) # get values from 07.2006 to 12.2010
 ps2 = np.array(f.variables['PS'][733:736]) # get values from 02.2011 to 04.2011
 ps = np.concatenate((ps1,ps2))
 
+f.close()
+
 ps = np.mean(ps, axis = 0)
+
+ps_so = np.mean(ps, axis = -1)
+ps_so = np.transpose(ps_so)
+
+ps_so = np.vstack((lat, ps_so)).T #creates a (180,34) array
+ps_so = ps_so[ps_so[:,0]>=-70]
+ps_so = ps_so[ps_so[:,0]<=-50]
+ps_so = ps_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
+ps_so = np.mean(ps_so, axis = 0)
+
+
 ps = np.mean(ps, axis = 0)
 ps = np.mean(ps, axis = 0)
 
 p = a*p0 + b*ps
-pressure = np.array(p)
+p = np.array(p / 100) #hPa
+
+p_so = a*p0 + b*ps_so
+p_so = np.array(p_so / 100) #hPa
 
 
 
@@ -107,14 +120,24 @@ sys.exit(0)
 #manually adjust alt and alt_so arrays usinf alt_p and alt_ts
 alt = alt_t
 
+"""
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/reduced_datasets/backup_reduced_datasets')
+b = h5py.File('07.2006_04.2011_cesm2_cam6.h5', 'r')
 
+alt = b['alt'][:]
+b.close()
+"""
+
+#interpolate southern ocean altitudes
+
+f = interpolate.interp1d(p, alt, fill_value="extrapolate", kind = 'cubic')
+alt_so = f(p_so) 
 
 ###############################################################################
 
 
 #---get lw---#
 
-#os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/tclw') #Home PC
 os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6') #Home PC
 
 f = Dataset('clw_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
@@ -122,29 +145,39 @@ lw1 = np.array(f.variables['CLDLIQ'][678:732]) # get values from 07.2006 to 12.2
 lw2 = np.array(f.variables['CLDLIQ'][733:736]) # get values from 02.2011 to 04.2011
 lw = np.concatenate((lw1,lw2))
 lw = np.mean(lw, axis = 0)
+f.close()
 
 #---get iw---#
-
-#os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/tciw') #Home PC
-os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6') #Home PC
 
 f = Dataset('cli_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
 iw1 = np.array(f.variables['CLDICE'][678:732]) # get values from 07.2006 to 12.2010
 iw2 = np.array(f.variables['CLDICE'][733:736]) # get values from 02.2011 to 04.2011
 iw = np.concatenate((iw1,iw2))
 iw = np.mean(iw, axis = 0)
+f.close()
 
 
 #---get temp---#
-
-#os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/') #Home PC
-os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6') #Home PC
 
 f = Dataset('ta_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') # 780 months
 T1 = np.array(f.variables['T'][678:732]) # get values from 07.2006 to 12.2010
 T2 = np.array(f.variables['T'][733:736]) # get values from 02.2011 to 04.2011
 T = np.concatenate((T1,T2))
-T = np.mean(T, axis = 0)
+T[T>400] = None
+T = np.nanmean(T, axis = 0)
+f.close()
+
+T_so = np.nanmean(T, axis = -1)
+T_so = np.transpose(T_so)
+
+T_so = np.hstack((np.vstack(lat), T_so)) #creates a (180,34) array
+T_so = T_so[T_so[:,0]>=-70]
+T_so = T_so[T_so[:,0]<=-50]
+T_so = T_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
+temp_so = np.nanmean(T_so, axis = 0)
+
+T_g = np.nanmean(T, axis = -1)
+temp_g = np.nanmean(T_g, axis = -1)
 
     
     
@@ -156,18 +189,11 @@ T = np.mean(T, axis = 0)
 # Integrate density with altitude to get air path AP
 # multiply lw and iw by AP
 
-alt_t = np.hstack(alt*1000)
-pressure = np.hstack((np.vstack(alt_t), np.vstack(pressure)))
-temp_g = np.mean(T, axis = -1)
-temp_g = np.mean(temp_g, axis = -1)
-temp_g = np.vstack(temp_g)
-temp_g = np.hstack((np.vstack(alt_t), temp_g))
-
 air_density = [] #create empty list
 #calculate air density at each pressure layer
-air_density = (pressure[:,1]) / (286.9 * temp_g[:,1])
+air_density = ((p * 100) / (286.9 * temp_g))
 
-ap = integrate.trapz(air_density, alt_t)
+ap = integrate.trapz(air_density, (alt * 1000)) # gloabl air path
 
 tclw = np.mean(lw , axis = 0)
 tclw = np.mean(tclw  , axis = -1) * -ap
@@ -194,7 +220,6 @@ tclw_frac = np.vstack((lat, lw_frac * tcc[:,1])).T
 tciw_frac = np.vstack((lat, iw_frac * tcc[:,1])).T
 
 #----------------------------#
-alt = np.hstack(alt)
 
 cf_g = np.mean(cf, axis = -1)
 cf_g = np.mean(cf_g, axis = -1)
@@ -224,9 +249,7 @@ iw_frac_g = np.vstack((alt, iw_frac * cf_g[:,1])).T
 
 #----------------------------#
 
-
-temp_alt_lat = np.mean(T, axis = -1)
-temp_alt_lat[temp_alt_lat>400] = None
+temp_alt_lat = np.mean(T, axis = -1) # goes with alt_temp
 cf_alt_lat = np.mean(cf, axis = -1)
 lw_alt_lat = np.mean(lw, axis = -1)
 iw_alt_lat = np.mean(iw, axis = -1)
@@ -240,7 +263,7 @@ cf_so = cf_so[cf_so[:,0]>=-70]
 cf_so = cf_so[cf_so[:,0]<=-50]
 cf_so = cf_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
 cf_so = np.mean(cf_so, axis = 0)
-cf_so = np.vstack((alt, cf_so)).T
+cf_so = np.vstack((alt_so, cf_so)).T
 
 
 lw_so = np.mean(lw, axis = -1)
@@ -251,7 +274,7 @@ lw_so = lw_so[lw_so[:,0]>=-70]
 lw_so = lw_so[lw_so[:,0]<=-50]
 lw_so = lw_so[:,1:] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
 lw_so = np.mean(lw_so, axis = 0)
-lw_so = np.vstack((alt, lw_so)).T
+lw_so = np.vstack((alt_so, lw_so)).T
 
 
 iw_so = np.mean(iw, axis = -1)
@@ -262,18 +285,7 @@ iw_so = iw_so[iw_so[:,0]>=-70]
 iw_so = iw_so[iw_so[:,0]<=-50]
 iw_so = iw_so[:,1:] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
 iw_so = np.mean(iw_so, axis = 0)
-iw_so = np.vstack((alt, iw_so)).T
-
-
-temp_so = np.mean(T, axis = -1)
-temp_so = np.transpose(temp_so)
-
-temp_so = np.hstack((np.vstack(lat), temp_so)) #creates a (180,34) array
-temp_so = temp_so[temp_so[:,0]>=-70]
-temp_so = temp_so[temp_so[:,0]<=-50]
-temp_so = temp_so[:,1:] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
-temp_so = np.mean(temp_so, axis = 0)
-temp_so = np.vstack((alt, temp_so)).T
+iw_so = np.vstack((alt_so, iw_so)).T
 
 #----------------------------#
 
@@ -286,11 +298,16 @@ iwc = np.mean(iwc , axis = -1)
 lw_frac = (lwc/(lwc+iwc))
 iw_frac = (iwc/(lwc+iwc))
 
-lw_frac_so = np.vstack((alt, lw_frac * cf_so[:,1])).T
-iw_frac_so = np.vstack((alt, iw_frac * cf_so[:,1])).T
+lw_frac_so = np.vstack((alt_so, lw_frac * cf_so[:,1])).T
+iw_frac_so = np.vstack((alt_so, iw_frac * cf_so[:,1])).T
 
 
 #----------------------------#
+temp_g = np.vstack((alt, temp_g)).T
+temp_so = np.vstack((alt_so, temp_so)).T
+
+pressure = np.vstack((alt, p)).T
+pressure_so = np.vstack((alt_so, p_so)).T
 
 cf_t = np.vstack((temp_g[:,1], cf_g[:,1])).T
 cf_t_so = np.vstack((temp_so[:,1], cf_so[:,1])).T
@@ -306,6 +323,11 @@ lw_frac_t_so = np.vstack((temp_so[:,1], lw_frac_so[:,1])).T
 iw_frac_t = np.vstack((temp_g[:,1], iw_frac_g[:,1])).T
 iw_frac_t_so = np.vstack((temp_so[:,1], iw_frac_so[:,1])).T
 
+
+fig, ax1 = plt.subplots()
+ax1.plot(lw_frac_t_so[:,0],lw_frac_t_so[:,1], '-r', label='SO')
+ax1.plot(lw_frac_t[:,0],lw_frac_t[:,1], '-b', label='G')
+
 #----------------------------#
 
 
@@ -315,10 +337,13 @@ os.chdir('E:/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/r
 with h5py.File('07.2006_04.2011_cesm2_cam6.h5', 'w') as p:
     
     p.create_dataset('alt', data=alt)
+    p.create_dataset('alt_so', data=alt_so)  
     p.create_dataset('lat', data=lat)  
     p.create_dataset('air_density', data=air_density)  
     p.create_dataset('temp', data=temp_g)
+    p.create_dataset('temp_so', data=temp_so)
     p.create_dataset('pressure', data=pressure)
+    p.create_dataset('pressure_so', data=pressure_so)
         
     p.create_dataset('tcc', data=tcc)
     p.create_dataset('tclw', data=tclw)
@@ -355,17 +380,6 @@ with h5py.File('07.2006_04.2011_cesm2_cam6.h5', 'w') as p:
     p.create_dataset('iw_t_so', data=iw_t_so)
     p.create_dataset('iw_frac_t', data=iw_frac_t)
     p.create_dataset('iw_frac_t_so', data=iw_frac_t_so)
-    
+ 
  
     p.close()
-
-
-
-end = time.time()
-print('Averaging data and creating combined arrays took:', end - start, 's')
-
-
-"""
-fig, ax1 = plt.subplots()
-ax1.plot(lat,tcc, '-r', label='Total Cloud Fraction')
-"""

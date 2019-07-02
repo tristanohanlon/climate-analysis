@@ -10,8 +10,8 @@ Spyder Editor
 import h5py
 import os
 import numpy as np
-#os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
-os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
 #os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Laptop
 
 a = h5py.File('2007_2008_cccm.h5', 'r')
@@ -58,10 +58,72 @@ iw_frac_temp_so = a['iw_frac_temp_so'][:]
 
 a.close()
 
-os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets/old_data') #Uni Laptop
-a = h5py.File('2007_2008_cccm.h5', 'r')
-tcc_enhanced = a['tcc'][:]
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets/old_data') # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets/old_data') #Uni Laptop
+a = h5py.File('2007_CCCM.h5', 'r')
+tcc_enhanced1 = a['tcc'][:]
 a.close()
+
+a = h5py.File('2008_CCCM.h5', 'r')
+tcc_enhanced2 = a['tcc'][:]
+a.close()
+
+############################################################################### tcc
+
+combined = np.vstack((tcc_enhanced1, tcc_enhanced2))
+
+#print("get unique lats")
+unique = np.unique(tcc_enhanced1[:,0])
+#print(unique)
+
+# Add a column for every additional column, -1 will sort by the first column
+combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+
+# Averages of (lat, cloud ice water content) empty array
+averages_total = unique.size
+tcc_enhanced = np.empty((averages_total,2),dtype=float)
+
+# Current subtotal of current lat
+subtotal = 0.0
+# Current number of cloud ice water content entries in subtotal
+number = 0
+# Set the current lat to false
+current_lat = None
+
+# Iterate through all of the (lat, cloud ice water content) elements and subtotal the same lat values
+i = 0
+for item in combined:
+    
+    if np.isnan(item[1]):
+        continue
+
+    if current_lat is None:
+        current_lat = item[0];
+    
+    # If the lat is not the same as last time, then perform the average calc and reset everything
+    if item[0] != current_lat:
+        
+        # Find the average value.
+        average = subtotal / number
+        # Append the average
+        tcc_enhanced[i] = [current_lat, average]
+        # Reset the subtotal
+        subtotal = 0.0
+        number = 0
+        # Set the current latitude
+        current_lat = item[0]
+        # Move to the next index in the averages array
+        i+=1
+
+    # Add the next value to the subtotal
+    number+=1
+    subtotal+=item[1]
+    
+# Catch the last entry in the for loop
+average = subtotal / number
+tcc_enhanced[i] = [current_lat, average]
+
+############################################################################### tclw
 
 
 tclw_frac_enhanced = tclw_frac / tcc
@@ -75,8 +137,8 @@ tciw_frac_enhanced = tciw_frac_enhanced * tcc_enhanced
 
 import h5py
 import os
-#os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
-os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
+os.chdir('E:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') # Home PC
+#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Uni Laptop
 #os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets') #Laptop
 
 with h5py.File('2007_2008_cccm.h5', 'w') as p:

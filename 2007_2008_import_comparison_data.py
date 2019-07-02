@@ -19,7 +19,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-
+"""
 # Uni Laptop
 #ECMWF-ERA5 Data
 #os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
@@ -56,8 +56,8 @@ f = h5py.File('2007_2008_calipso.h5', 'r')
 #CERES Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('2007_2008_ceres.h5', 'r')
-
 """
+
 # Home PC
 #ECMWF Data
 #os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
@@ -94,7 +94,7 @@ f = h5py.File('2007_2008_calipso.h5', 'r')
 #CERES Data
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('2007_2008_ceres.h5', 'r')
-"""
+
 """
 # Laptop
 #ECMWF Data
@@ -232,6 +232,7 @@ ecmwf_tciw_frac_temp_so = np.vstack((ecmwf_tciw_temp_so[:,0], ecmwf_tciw_frac_te
 #---CCCM Global Latitude Data---#
 
 cccm_tcc_lat_g = c['tcc'][:] # 0-1
+cccm_tcc_lat_g_enhanced  = c['tcc_enhanced'][:] # 0-1
 cccm_tclw_lat_g = c['tclw'][:] #kgm^-2
 cccm_tciw_lat_g = c['tciw'][:] #kgm^-2
 
@@ -250,6 +251,9 @@ cccm_tciw_lat_so = cccm_tciw_lat_so[cccm_tciw_lat_so[:,0]<=-50] #kgm^-2
 
 cccm_tclw_frac_lat_g = c['tclw_frac'][:]
 cccm_tciw_frac_lat_g = c['tclw_frac'][:]
+
+cccm_tclw_frac_lat_g_enhanced = c['tclw_frac_enhanced'][:]
+cccm_tciw_frac_lat_g_enhanced = c['tclw_frac_enhanced'][:]
 
 #---CCCM Global Profile---#
 
@@ -406,8 +410,8 @@ gfdl_hiram_temp_alt_lat = h['temp_alt_lat'][:] #kg/kg
 gfdl_hiram_lat = h['lat'][:]
 gfdl_hiram_alt = h['alt'][:]
 
-gfdl_hiram_tclw_frac_alt_lat = (gfdl_hiram_tclw_alt_lat / (gfdl_hiram_tclw_alt_lat + gfdl_hiram_tciw_alt_lat)) * (gfdl_hiram_tcc_alt_lat / 100)
-gfdl_hiram_tciw_frac_alt_lat = (gfdl_hiram_tciw_alt_lat / (gfdl_hiram_tclw_alt_lat + gfdl_hiram_tciw_alt_lat)) * (gfdl_hiram_tcc_alt_lat / 100)
+gfdl_hiram_tclw_frac_alt_lat = (gfdl_hiram_tclw_alt_lat / (gfdl_hiram_tclw_alt_lat + gfdl_hiram_tciw_alt_lat)) * (gfdl_hiram_tcc_alt_lat)
+gfdl_hiram_tciw_frac_alt_lat = (gfdl_hiram_tciw_alt_lat / (gfdl_hiram_tclw_alt_lat + gfdl_hiram_tciw_alt_lat)) * (gfdl_hiram_tcc_alt_lat)
 
 
 #---GFDL-HIRAM-C360 Global Profile---#
@@ -418,8 +422,6 @@ gfdl_hiram_tciw_alt_g = h['iw'][:] #kg/kg
 gfdl_hiram_temp_alt_g = h['temp'][:] #K
 gfdl_hiram_plevel_alt_g = h['pressure'][:] #hPa
 
-z = gfdl_hiram_tcc_alt_g[:,1] / 100
-gfdl_hiram_tcc_alt_g  = np.vstack((gfdl_hiram_tcc_alt_g [:,0], z)).T
 
 
 gfdl_hiram_tcc_temp_g = h['cf_t'][:] # 0-1
@@ -429,11 +431,6 @@ gfdl_hiram_tciw_temp_g = h['iw_t'][:] #kg/kg
 gfdl_hiram_tclw_frac_temp_g = h['lw_frac_t'][:]
 gfdl_hiram_tciw_frac_temp_g = h['iw_frac_t'][:]
 
-z = gfdl_hiram_tclw_frac_temp_g[:,1] / 100
-gfdl_hiram_tclw_frac_temp_g = np.vstack((gfdl_hiram_tclw_frac_temp_g[:,0], z)).T
-
-z = gfdl_hiram_tciw_frac_temp_g[:,1] / 100
-gfdl_hiram_tciw_frac_temp_g = np.vstack((gfdl_hiram_tciw_frac_temp_g[:,0], z)).T
 
 #---GFDL-HIRAM-C360 Phase Profile Fractions---#
 
@@ -442,25 +439,11 @@ gfdl_hiram_tciw_frac_alt_g = h['iw_frac'][:]
 gfdl_hiram_tclw_frac_alt_so = h['lw_frac_so'][:]
 gfdl_hiram_tciw_frac_alt_so = h['iw_frac_so'][:]
 
-z = gfdl_hiram_tclw_frac_alt_g[:,1] / 100
-gfdl_hiram_tclw_frac_alt_g = np.vstack((gfdl_hiram_tclw_frac_alt_g[:,0], z)).T
-
-z = gfdl_hiram_tciw_frac_alt_g[:,1] / 100
-gfdl_hiram_tciw_frac_alt_g = np.vstack((gfdl_hiram_tciw_frac_alt_g[:,0], z)).T
-
-z = gfdl_hiram_tclw_frac_alt_so[:,1] / 100
-gfdl_hiram_tclw_frac_alt_so = np.vstack((gfdl_hiram_tclw_frac_alt_so[:,0], z)).T
-
-z = gfdl_hiram_tciw_frac_alt_so[:,1] / 100
-gfdl_hiram_tciw_frac_alt_so = np.vstack((gfdl_hiram_tciw_frac_alt_so[:,0], z)).T
 #---GFDL-HIRAM-C360 Southern Ocean Profile---#
 
 gfdl_hiram_tcc_alt_so = h['cf_so'][:] # 0-1
 gfdl_hiram_tclw_alt_so = h['lw_so'][:] #kg/kg
 gfdl_hiram_tciw_alt_so = h['iw_so'][:] #kg/kg
-
-z = gfdl_hiram_tcc_alt_so[:,1] / 100
-gfdl_hiram_tcc_alt_so = np.vstack((gfdl_hiram_tcc_alt_so[:,0], z)).T
 
 gfdl_hiram_tcc_temp_so = h['cf_t_so'][:] # 0-1
 gfdl_hiram_tclw_temp_so = h['lw_t_so'][:] #kg/kg
@@ -469,11 +452,6 @@ gfdl_hiram_tciw_temp_so = h['iw_t_so'][:] #kg/kg
 gfdl_hiram_tclw_frac_temp_so = h['lw_frac_t_so'][:]
 gfdl_hiram_tciw_frac_temp_so = h['lw_frac_t_so'][:]
 
-z = gfdl_hiram_tclw_frac_temp_so[:,1] / 100
-gfdl_hiram_tclw_frac_temp_so = np.vstack((gfdl_hiram_tclw_frac_temp_so[:,0], z)).T
-
-z = gfdl_hiram_tciw_frac_temp_so[:,1] / 100
-gfdl_hiram_tciw_frac_temp_so = np.vstack((gfdl_hiram_tciw_frac_temp_so[:,0], z)).T
 
 ############################################################################### MRI_ESM2-AMIP Data
 
@@ -595,8 +573,8 @@ mri_cgcm_lat = i['lat'][:]
 mri_cgcm_alt = i['alt'][:]
 
 
-mri_cgcm_tclw_frac_alt_lat = (mri_cgcm_tclw_alt_lat / (mri_cgcm_tclw_alt_lat + mri_cgcm_tciw_alt_lat)) * (mri_cgcm_tcc_alt_lat / 100)
-mri_cgcm_tciw_frac_alt_lat = (mri_cgcm_tciw_alt_lat / (mri_cgcm_tclw_alt_lat + mri_cgcm_tciw_alt_lat)) * (mri_cgcm_tcc_alt_lat / 100)
+mri_cgcm_tclw_frac_alt_lat = (mri_cgcm_tclw_alt_lat / (mri_cgcm_tclw_alt_lat + mri_cgcm_tciw_alt_lat)) * (mri_cgcm_tcc_alt_lat)
+mri_cgcm_tciw_frac_alt_lat = (mri_cgcm_tciw_alt_lat / (mri_cgcm_tclw_alt_lat + mri_cgcm_tciw_alt_lat)) * (mri_cgcm_tcc_alt_lat)
 
 
 #---MRI-CGCM3-AMIP Global Profile---#
@@ -607,9 +585,6 @@ mri_cgcm_tciw_alt_g = i['iw'][:] #kg/kg
 mri_cgcm_temp_alt_g = i['temp'][:] #K
 mri_cgcm_plevel_alt_g = i['pressure'][:] #hPa
 
-z = mri_cgcm_tcc_alt_g[:,1] / 100
-mri_cgcm_tcc_alt_g = np.vstack((mri_cgcm_tcc_alt_g[:,0], z)).T
-
 
 mri_cgcm_tcc_temp_g = i['cf_t'][:] # 0-1
 mri_cgcm_tclw_temp_g = i['lw_t'][:] #kg/kg
@@ -617,13 +592,6 @@ mri_cgcm_tciw_temp_g = i['iw_t'][:] #kg/kg
 
 mri_cgcm_tclw_frac_temp_g = i['lw_frac_t'][:]
 mri_cgcm_tciw_frac_temp_g = i['iw_frac_t'][:]
-
-z = mri_cgcm_tclw_frac_temp_g[:,1] / 100
-mri_cgcm_tclw_frac_temp_g = np.vstack((mri_cgcm_tclw_frac_temp_g[:,0], z)).T
-
-z = mri_cgcm_tciw_frac_temp_g[:,1] / 100
-mri_cgcm_tciw_frac_temp_g = np.vstack((mri_cgcm_tciw_frac_temp_g[:,0], z)).T
-
 
 
 #---MRI-CGCM3-AMIP Phase Profile Fractions---#
@@ -633,28 +601,12 @@ mri_cgcm_tciw_frac_alt_g = i['iw_frac'][:]
 mri_cgcm_tclw_frac_alt_so = i['lw_frac_so'][:]
 mri_cgcm_tciw_frac_alt_so = i['iw_frac_so'][:]
 
-z = mri_cgcm_tclw_frac_alt_g[:,1] / 100
-mri_cgcm_tclw_frac_alt_g = np.vstack((mri_cgcm_tclw_frac_alt_g[:,0], z)).T
-
-z = mri_cgcm_tciw_frac_alt_g[:,1] / 100
-mri_cgcm_tciw_frac_alt_g = np.vstack((mri_cgcm_tciw_frac_alt_g[:,0], z)).T
-
-z = mri_cgcm_tclw_frac_alt_so[:,1] / 100
-mri_cgcm_tclw_frac_alt_so = np.vstack((mri_cgcm_tclw_frac_alt_so[:,0], z)).T
-
-z = mri_cgcm_tciw_frac_alt_so[:,1] / 100
-mri_cgcm_tciw_frac_alt_so = np.vstack((mri_cgcm_tciw_frac_alt_so[:,0], z)).T
-
 
 #---MRI-CGCM3-AMIP Southern Ocean Profile---#
 
 mri_cgcm_tcc_alt_so = i['cf_so'][:] # 0-1
 mri_cgcm_tclw_alt_so = i['lw_so'][:] #kg/kg
 mri_cgcm_tciw_alt_so = i['iw_so'][:] #kg/kg
-
-z = mri_cgcm_tcc_alt_so[:,1] / 100
-mri_cgcm_tcc_alt_so = np.vstack((mri_cgcm_tcc_alt_so[:,0], z)).T
-
 
 mri_cgcm_tcc_temp_so = i['cf_t_so'][:] # 0-1
 mri_cgcm_tclw_temp_so = i['lw_t_so'][:] #kg/kg
@@ -663,11 +615,6 @@ mri_cgcm_tciw_temp_so = i['iw_t_so'][:] #kg/kg
 mri_cgcm_tclw_frac_temp_so = i['lw_frac_t_so'][:]
 mri_cgcm_tciw_frac_temp_so = i['lw_frac_t_so'][:]
 
-z = mri_cgcm_tclw_frac_temp_so[:,1] / 100
-mri_cgcm_tclw_frac_temp_so = np.vstack((mri_cgcm_tclw_frac_temp_so[:,0], z)).T
-
-z = mri_cgcm_tciw_frac_temp_so[:,1] / 100
-mri_cgcm_tciw_frac_temp_so = np.vstack((mri_cgcm_tciw_frac_temp_so[:,0], z)).T
 
 ############################################################################### CESM2-CAM6-AMIP Data
 
@@ -844,7 +791,7 @@ print('Importing data took:', end - start, 's')
 """
 os.chdir('c:/Users/toha006/University/University/MSc/Models/Images/Meeting 1.7/2007 - 2008')
 
-os.chdir('e:/University/University/MSc/Models/Images/Meeting 1.7')
+os.chdir('e:/University/University/MSc/Models/Images')
 """
 ############################################################################### Temperature Profiles
 
@@ -880,15 +827,15 @@ plt.show()
 """
 fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True,figsize=(5, 6))
 
-ax1.plot(cccm_tclw_frac_temp_g[5:44,0],cccm_tclw_frac_temp_g[5:44,1], ':r', label='CCCM - Global')
-ax1.plot(calipso_tclw_frac_temp_g[20:34,0],calipso_tclw_frac_temp_g[20:34,1], ':b', label='CALIPSO - Global')
+ax1.plot(cccm_tclw_frac_temp_g[5:44,0],cccm_tclw_frac_temp_g[5:44,1], ':r', label='Global - CCCM')
+ax1.plot(calipso_tclw_frac_temp_g[20:34,0],calipso_tclw_frac_temp_g[20:34,1], ':b', label='Global - CALIPSO')
 
 ax1.plot(gfdl_hiram_tclw_frac_temp_g[:17,0],gfdl_hiram_tclw_frac_temp_g[:17,1], '-g', label='Global - CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_temp_g[:18,0],mri_cgcm_tclw_frac_temp_g[:18,1], '-m', label='Global - CMIP5-MRI_CGCM3-AMIP')
 
 
-ax2.plot(cccm_tclw_frac_temp_g[5:44,0],cccm_tclw_frac_temp_g[5:44,1], ':r', label='CCCM - Global')
-ax2.plot(calipso_tclw_frac_temp_g[20:34,0],calipso_tclw_frac_temp_g[20:34,1], ':b', label='CALIPSO - Global')
+ax2.plot(cccm_tclw_frac_temp_g[5:44,0],cccm_tclw_frac_temp_g[5:44,1], ':r', label='Global - CCCM')
+ax2.plot(calipso_tclw_frac_temp_g[20:34,0],calipso_tclw_frac_temp_g[20:34,1], ':b', label='Global - CALIPSO')
 
 ax2.plot(gfdl4_tclw_frac_temp_g[:18,0],gfdl4_tclw_frac_temp_g[:18,1], '-g', label='Global - CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_temp_g[:26,0],mri_tclw_frac_temp_g[:26,1], '-m', label='Global - CMIP6-MRI_ESM2-AMIP')
@@ -920,14 +867,14 @@ ax2.grid(True)
 """
 fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True,figsize=(5, 6))
 
-ax1.plot(cccm_tclw_frac_temp_so[2:40,0],cccm_tclw_frac_temp_so[2:40,1], ':r', label='CCCM - Southern Ocean')
-ax1.plot(calipso_tclw_frac_temp_so[20:34,0],calipso_tclw_frac_temp_so[20:34,1], ':b', label='CALIPSO - Southern Ocean')
+ax1.plot(cccm_tclw_frac_temp_so[2:40,0],cccm_tclw_frac_temp_so[2:40,1], ':r', label='Southern Ocean - CCCM')
+ax1.plot(calipso_tclw_frac_temp_so[20:34,0],calipso_tclw_frac_temp_so[20:34,1], ':b', label='Southern Ocean - CALIPSO')
 
 ax1.plot(gfdl_hiram_tclw_frac_temp_so[:16,0],gfdl_hiram_tclw_frac_temp_so[:16,1], '-g', label='Southern Ocean - CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_temp_so[:18,0],mri_cgcm_tclw_frac_temp_so[:18,1], '-m', label='Southern Ocean - CMIP5-MRI_CGCM3-AMIP')
 
-ax2.plot(cccm_tclw_frac_temp_so[2:40,0],cccm_tclw_frac_temp_so[2:40,1], ':r', label='CCCM - Southern Ocean')
-ax2.plot(calipso_tclw_frac_temp_so[20:34,0],calipso_tclw_frac_temp_so[20:34,1], ':b', label='CALIPSO - Southern Ocean')
+ax2.plot(cccm_tclw_frac_temp_so[2:40,0],cccm_tclw_frac_temp_so[2:40,1], ':r', label='Southern Ocean - CCCM')
+ax2.plot(calipso_tclw_frac_temp_so[20:34,0],calipso_tclw_frac_temp_so[20:34,1], ':b', label='Southern Ocean - CALIPSO')
 
 ax2.plot(gfdl4_tclw_frac_temp_so[:18,0],gfdl4_tclw_frac_temp_so[:18,1], '-g', label='Southern Ocean - CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_temp_so[:26,0],mri_tclw_frac_temp_so[:26,1], '-m', label='Southern Ocean - CMIP6-MRI_ESM2-AMIP')
@@ -958,14 +905,14 @@ ax2.grid(True)
 """
 fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True,figsize=(5, 6))
 
-ax1.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], ':r', label='CCCM')
+ax1.plot(cccm_tcc_lat_g_enhanced[:,0],cccm_tcc_lat_g_enhanced[:,1], ':r', label='CCCM')
 ax1.plot(calipso_tcc_lat_g[:,0],calipso_tcc_lat_g[:,1], ':b', label='CAPLISO')
 ax1.plot(ceres_tcc_lat_g[:,0],ceres_tcc_lat_g[:,1], '--r', label='CERES')
 
 ax1.plot(gfdl_hiram_tcc_lat_g[:,0],gfdl_hiram_tcc_lat_g[:,1], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tcc_lat_g[:,0],mri_cgcm_tcc_lat_g[:,1], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 
-ax2.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], ':r', label='CCCM')
+ax2.plot(cccm_tcc_lat_g_enhanced[:,0],cccm_tcc_lat_g_enhanced[:,1], ':r', label='CCCM')
 ax2.plot(calipso_tcc_lat_g[:,0],calipso_tcc_lat_g[:,1], ':b', label='CAPLISO')
 ax2.plot(ceres_tcc_lat_g[:,0],ceres_tcc_lat_g[:,1], '--r', label='CERES')
 
@@ -996,13 +943,13 @@ plt.show()
 """
 fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True,figsize=(5, 6))
 
-ax1.plot(cccm_tclw_frac_lat_g[:,0],cccm_tclw_frac_lat_g[:,1], ':r', label='CCCM')
+ax1.plot(cccm_tclw_frac_lat_g_enhanced[:,0],cccm_tclw_frac_lat_g_enhanced[:,1], ':r', label='CCCM')
 ax1.plot(calipso_tclw_frac_lat_g[:,0],calipso_tclw_frac_lat_g[:,1], ':b', label='CALIPSO')
 
 ax1.plot(gfdl_hiram_tclw_frac_lat_g[:,0],gfdl_hiram_tclw_frac_lat_g[:,1], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_lat_g[:,0],mri_cgcm_tclw_frac_lat_g[:,1], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 
-ax2.plot(cccm_tclw_frac_lat_g[:,0],cccm_tclw_frac_lat_g[:,1], ':r', label='CCCM')
+ax2.plot(cccm_tclw_frac_lat_g_enhanced[:,0],cccm_tclw_frac_lat_g_enhanced[:,1], ':r', label='CCCM')
 ax2.plot(calipso_tclw_frac_lat_g[:,0],calipso_tclw_frac_lat_g[:,1], ':b', label='CALIPSO')
 
 ax2.plot(gfdl4_tclw_frac_lat_g[:,0],gfdl4_tclw_frac_lat_g[:,1], '-g', label='CMIP6-GFDL-AM4-AMIP')
@@ -1505,8 +1452,6 @@ plt.show()
 plt.subplots()
 
 plt.contourf(cam6_lat, cam6_alt[7:32], cam6_tciw_frac_alt_lat[7:32])
-
-ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3), ncol=4);
 
 plt.clim(0, 0.5)
 

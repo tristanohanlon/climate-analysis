@@ -758,517 +758,79 @@ print('Averaging temp data took:', end - start, 's')
 ###############################################################################
 ###############################################################################
 
-#---combine each dataset with common plevel---#
 
-a_cf = np.vstack((plevel, a_cf)).T 
-a_lw = np.vstack((plevel, a_lw)).T 
-a_iw = np.vstack((plevel, a_iw)).T 
-a_cf_so = np.vstack((plevel, a_cf_so)).T 
-a_lw_so = np.vstack((plevel, a_lw_so)).T 
-a_iw_so = np.vstack((plevel, a_iw_so)).T 
-a_temp = np.vstack((plevel, a_temp)).T 
-a_temp_so = np.vstack((plevel, a_temp_so)).T 
-
-b_cf = np.vstack((plevel, b_cf)).T 
-b_lw = np.vstack((plevel, b_lw)).T 
-b_iw = np.vstack((plevel, b_iw)).T 
-b_cf_so = np.vstack((plevel, b_cf_so)).T 
-b_lw_so = np.vstack((plevel, b_lw_so)).T 
-b_iw_so = np.vstack((plevel, b_iw_so)).T 
-b_temp = np.vstack((plevel, b_temp)).T 
-b_temp_so = np.vstack((plevel, b_temp_so)).T 
-
-c_cf = np.vstack((plevel, c_cf)).T 
-c_lw = np.vstack((plevel, c_lw)).T 
-c_iw = np.vstack((plevel, c_iw)).T 
-c_cf_so = np.vstack((plevel, c_cf_so)).T 
-c_lw_so = np.vstack((plevel, c_lw_so)).T 
-c_iw_so = np.vstack((plevel, c_iw_so)).T 
-c_temp = np.vstack((plevel, c_temp)).T 
-c_temp_so = np.vstack((plevel, c_temp_so)).T 
-
-d_cf = np.vstack((plevel, d_cf)).T 
-d_lw = np.vstack((plevel, d_lw)).T 
-d_iw = np.vstack((plevel, d_iw)).T 
-d_cf_so = np.vstack((plevel, d_cf_so)).T 
-d_lw_so = np.vstack((plevel, d_lw_so)).T 
-d_iw_so = np.vstack((plevel, d_iw_so)).T 
-d_temp = np.vstack((plevel, d_temp)).T 
-d_temp_so = np.vstack((plevel, d_temp_so)).T 
-
-e_cf = np.vstack((plevel, e_cf)).T 
-e_lw = np.vstack((plevel, e_lw)).T 
-e_iw = np.vstack((plevel, e_iw)).T 
-e_cf_so = np.vstack((plevel, e_cf_so)).T 
-e_lw_so = np.vstack((plevel, e_lw_so)).T 
-e_iw_so = np.vstack((plevel, e_iw_so)).T 
-e_temp = np.vstack((plevel, e_temp)).T 
-e_temp_so = np.vstack((plevel, e_temp_so)).T 
-
-f_cf = np.vstack((plevel, f_cf)).T 
-f_lw = np.vstack((plevel, f_lw)).T 
-f_iw = np.vstack((plevel, f_iw)).T 
-f_cf_so = np.vstack((plevel, f_cf_so)).T 
-f_lw_so = np.vstack((plevel, f_lw_so)).T 
-f_iw_so = np.vstack((plevel, f_iw_so)).T 
-f_temp = np.vstack((plevel, f_temp)).T 
-f_temp_so = np.vstack((plevel, f_temp_so)).T 
-
-###############################################################################
-###############################################################################
-###############################################################################
-
-#---reduce each dataset based on common plevel---#
+#---reduce each dataset---#
 ############################################################################### cf
 
-combined = np.vstack((a_cf, b_cf, c_cf, d_cf, e_cf, f_cf))
+combined = np.sum((a_cf, b_cf, c_cf, d_cf, e_cf, f_cf), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_cf[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-cf = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        cf[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-cf[i] = [current_alt, average]
-cf = cf[:,1]
+cf = combined / 6
 
 ############################################################################### cf_so
 
-combined = np.vstack((a_cf_so, b_cf_so, c_cf_so, d_cf_so, e_cf_so, f_cf_so))
+combined = np.sum((a_cf_so, b_cf_so, c_cf_so, d_cf_so, e_cf_so, f_cf_so), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_cf_so[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-cf_so = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        cf_so[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-cf_so[i] = [current_alt, average]
-cf_so = cf_so[:,1]
+cf_so = combined / 6
 
 ############################################################################### lw
 
-combined = np.vstack((a_lw, b_lw, c_lw, d_lw, e_lw, f_lw))
+combined = np.sum((a_lw, b_lw, c_lw, d_lw, e_lw, f_lw), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_lw[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-lw = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        lw[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-lw[i] = [current_alt, average]
-lw = lw[:,1]
-
+lw = combined / 6
 
 ############################################################################### lw_so
 
-combined = np.vstack((a_lw_so, b_lw_so, c_lw_so, d_lw_so, e_lw_so, f_lw_so))
+combined = np.sum((a_lw_so, b_lw_so, c_lw_so, d_lw_so, e_lw_so, f_lw_so), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_lw_so[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-lw_so = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        lw_so[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-lw_so[i] = [current_alt, average]
-lw_so = lw_so[:,1]
-
+lw_so = combined / 6
 
 ############################################################################### iw
 
-combined = np.vstack((a_iw, b_iw, c_iw, d_iw, e_iw, f_iw))
+combined = np.sum((a_iw, b_iw, c_iw, d_iw, e_iw, f_iw), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_iw[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-iw = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        iw[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-iw[i] = [current_alt, average]
-iw = iw[:,1]
+iw = combined / 6
 
 ############################################################################### iw_so
 
-combined = np.vstack((a_iw_so, b_iw_so, c_iw_so, d_iw_so, e_iw_so, f_iw_so))
+combined = np.sum((a_iw_so, b_iw_so, c_iw_so, d_iw_so, e_iw_so, f_iw_so), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_iw_so[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-iw_so = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        iw_so[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-iw_so[i] = [current_alt, average]
-iw_so = iw_so[:,1]
+iw_so = combined / 6
 
 ############################################################################### temp
 
-combined = np.vstack((a_temp, b_temp, c_temp, d_temp, e_temp, f_temp))
+combined = np.sum((a_temp, b_temp, c_temp, d_temp, e_temp, f_temp), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_temp[:,0])
-#print(unique)
-
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
-
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-temp = np.empty((averages_total,2),dtype=float)
-
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
-
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
-
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        temp[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
-
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-temp[i] = [current_alt, average]
-temp = temp[:,1]
-
+temp = combined / 6
 
 ############################################################################### temp_so
 
-combined = np.vstack((a_temp_so, b_temp_so, c_temp_so, d_temp_so, e_temp_so, f_temp_so))
+combined = np.sum((a_temp_so, b_temp_so, c_temp_so, d_temp_so, e_temp_so, f_temp_so), axis = 0)
 
-#print("get unique alt")
-unique = np.unique(a_temp_so[:,0])
-#print(unique)
+temp_so = combined / 6
 
-# Add a column for every additional column, -1 will sort by the first column
-combined = combined[np.lexsort(np.transpose(combined)[:-1])]
+############################################################################### cf_alt_lat
 
-# Averages of (alt, cloud content) empty array
-averages_total = unique.size
-temp_so = np.empty((averages_total,2),dtype=float)
+combined = np.sum((a_cf_alt_lat, b_cf_alt_lat, c_cf_alt_lat, d_cf_alt_lat, e_cf_alt_lat, f_cf_alt_lat), axis = 0)
 
-# Current subtotal of current alt
-subtotal = 0.0
-# Current number of cloud fraction content entries in subtotal
-number = 0
-# Set the current alt to false
-current_alt = None
+cf_alt_lat = combined / 6
 
-# Iterate through all of the (alt, cloud content) elements and subtotal the same alt values
-i = 0
-for item in combined:
-    
-    if np.isnan(item[1]):
-        continue
+############################################################################### lw_alt_lat
 
-    if current_alt is None:
-        current_alt = item[0];
-    
-    # If the alt is not the same as last time, then perform the average calc and reset everything
-    if item[0] != current_alt:
-        
-        # Find the average value.
-        average = subtotal / number
-        # Append the average
-        temp_so[i] = [current_alt, average]
-        # Reset the subtotal
-        subtotal = 0.0
-        number = 0
-        # Set the current altitude
-        current_alt = item[0]
-        # Move to the next index in the averages array
-        i+=1
+combined = np.sum((a_lw_alt_lat, b_lw_alt_lat, c_lw_alt_lat, d_lw_alt_lat, e_lw_alt_lat, f_lw_alt_lat), axis = 0)
 
-    # Add the next value to the subtotal
-    number+=1
-    subtotal+=item[1]
-    
-# Catch the last entry in the for loop
-average = subtotal / number
-temp_so[i] = [current_alt, average]
-temp_so = temp_so[:,1]
+lw_alt_lat = combined / 6
+
+############################################################################### iw_alt_lat
+
+combined = np.sum((a_iw_alt_lat, b_iw_alt_lat, c_iw_alt_lat, d_iw_alt_lat, e_iw_alt_lat, f_iw_alt_lat), axis = 0)
+
+iw_alt_lat = combined / 6
+
+############################################################################### temp_alt_lat
+
+combined = np.sum((a_temp_alt_lat, b_temp_alt_lat, c_temp_alt_lat, d_temp_alt_lat, e_temp_alt_lat, f_temp_alt_lat), axis = 0)
+
+temp_alt_lat = combined / 6
 
 ###############################################################################
 ###############################################################################
@@ -1366,10 +928,20 @@ ecmwf_tciw_temp_so = np.vstack((temp_so, iw_so)).T
 ###############################################################################
 import h5py
 import os
-os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') # Home PC
-#os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Uni Laptop
+os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Uni Laptop
+#os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Home PC
+f = h5py.File("07.2006_04.2011_ECMWF.h5", "r")
+ecmwf_tclw_lat = f['tclw'][:]
+ecmwf_tciw_lat = f['tciw'][:]
+ecmwf_tcc_lat = f['tcc'][:]
 
-with h5py.File('07.2006_04.2011_ECMWF.h5', 'w') as p:
+f.close()
+
+
+#os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') # Home PC
+os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF/reduced_datasets') #Uni Laptop
+
+with h5py.File('07.2006_04.2011_ECMWF0.h5', 'w') as p:
     p.create_dataset('lat', data=lat)
     p.create_dataset('alt', data=alt)
     

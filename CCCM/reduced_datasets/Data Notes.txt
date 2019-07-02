@@ -9,7 +9,7 @@ air_density_g = (g/m^3) 137 altitude levels
 air_density_so = (g/m^3) 137 altitude levels
 
 tcc = (latitude, total cloud fraction) - (1 - cccm21)
-tcc_enhanced =  = (latitude, total cloud fraction) - (cccm81b)
+tcc_enhanced = (latitude, total cloud fraction) - (cccm81b)
 
 ---mean value over entire CERES footprint - see CCCM-85 & CCCM-86 note (1 - cccm21)---
 tclw = (latitude, liquid water path (kg/m^2))

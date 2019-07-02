@@ -17,11 +17,12 @@ import matplotlib.pyplot as plt
 import h5py
 import math
 from scipy import integrate
+from scipy import interpolate
 
 
 #---get latitude and cf---#
 #os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/tcc') #Home PC
-os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/') #Home PC
 
 f = Dataset('clt_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_197901-201412.nc', 'r')
 tcc1 = np.array(f.variables['clt'][330:384])
@@ -33,11 +34,12 @@ lat = np.array(lat)
 
 tcc = np.mean(tcc, axis = 0) # average over time
 tcc = np.mean(tcc, axis = -1) / 100 # average over longitude
+f.close()
 
 #---get cf---#
 
 #os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/cf') #Home PC
-os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/cf') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/cf') #Home PC
 
 f = Dataset('cl_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-200812.nc', 'r')
 cf1 = np.array(f.variables['cl'][90:])
@@ -52,26 +54,41 @@ plev = f.variables['lev'][:] #in hPa
 a = np.array(f.variables['a'][:]) #in hPa
 b = np.array(f.variables['b'][:]) #in hPa
 p0 = np.array(f.variables['p0'][:]) #in hPa
+f.close()
 
 
 
 #---get surface pressure---#
 
-os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/mri_esm2/') #Home PC
 
 f = Dataset('ps_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_197901-201412.nc', 'r')
 ps1 = np.array(f.variables['ps'][330:384])
 ps2 = np.array(f.variables['ps'][385:388])
 ps = np.concatenate((ps1, ps2))
 
+f.close()
+
 ps = np.mean(ps, axis = 0)
+
+ps_so = np.mean(ps, axis = -1)
+ps_so = np.transpose(ps_so)
+
+ps_so = np.vstack((lat, ps_so)).T #creates a (180,34) array
+ps_so = ps_so[ps_so[:,0]>=-70]
+ps_so = ps_so[ps_so[:,0]<=-50]
+ps_so = ps_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
+ps_so = np.mean(ps_so, axis = 0)
+
+
 ps = np.mean(ps, axis = 0)
 ps = np.mean(ps, axis = 0)
 
 p = a*p0 + b*ps
-pressure = np.array(p)
+p = np.array(p / 100) #hPa
 
-pressure = np.vstack((alt, pressure / 100)).T
+p_so = a*p0 + b*ps_so
+p_so = np.array(p_so / 100) #hPa
 
 
 ###############################################################################
@@ -112,36 +129,18 @@ sys.exit(0)
 alt = alt_t
 
 """
-os.chdir('E:/University/University/MSc/Models/climate-analysis/MRI/raw_datasets') #Home PC
-os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/MRI/raw_datasets') #Home PC
-f = h5py.File("MRI_raw.h5", "r")
-lat = f['lat'][:]
-alt = f['alt'][:]
-tcc = f['tcc'][:]
-p = f['p'][:]
-iw = f['iw'][:]
-cf = f['cf'][:]
-T = f['T'][:]
-lw = f['lw'][:]
-f.close()
+#os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-HIRAM-C360/reduced_datasets/backup_reduced_datasets')
+os.chdir('E:/University/University/MSc/Models/climate-analysis/MRI-ESM2-AMIP/reduced_datasets/backup_reduced_datasets')
+b = h5py.File('07.2006_04.2011_mri_esm2.h5', 'r')
 
-
-
-os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/MRI/raw_datasets') #Home PC
-with h5py.File('MRI_raw.h5', 'w') as f:
-    
-    f.create_dataset('tcc', data=tcc)
-    f.create_dataset('lat', data=lat)
-    f.create_dataset('p', data=p)
-    f.create_dataset('lw', data=lw)
-    f.create_dataset('alt', data=alt)
-    f.create_dataset('T', data=T)
-    f.create_dataset('iw', data=iw)
-    f.create_dataset('cf', data=cf)
-   
- 
-    f.close()
+alt = b['alt'][:]
+b.close()
 """
+
+#interpolate southern ocean altitudes
+
+f = interpolate.interp1d(p, alt, fill_value="extrapolate", kind = 'cubic')
+alt_so = f(p_so)
 
 ###############################################################################
 
@@ -160,6 +159,7 @@ lw3 = np.array(f.variables['clw'][25:28])
     
 lw = np.concatenate((lw1, lw2, lw3))
 lw = np.mean(lw, axis = 0)
+f.close()
 
 #---get iw---#
 
@@ -175,47 +175,42 @@ iw3 = np.array(f.variables['cli'][25:28])
  
 iw = np.concatenate((iw1, iw2, iw3))
 iw = np.mean(iw, axis = 0)
+f.close()
 
 
 #---get temp---#
 
 #os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/') #Home PC
-os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/') #Home PC
+os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/mri_esm2/') #Home PC
 f = Dataset('ta_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_197901-201412.nc', 'r')
 T1 = np.array(f.variables['ta'][330:384])
 T2 = np.array(f.variables['ta'][385:388])
 T = np.concatenate((T1, T2))
-T = np.mean(T, axis = 0)
+T[T>400] = None
+T = np.nanmean(T, axis = 0)
+plev_t = np.array(f.variables['plev'][:]) / 100 #in Pa
+f.close()
 
-plev = np.array(f.variables['plev'][:])
-alt_t = np.empty((plev.size,1),dtype=float)
-alt_p = np.empty((plev.size,1),dtype=float)
-alt_ts = np.empty((plev.size,1),dtype=float)
+T_so = np.nanmean(T, axis = -1)
+T_so = np.transpose(T_so)
 
-# Iterate through all of the temp elements (troposphere h < 11km)
-i = 0
-for item in plev:
-    newalt = (288.19 - 288.08*((item/101290)**(1/5.256)))/6.49
-    alt_t[i] = [newalt]
-    i+=1
+T_so = np.hstack((np.vstack(lat), T_so)) #creates a (180,34) array
+T_so = T_so[T_so[:,0]>=-70]
+T_so = T_so[T_so[:,0]<=-50]
+T_so = T_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
+T_so = np.nanmean(T_so, axis = 0)
 
+T_g = np.nanmean(T, axis = -1)
+T_g = np.nanmean(T_g, axis = -1)
 
-# Iterate through all of the pressure elements (lower stratosphere 11km < h <25km)
-i = 0
-for item in plev:
-    newalt = (1.73 - math.log(item/22650))/0.157
-    alt_p[i] = [newalt]
-    i+=1
+f = interpolate.interp1d(p, alt, fill_value="extrapolate", kind = 'cubic')
+alt_temp = f(plev_t)
 
+f = interpolate.interp1d(plev_t, T_g,fill_value="extrapolate", kind = 'cubic')
+temp_g = f(p)
 
-# Iterate through all of the temp elements (upper stratosphere  h > 25km)
-i = 0
-for item in plev:
-    newalt = (216.6*((item/2488)**(1/-11.388)) - 141.94)/2.99
-    alt_ts[i] = [newalt]
-    i+=1
-    
-alt_ts = 141.89 + 2.99 * alt
+f = interpolate.interp1d(plev_t, T_so,fill_value="extrapolate", kind = 'cubic')
+temp_so = f(p_so)
     
     
 ###############################################################################
@@ -226,19 +221,11 @@ alt_ts = 141.89 + 2.99 * alt
 # Integrate density with altitude to get air path AP
 # multiply lw and iw by AP
 
-alt_t = np.hstack(alt_t*1000)
-plev = np.vstack(plev)
-pressure = np.hstack((np.vstack(alt_t), plev))
-temp_g = np.mean(T, axis = -1)
-temp_g = np.mean(temp_g, axis = -1)
-temp_g = np.vstack(temp_g)
-temp_g = np.vstack((alt, alt_t)).T
-
 air_density = [] #create empty list
 #calculate air density at each pressure layer
-air_density = (pressure[:,1] * 100) / (286.9 * temp_g[:,1])
+air_density = ((p * 100) / (286.9 * temp_g))
 
-ap = integrate.trapz(air_density, alt_t)
+ap = integrate.trapz(air_density, (alt * 1000)) # gloabl air path
 
 tclw = np.mean(lw , axis = 0)
 tclw = np.mean(tclw  , axis = -1) * ap
@@ -265,7 +252,6 @@ tclw_frac = np.vstack((lat, lw_frac * tcc[:,1])).T
 tciw_frac = np.vstack((lat, iw_frac * tcc[:,1])).T
 
 #----------------------------#
-alt = np.hstack(alt)
 
 cf_g = np.mean(cf, axis = -1)
 cf_g = np.mean(cf_g, axis = -1)
@@ -295,8 +281,7 @@ iw_frac_g = np.vstack((alt, iw_frac * cf_g[:,1])).T
 
 #----------------------------#
 
-temp_alt_lat = np.mean(T, axis = -1)
-temp_alt_lat[temp_alt_lat>400] = None
+temp_alt_lat = np.mean(T, axis = -1) # goes with alt_temp
 cf_alt_lat = np.mean(cf, axis = -1)
 lw_alt_lat = np.mean(lw, axis = -1)
 iw_alt_lat = np.mean(iw, axis = -1)
@@ -310,7 +295,7 @@ cf_so = cf_so[cf_so[:,0]>=-70]
 cf_so = cf_so[cf_so[:,0]<=-50]
 cf_so = cf_so[:,1:] #Split the combined array into just the tccf data, eliminating the first coloumn of latitude
 cf_so = np.mean(cf_so, axis = 0)
-cf_so = np.vstack((alt, cf_so)).T
+cf_so = np.vstack((alt_so, cf_so)).T
 
 
 lw_so = np.mean(lw, axis = -1)
@@ -321,7 +306,7 @@ lw_so = lw_so[lw_so[:,0]>=-70]
 lw_so = lw_so[lw_so[:,0]<=-50]
 lw_so = lw_so[:,1:] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
 lw_so = np.mean(lw_so, axis = 0)
-lw_so = np.vstack((alt, lw_so)).T
+lw_so = np.vstack((alt_so, lw_so)).T
 
 
 iw_so = np.mean(iw, axis = -1)
@@ -332,7 +317,7 @@ iw_so = iw_so[iw_so[:,0]>=-70]
 iw_so = iw_so[iw_so[:,0]<=-50]
 iw_so = iw_so[:,1:] #Split the combined array into just the tclw data, eliminating the first coloumn of latitude
 iw_so = np.mean(iw_so, axis = 0)
-iw_so = np.vstack((alt, iw_so)).T
+iw_so = np.vstack((alt_so, iw_so)).T
 
 #----------------------------#
 
@@ -345,40 +330,55 @@ iwc = np.mean(iwc , axis = -1)
 lw_frac = (lwc/(lwc+iwc))
 iw_frac = (iwc/(lwc+iwc))
 
-lw_frac_so = np.vstack((alt, lw_frac * cf_so[:,1])).T
-iw_frac_so = np.vstack((alt, iw_frac * cf_so[:,1])).T
+lw_frac_so = np.vstack((alt_so, lw_frac * cf_so[:,1])).T
+iw_frac_so = np.vstack((alt_so, iw_frac * cf_so[:,1])).T
 
 
 #----------------------------#
+temp_g = np.vstack((alt, temp_g)).T
+temp_so = np.vstack((alt_so, temp_so)).T
+
+pressure = np.vstack((alt, p)).T
+pressure_so = np.vstack((alt_so, p_so)).T
 
 cf_t = np.vstack((temp_g[:,1], cf_g[:,1])).T
-cf_t_so = np.vstack((temp_g[:,1], cf_so[:,1])).T
+cf_t_so = np.vstack((temp_so[:,1], cf_so[:,1])).T
 lw_t = np.vstack((temp_g[:,1], lw_g[:,1])).T
-lw_t_so = np.vstack((temp_g[:,1], lw_so[:,1])).T
+lw_t_so = np.vstack((temp_so[:,1], lw_so[:,1])).T
 iw_t = np.vstack((temp_g[:,1], iw_g[:,1])).T
-iw_t_so = np.vstack((temp_g[:,1], iw_so[:,1])).T
+iw_t_so = np.vstack((temp_so[:,1], iw_so[:,1])).T
 
 #----------------------------#
 
 lw_frac_t = np.vstack((temp_g[:,1], lw_frac_g[:,1])).T
-lw_frac_t_so = np.vstack((temp_g[:,1], lw_frac_so[:,1])).T
+lw_frac_t_so = np.vstack((temp_so[:,1], lw_frac_so[:,1])).T
 iw_frac_t = np.vstack((temp_g[:,1], iw_frac_g[:,1])).T
-iw_frac_t_so = np.vstack((temp_g[:,1], iw_frac_so[:,1])).T
+iw_frac_t_so = np.vstack((temp_so[:,1], iw_frac_so[:,1])).T
+
+
+fig, ax1 = plt.subplots()
+ax1.plot(lw_frac_t_so[:,0],lw_frac_t_so[:,1], '-r', label='SO')
+ax1.plot(lw_frac_t[:,0],lw_frac_t[:,1], '-b', label='G')
 
 #----------------------------#
 
 
 
 
-os.chdir('//synthesis/e/University/University/MSc/Models/climate-analysis/MRI/reduced_datasets') #Home PC
+
+#os.chdir('c:/Users/tristan/University/University/MSc/Models/climate-analysis/MRI-ESM2-AMIP/reduced_datasets') #Home PC
+os.chdir('E:/University/University/MSc/Models/climate-analysis/MRI-ESM2-AMIP/reduced_datasets') #Home PC
 with h5py.File('07.2006_04.2011_mri_esm2.h5', 'w') as p:
     
     p.create_dataset('alt', data=alt)
-    p.create_dataset('alt_temp', data=alt_t)  
+    p.create_dataset('alt_so', data=alt_so)  
+    p.create_dataset('alt_temp', data=alt_temp)  
     p.create_dataset('lat', data=lat)  
     p.create_dataset('air_density', data=air_density)  
     p.create_dataset('temp', data=temp_g)
+    p.create_dataset('temp_so', data=temp_so)
     p.create_dataset('pressure', data=pressure)
+    p.create_dataset('pressure_so', data=pressure_so)
         
     p.create_dataset('tcc', data=tcc)
     p.create_dataset('tclw', data=tclw)
@@ -415,17 +415,6 @@ with h5py.File('07.2006_04.2011_mri_esm2.h5', 'w') as p:
     p.create_dataset('iw_t_so', data=iw_t_so)
     p.create_dataset('iw_frac_t', data=iw_frac_t)
     p.create_dataset('iw_frac_t_so', data=iw_frac_t_so)
-    
+ 
  
     p.close()
-
-
-
-end = time.time()
-print('Averaging data and creating combined arrays took:', end - start, 's')
-
-
-"""
-fig, ax1 = plt.subplots()
-ax1.plot(lat,tcc, '-r', label='Total Cloud Fraction')
-"""

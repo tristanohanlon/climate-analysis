@@ -19,7 +19,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-
+"""
 # Uni Laptop
 #ECMWF-ERA5 Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
@@ -78,7 +78,7 @@ f = h5py.File('07.2006_04.2011_calipso.h5', 'r')
 #CERES Data
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('07.2006_04.2011_ceres.h5', 'r')
-"""
+
 """
 # Laptop
 #ECMWF Data
@@ -207,6 +207,7 @@ ecmwf_tciw_frac_temp_so = np.vstack((ecmwf_tciw_temp_so[:,0], ecmwf_tciw_frac_te
 #---CCCM Global Latitude Data---#
 
 cccm_tcc_lat_g = c['tcc'][:] # 0-1
+cccm_tcc_lat_g_enhanced  = c['tcc_enhanced'][:] # 0-1
 cccm_tclw_lat_g = c['tclw'][:] #kgm^-2
 cccm_tciw_lat_g = c['tciw'][:] #kgm^-2
 
@@ -225,6 +226,8 @@ cccm_tciw_lat_so = cccm_tciw_lat_so[cccm_tciw_lat_so[:,0]<=-50] #kgm^-2
 
 cccm_tclw_frac_lat_g = c['tclw_frac'][:]
 cccm_tciw_frac_lat_g = c['tciw_frac'][:]
+cccm_tclw_frac_lat_g_enhanced = c['tclw_frac_enhanced'][:]
+cccm_tciw_frac_lat_g_enhanced = c['tclw_frac_enhanced'][:]
 
 #---CCCM Global Profile---#
 
@@ -602,7 +605,7 @@ print('Importing data took:', end - start, 's')
 
 """
 
-os.chdir('E:/University/University/MSc/Models/Images/Meeting 1.7')
+os.chdir('E:/University/University/MSc/Models/Images')
 
 os.chdir('C:/Users/toha006/University/University/MSc/Models/Images/Meeting 1.7/07.2006 - 04.2011')
 """
@@ -683,7 +686,7 @@ plt.show()
 """
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tcc_lat_g[:,0],cccm_tcc_lat_g[:,1], '-r', label='CCCM')
+ax.plot(cccm_tcc_lat_g_enhanced[:,0],cccm_tcc_lat_g_enhanced[:,1], '-r', label='CCCM')
 ax.plot(calipso_tcc_lat_g[:,0],calipso_tcc_lat_g[:,1], '-b', label='CAPLISO')
 ax.plot(ceres_tcc_lat_g[:,0],ceres_tcc_lat_g[:,1], '--r', label='CERES')
 
@@ -710,7 +713,7 @@ plt.show()
 """
 fig, ax = plt.subplots()
 
-ax.plot(cccm_tclw_frac_lat_g[:,0],cccm_tclw_frac_lat_g[:,1], ':r', label='CCCM')
+ax.plot(cccm_tclw_frac_lat_g_enhanced[:,0],cccm_tclw_frac_lat_g_enhanced[:,1], ':r', label='CCCM')
 ax.plot(calipso_tclw_frac_lat_g[:,0],calipso_tclw_frac_lat_g[:,1], ':b', label='CALIPSO')
 ax.plot(ecmwf_tclw_frac_lat_g[:,0],ecmwf_tclw_frac_lat_g[:,1], ':k', label='ECMWF-ERA5')
 ax.plot(gfdl4_tclw_frac_lat_g[:,0],gfdl4_tclw_frac_lat_g[:,1], ':g', label='CMIP6-GFDL-AM4-AMIP')
