@@ -84,7 +84,7 @@ p_so = np.array(p_so / 100) #hPa
 
 
 ###############################################################################
-
+"""
 #---convert pressure levels to altitude---#
 
 #https://www.mide.com/pages/air-pressure-at-altitude-calculator
@@ -121,12 +121,12 @@ sys.exit(0)
 alt = alt_t
 
 """
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/reduced_datasets/backup_reduced_datasets')
+os.chdir('//Synthesis/E/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/reduced_datasets/backup_reduced_datasets')
 b = h5py.File('07.2006_04.2011_cesm2_cam6.h5', 'r')
 
 alt = b['alt'][:]
 b.close()
-"""
+
 
 #interpolate southern ocean altitudes
 
@@ -289,11 +289,9 @@ iw_so = np.vstack((alt_so, iw_so)).T
 
 #----------------------------#
 
-lwc = np.mean(lw_so , axis = -1)
-lwc = np.mean(lwc , axis = -1)
+lwc = lw_so[:,1]
 
-iwc = np.mean(iw_so , axis = -1)
-iwc = np.mean(iwc , axis = -1)
+iwc = iw_so[:,1]
 
 lw_frac = (lwc/(lwc+iwc))
 iw_frac = (iwc/(lwc+iwc))
@@ -333,7 +331,7 @@ ax1.plot(lw_frac_t[:,0],lw_frac_t[:,1], '-b', label='G')
 
 
 
-os.chdir('E:/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/reduced_datasets') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/climate-analysis/CESM2-CAM6-AMIP/reduced_datasets') #Home PC
 with h5py.File('07.2006_04.2011_cesm2_cam6.h5', 'w') as p:
     
     p.create_dataset('alt', data=alt)

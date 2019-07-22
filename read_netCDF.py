@@ -13,8 +13,8 @@ import matplotlib.cm as cm
 
 # Specify nc file
 #dataset = Dataset('E:/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6/f.e21.FHIST_BGC.f09_f09_mg17.CMIP6-AMIP.001.cam.h0.CLOUD.195001-201412.nc', 'r') #Home PC
-#dataset = Dataset('D:/MSc/Models/Data/CALIPSO-GOCCP/3D_CloudFraction_Phase330m_200606-201803_avg_CFMIP2_sat_3.1.2.nc', 'r') #ext HDD
-dataset = Dataset('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6/ta_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc', 'r') #Laptop
+#dataset = Dataset('D:/MSc/Models/Data/CMIP5/ipsl_cm5a_lr_amip/cl_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc', 'r') #ext HDD
+dataset = Dataset('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/ipsl_cm6a_lr_amip/cl_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc', 'r') #Laptop
 #dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/CMIP5/gfdl_cm3_rcp4.5/cl_Amon_GFDL-CM3_rcp45_r1i1p1_200601-201012.nc', 'r') #Uni Laptop
 
 print (dataset.variables)

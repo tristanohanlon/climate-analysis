@@ -57,14 +57,14 @@ with h5py.File('2006_raw_cccm85_enhanced_lwc.h5', 'w') as p:
 ###############################################################################  Load raw lwc
 
 """    
-os.chdir('e:/University/University/MSc/Models/climate-analysis/CCCM/')  # Home PC
+os.chdir('D:/Downloads/CCCM/raw_data')  # Home PC
 f = h5py.File('2006_cccm85_enhanced_lwc.h5', 'r')
 
 cccm85_enhanced_lwc = f['cccm85_enhanced_lwc'][:]
 f.close()
 
-os.chdir('e:/University/University/MSc/Models/climate-analysis/CCCM/')  # Home PC
-f = h5py.File('2006_lat.h5', 'r')
+os.chdir('e:/University/University/MSc/Models/climate-analysis/CCCM/reduced_datasets')  # Home PC
+f = h5py.File('07.2006_04.2011_cccm.h5', 'r')
 
 lat = f['lat'][:]
 f.close()

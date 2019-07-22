@@ -22,8 +22,8 @@ from scipy import interpolate
 
 #---get latitude and cf---#
 #os.chdir('E:/University/University/MSc/Models/Data/CMIP6/gfdl_am4') #Home PC
-#os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/gfdl_am4/') #Home PC
-os.chdir('D:/MSc/Models/Data/CMIP6/gfdl_am4/') #Home PC
+os.chdir('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/gfdl_am4/') #Home PC
+#os.chdir('D:/MSc/Models/Data/CMIP6/gfdl_am4/') #Home PC
 
 f = Dataset('clt_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r') # 420 months
 tcc = np.array(f.variables['clt'][324:348])
@@ -79,7 +79,7 @@ p_so = np.array(p_so / 100) #hPa
 
 
 ###############################################################################
-
+""""
 #---convert pressure levels to altitude---#
 
 #https://www.mide.com/pages/air-pressure-at-altitude-calculator
@@ -116,12 +116,12 @@ sys.exit(0)
 alt = alt_t
 
 """
-os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets/backup_reduced_datasets')
+os.chdir('c:/Users/tristan/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets/backup_reduced_datasets')
 b = h5py.File('2007_2008_gfdl_am4.h5', 'r')
 
 alt = b['alt'][:]
 b.close()
-"""
+
 
 #interpolate southern ocean altitudes
 
@@ -134,8 +134,8 @@ alt_so = f(p_so)
 #---get lw---#
 
 #os.chdir('E:/University/University/MSc/Models/Data/CMIP6/mri_esm2/amip/tclw') #Home PC
-#os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/gfdl_am4') #Home PC
-os.chdir('D:/MSc/Models/Data/CMIP6/gfdl_am4') #HDD
+os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP6/gfdl_am4') #Home PC
+#os.chdir('D:/MSc/Models/Data/CMIP6/gfdl_am4') #HDD
 
 f = Dataset('clw_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc', 'r') # 120 months
 lw = np.array(f.variables['clw'][324:348])
@@ -291,11 +291,9 @@ iw_so = np.vstack((alt_so, iw_so)).T
 
 #----------------------------#
 
-lwc = np.mean(lw_so , axis = -1)
-lwc = np.mean(lwc , axis = -1)
+lwc = lw_so[:,1]
 
-iwc = np.mean(iw_so , axis = -1)
-iwc = np.mean(iwc , axis = -1)
+iwc = iw_so[:,1]
 
 lw_frac = (lwc/(lwc+iwc))
 iw_frac = (iwc/(lwc+iwc))
@@ -334,7 +332,7 @@ ax1.plot(lw_frac_t[:,0],lw_frac_t[:,1], '-b', label='G')
 
 
 
-os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets')
+os.chdir('c:/Users/tristan/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets')
 with h5py.File('2007_2008_gfdl_am4.h5', 'w') as p:
     
     p.create_dataset('alt', data=alt)

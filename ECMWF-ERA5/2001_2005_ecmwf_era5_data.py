@@ -36,401 +36,141 @@ lat = np.array(dataset.variables['latitude'][:]) #Extract latitude data
 tcc = np.mean(np.mean(np.array(dataset.variables['tcc'][252:312]), axis = 0), axis = -1) #Extract total cloud cover, keyed to time, lon and lat
 tciw = np.mean(np.mean(np.array(dataset.variables['tciw'][252:312]), axis = 0), axis = -1) #Extract ice water path (kg/m^2), keyed to time, lon and lat
 tclw = np.mean(np.mean(np.array(dataset.variables['tclw'][252:312]), axis = 0), axis = -1) #Extract liquid water path (kg/m^2), keyed to time, lon and lat
+dataset.close()
 
 ############################################################################### 2001
 
+# Uni Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2001_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
 dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2001_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
 
 p = np.array(dataset.variables['level'][:]) * 100 #Extract pressure (millibars) level data (37 levels)
-a_cf = np.mean(np.mean(np.array(dataset.variables['cc'][:]), axis = 0), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-a_iw = np.mean(np.mean(np.array( dataset.variables['ciwc'][:]), axis = 0), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-a_lw = np.mean(np.mean(np.array(dataset.variables['clwc'][:]), axis = 0), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-a_temp = np.mean(np.mean(np.array(dataset.variables['t'][:]), axis = 0), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+a_cf = np.mean(np.array(dataset.variables['cc'][:]), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
+a_iw = np.mean(np.array(dataset.variables['ciwc'][:]), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+a_lw = np.mean(np.array(dataset.variables['clwc'][:]), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+a_temp = np.mean(np.array(dataset.variables['t'][:]), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset.close()
 
-a_cf_alt_lat = a_cf
-a_iw_alt_lat = a_iw
-a_lw_alt_lat = a_lw
-a_temp_alt_lat = a_temp
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-a_cf_so = np.vstack((lat, a_cf)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-a_cf_so = a_cf_so[a_cf_so[:,0]>=-70]
-a_cf_so = a_cf_so[a_cf_so[:,0]<=-50]
-
-#Split the combined array into just the cf data, eliminating the first coloumn of latitude
-a_cf_so = a_cf_so[:,1:38]
-
-a_cf = np.mean(a_cf, axis=-1) #Average fraction of cloud cover over latitude
-a_cf_so = np.mean(a_cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
-
-
-#---------------iw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-a_iw_so = np.vstack((lat, a_iw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-a_iw_so = a_iw_so[a_iw_so[:,0]>=-70]
-a_iw_so = a_iw_so[a_iw_so[:,0]<=-50]
-
-#Split the combined array into just the iw data, eliminating the first coloumn of latitude
-a_iw_so = a_iw_so[:,1:38]
-
-a_iw = np.mean(a_iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
-a_iw_so = np.mean(a_iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
-
-
-#---------------lw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-a_lw_so = np.vstack((lat, a_lw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-a_lw_so = a_lw_so[a_lw_so[:,0]>=-70]
-a_lw_so = a_lw_so[a_lw_so[:,0]<=-50]
-
-#Split the combined array into just the lw data, eliminating the first coloumn of latitude
-a_lw_so = a_lw_so[:,1:38]
-
-a_lw = np.mean(a_lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
-a_lw_so = np.mean(a_lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
-
-
-#---------------temperature-------------#
-
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-a_temp_so = np.vstack((lat, a_temp)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-a_temp_so = a_temp_so[a_temp_so[:,0]>=-70]
-a_temp_so = a_temp_so[a_temp_so[:,0]<=-50]
-
-#Split the combined array into just the temp data, eliminating the first coloumn of latitude
-a_temp_so = a_temp_so[:,1:38]
-
-a_temp = np.mean(a_temp, axis=-1) #Average air temperature over latitude
-a_temp_so = np.mean(a_temp_so, axis=0)  #Average southern ocean air temperature over latitude
 
 ############################################################################### 2002
 
+# Uni Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2002_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
 dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2002_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
-
-b_cf = np.mean(np.mean(np.array(dataset.variables['cc'][:]), axis = 0), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-b_iw = np.mean(np.mean(np.array( dataset.variables['ciwc'][:]), axis = 0), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-b_lw = np.mean(np.mean(np.array(dataset.variables['clwc'][:]), axis = 0), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-b_temp = np.mean(np.mean(np.array(dataset.variables['t'][:]), axis = 0), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-
-b_cf_alt_lat = b_cf
-b_iw_alt_lat = b_iw
-b_lw_alt_lat = b_lw
-b_temp_alt_lat = b_temp
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-b_cf_so = np.vstack((lat, b_cf)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-b_cf_so = b_cf_so[b_cf_so[:,0]>=-70]
-b_cf_so = b_cf_so[b_cf_so[:,0]<=-50]
-
-#Split the combined array into just the cf data, eliminating the first coloumn of latitude
-b_cf_so = b_cf_so[:,1:38]
-
-b_cf = np.mean(b_cf, axis=-1) #Average fraction of cloud cover over latitude
-b_cf_so = np.mean(b_cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
-
-
-#---------------iw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-b_iw_so = np.vstack((lat, b_iw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-b_iw_so = b_iw_so[b_iw_so[:,0]>=-70]
-b_iw_so = b_iw_so[b_iw_so[:,0]<=-50]
-
-#Split the combined array into just the iw data, eliminating the first coloumn of latitude
-b_iw_so = b_iw_so[:,1:38]
-
-b_iw = np.mean(b_iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
-b_iw_so = np.mean(b_iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
-
-
-#---------------lw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-b_lw_so = np.vstack((lat, b_lw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-b_lw_so = b_lw_so[b_lw_so[:,0]>=-70]
-b_lw_so = b_lw_so[b_lw_so[:,0]<=-50]
-
-#Split the combined array into just the lw data, eliminating the first coloumn of latitude
-b_lw_so = b_lw_so[:,1:38]
-
-b_lw = np.mean(b_lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
-b_lw_so = np.mean(b_lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
-
-
-#---------------temperature-------------#
-
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-b_temp_so = np.vstack((lat, b_temp)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-b_temp_so = b_temp_so[b_temp_so[:,0]>=-70]
-b_temp_so = b_temp_so[b_temp_so[:,0]<=-50]
-
-#Split the combined array into just the temp data, eliminating the first coloumn of latitude
-b_temp_so = b_temp_so[:,1:38]
-
-b_temp = np.mean(b_temp, axis=-1) #Average air temperature over latitude
-b_temp_so = np.mean(b_temp_so, axis=0)  #Average southern ocean air temperature over latitude
+b_cf = np.mean(np.array(dataset.variables['cc'][:]), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
+b_iw = np.mean(np.array(dataset.variables['ciwc'][:]), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+b_lw = np.mean(np.array(dataset.variables['clwc'][:]), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+b_temp = np.mean(np.array(dataset.variables['t'][:]), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset.close()
 
 ############################################################################### 2003
 
+# Uni Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2003_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
 dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2003_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
+c_cf = np.mean(np.array(dataset.variables['cc'][:]), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
+c_iw = np.mean(np.array(dataset.variables['ciwc'][:]), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+c_lw = np.mean(np.array(dataset.variables['clwc'][:]), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+c_temp = np.mean(np.array(dataset.variables['t'][:]), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset.close()
 
-c_cf = np.mean(np.mean(np.array(dataset.variables['cc'][:]), axis = 0), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-c_iw = np.mean(np.mean(np.array( dataset.variables['ciwc'][:]), axis = 0), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-c_lw = np.mean(np.mean(np.array(dataset.variables['clwc'][:]), axis = 0), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-c_temp = np.mean(np.mean(np.array(dataset.variables['t'][:]), axis = 0), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-
-c_cf_alt_lat = c_cf
-c_iw_alt_lat = c_iw
-c_lw_alt_lat = c_lw
-c_temp_alt_lat = c_temp
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-c_cf_so = np.vstack((lat, c_cf)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-c_cf_so = c_cf_so[c_cf_so[:,0]>=-70]
-c_cf_so = c_cf_so[c_cf_so[:,0]<=-50]
-
-#Split the combined array into just the cf data, eliminating the first coloumn of latitude
-c_cf_so = c_cf_so[:,1:38]
-
-c_cf = np.mean(c_cf, axis=-1) #Average fraction of cloud cover over latitude
-c_cf_so = np.mean(c_cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
-
-
-#---------------iw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-c_iw_so = np.vstack((lat, c_iw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-c_iw_so = c_iw_so[c_iw_so[:,0]>=-70]
-c_iw_so = c_iw_so[c_iw_so[:,0]<=-50]
-
-#Split the combined array into just the iw data, eliminating the first coloumn of latitude
-c_iw_so = c_iw_so[:,1:38]
-
-c_iw = np.mean(c_iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
-c_iw_so = np.mean(c_iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
-
-
-#---------------lw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-c_lw_so = np.vstack((lat, c_lw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-c_lw_so = c_lw_so[c_lw_so[:,0]>=-70]
-c_lw_so = c_lw_so[c_lw_so[:,0]<=-50]
-
-#Split the combined array into just the lw data, eliminating the first coloumn of latitude
-c_lw_so = c_lw_so[:,1:38]
-
-c_lw = np.mean(c_lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
-c_lw_so = np.mean(c_lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
-
-
-#---------------temperature-------------#
-
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-c_temp_so = np.vstack((lat, c_temp)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-c_temp_so = c_temp_so[c_temp_so[:,0]>=-70]
-c_temp_so = c_temp_so[c_temp_so[:,0]<=-50]
-
-#Split the combined array into just the temp data, eliminating the first coloumn of latitude
-c_temp_so = c_temp_so[:,1:38]
-
-c_temp = np.mean(c_temp, axis=-1) #Average air temperature over latitude
-c_temp_so = np.mean(c_temp_so, axis=0)  #Average southern ocean air temperature over latitude
 
 
 ############################################################################### 2004
 
+# Uni Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2004_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
 dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2004_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
-
-d_cf = np.mean(np.mean(np.array(dataset.variables['cc'][:]), axis = 0), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-d_iw = np.mean(np.mean(np.array( dataset.variables['ciwc'][:]), axis = 0), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-d_lw = np.mean(np.mean(np.array(dataset.variables['clwc'][:]), axis = 0), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-d_temp = np.mean(np.mean(np.array(dataset.variables['t'][:]), axis = 0), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-
-d_cf_alt_lat = d_cf
-d_iw_alt_lat = d_iw
-d_lw_alt_lat = d_lw
-d_temp_alt_lat = d_temp
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-d_cf_so = np.vstack((lat, d_cf)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-d_cf_so = d_cf_so[d_cf_so[:,0]>=-70]
-d_cf_so = d_cf_so[d_cf_so[:,0]<=-50]
-
-#Split the combined array into just the cf data, eliminating the first coloumn of latitude
-d_cf_so = d_cf_so[:,1:38]
-
-d_cf = np.mean(d_cf, axis=-1) #Average fraction of cloud cover over latitude
-d_cf_so = np.mean(d_cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
-
-
-#---------------iw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-d_iw_so = np.vstack((lat, d_iw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-d_iw_so = d_iw_so[d_iw_so[:,0]>=-70]
-d_iw_so = d_iw_so[d_iw_so[:,0]<=-50]
-
-#Split the combined array into just the iw data, eliminating the first coloumn of latitude
-d_iw_so = d_iw_so[:,1:38]
-
-d_iw = np.mean(d_iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
-d_iw_so = np.mean(d_iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
-
-
-#---------------lw-------------#
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-d_lw_so = np.vstack((lat, d_lw)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-d_lw_so = d_lw_so[d_lw_so[:,0]>=-70]
-d_lw_so = d_lw_so[d_lw_so[:,0]<=-50]
-
-#Split the combined array into just the lw data, eliminating the first coloumn of latitude
-d_lw_so = d_lw_so[:,1:38]
-
-d_lw = np.mean(d_lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
-d_lw_so = np.mean(d_lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
-
-
-#---------------temperature-------------#
-
-
-#Southern Ocean
-#Join the two lists as if they were two columns side by side, into a list of two elements each
-d_temp_so = np.vstack((lat, d_temp)).T #creates a (721,38) array
-
-#Select latitudes over the southern ocean
-d_temp_so = d_temp_so[d_temp_so[:,0]>=-70]
-d_temp_so = d_temp_so[d_temp_so[:,0]<=-50]
-
-#Split the combined array into just the temp data, eliminating the first coloumn of latitude
-d_temp_so = d_temp_so[:,1:38]
-
-d_temp = np.mean(d_temp, axis=-1) #Average air temperature over latitude
-d_temp_so = np.mean(d_temp_so, axis=0)  #Average southern ocean air temperature over latitude
-
+d_cf = np.mean(np.array(dataset.variables['cc'][:]), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
+d_iw = np.mean(np.array(dataset.variables['ciwc'][:]), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+d_lw = np.mean(np.array(dataset.variables['clwc'][:]), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+d_temp = np.mean(np.array(dataset.variables['t'][:]), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset.close()
 
 ############################################################################### 2005
 
+# Uni Laptop
+#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2005_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 # Home PC
 dataset = Dataset('E:/University/University/MSc/Models/Data/ECMWF-ERA5/pressure_levels/2005_ECMWF_amon_plevels_T_cc_clw_ciw.nc', 'r')
 
+e_cf = np.mean(np.array(dataset.variables['cc'][:]), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
+e_iw = np.mean(np.array(dataset.variables['ciwc'][:]), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+e_lw = np.mean(np.array(dataset.variables['clwc'][:]), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+e_temp = np.mean(np.array(dataset.variables['t'][:]), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
+dataset.close()
 
-e_cf = np.mean(np.mean(np.array(dataset.variables['cc'][:]), axis = 0), axis = -1) #Extract fraction of cloud cover, keyed to time, lat and lon (12, 37, 721, 1440)
-e_iw = np.mean(np.mean(np.array( dataset.variables['ciwc'][:]), axis = 0), axis = -1) #Extract specific cloud ice water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-e_lw = np.mean(np.mean(np.array(dataset.variables['clwc'][:]), axis = 0), axis = -1) #Extract specific cloud liquid water content (kg/kg), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
-e_temp = np.mean(np.mean(np.array(dataset.variables['t'][:]), axis = 0), axis = -1) #Extract air temperature profile content (K), keyed to time, pressure level, lat and lon (12, 37, 721, 1440)
 
-e_cf_alt_lat = e_cf
-e_iw_alt_lat = e_iw
-e_lw_alt_lat = e_lw
-e_temp_alt_lat = e_temp
+############################################################################### Combine and average over time and longitude
+
+cf = np.mean(np.concatenate((a_cf, b_cf, c_cf, d_cf, e_cf)), axis = 0)
+iw = np.mean(np.concatenate((a_iw, b_iw, c_iw, d_iw, e_iw)), axis = 0)
+lw = np.mean(np.concatenate((a_lw, b_lw, c_lw, d_lw, e_lw)), axis = 0)
+temp = np.mean(np.concatenate((a_temp, b_temp, c_temp, d_temp, e_temp)), axis = 0)
+
+
+############################################################################### Create datasets
+
+cf_alt_lat = cf
+iw_alt_lat = iw
+lw_alt_lat = lw
+temp_alt_lat = temp
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-e_cf_so = np.vstack((lat, e_cf)).T #creates a (721,38) array
+cf_so = np.vstack((lat, cf)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-e_cf_so = e_cf_so[e_cf_so[:,0]>=-70]
-e_cf_so = e_cf_so[e_cf_so[:,0]<=-50]
+cf_so = cf_so[cf_so[:,0]>=-70]
+cf_so = cf_so[cf_so[:,0]<=-50]
 
 #Split the combined array into just the cf data, eliminating the first coloumn of latitude
-e_cf_so = e_cf_so[:,1:38]
+cf_so = cf_so[:,1:38]
 
-e_cf = np.mean(e_cf, axis=-1) #Average fraction of cloud cover over latitude
-e_cf_so = np.mean(e_cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
+cf = np.mean(cf, axis=-1) #Average fraction of cloud cover over latitude
+cf_so = np.mean(cf_so, axis=0) #Average southern ocean fraction of cloud cover over latitude
 
 
 #---------------iw-------------#
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-e_iw_so = np.vstack((lat, e_iw)).T #creates a (721,38) array
+iw_so = np.vstack((lat, iw)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-e_iw_so = e_iw_so[e_iw_so[:,0]>=-70]
-e_iw_so = e_iw_so[e_iw_so[:,0]<=-50]
+iw_so = iw_so[iw_so[:,0]>=-70]
+iw_so = iw_so[iw_so[:,0]<=-50]
 
 #Split the combined array into just the iw data, eliminating the first coloumn of latitude
-e_iw_so = e_iw_so[:,1:38]
+iw_so = iw_so[:,1:38]
 
-e_iw = np.mean(e_iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
-e_iw_so = np.mean(e_iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
+iw = np.mean(iw, axis=-1) #Average specific cloud ice water content (kg/kg) over latitude
+iw_so = np.mean(iw_so, axis=0) #Average southern ocean specific cloud ice water content (kg/kg) over latitude
 
 
 #---------------lw-------------#
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-e_lw_so = np.vstack((lat, e_lw)).T #creates a (721,38) array
+lw_so = np.vstack((lat, lw)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-e_lw_so = e_lw_so[e_lw_so[:,0]>=-70]
-e_lw_so = e_lw_so[e_lw_so[:,0]<=-50]
+lw_so = lw_so[lw_so[:,0]>=-70]
+lw_so = lw_so[lw_so[:,0]<=-50]
 
 #Split the combined array into just the lw data, eliminating the first coloumn of latitude
-e_lw_so = e_lw_so[:,1:38]
+lw_so = lw_so[:,1:38]
 
-e_lw = np.mean(e_lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
-e_lw_so = np.mean(e_lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
+lw = np.mean(lw, axis=-1) #Average specific cloud liquid water content (kg/kg) over latitude
+lw_so = np.mean(lw_so, axis=0) #Average southern ocean specific cloud liquid water content (kg/kg) over latitude
 
 
 #---------------temperature-------------#
@@ -438,21 +178,30 @@ e_lw_so = np.mean(e_lw_so, axis=0) #Average southern ocean specific cloud liquid
 
 #Southern Ocean
 #Join the two lists as if they were two columns side by side, into a list of two elements each
-e_temp_so = np.vstack((lat, e_temp)).T #creates a (721,38) array
+temp_so = np.vstack((lat, temp)).T #creates a (721,38) array
 
 #Select latitudes over the southern ocean
-e_temp_so = e_temp_so[e_temp_so[:,0]>=-70]
-e_temp_so = e_temp_so[e_temp_so[:,0]<=-50]
+temp_so = temp_so[temp_so[:,0]>=-70]
+temp_so = temp_so[temp_so[:,0]<=-50]
 
 #Split the combined array into just the temp data, eliminating the first coloumn of latitude
-e_temp_so = e_temp_so[:,1:38]
+temp_so = temp_so[:,1:38]
 
-e_temp = np.mean(e_temp, axis=-1) #Average air temperature over latitude
-e_temp_so = np.mean(e_temp_so, axis=0)  #Average southern ocean air temperature over latitude
+temp_g = np.mean(temp, axis=-1) #Average air temperature over latitude
+temp_so = np.mean(temp_so, axis=0)  #Average southern ocean air temperature over latitude
 
 
 #################################################################################
+
 """
+#os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets/backup_reduced_datasets')
+os.chdir('E:/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets/backup_reduced_datasets')
+b = h5py.File('2001_2005_ecmwf_era5.h5', 'r')
+
+alt = b['alt'][:]
+b.close()
+"""
+
 #---------------altitude-------------#
 
 alt_t = np.empty((p.size,1),dtype=float)
@@ -485,82 +234,7 @@ for item in p:
 sys.exit(0)
 #manually adjust alt and alt_so arrays usinf alt_p and alt_ts
 alt = alt_t
-"""
-#################################################################################
 
-#---reduce each dataset---#
-
-############################################################################### cf
-
-combined = a_cf + b_cf + c_cf + d_cf + e_cf
-
-cf = combined / 5
-
-############################################################################### cf_so
-
-combined = a_cf_so + b_cf_so + c_cf_so + d_cf_so + e_cf_so
-
-cf_so = combined / 5
-
-############################################################################### lw
-
-combined = a_lw + b_lw + c_lw + d_lw + e_lw
-
-lw = combined / 5
-
-############################################################################### lw_so
-
-combined = a_lw_so + b_lw_so + c_lw_so + d_lw_so + e_lw_so
-
-lw_so = combined / 5
-
-############################################################################### iw
-
-combined = a_iw + b_iw + c_iw + d_iw + e_iw
-
-iw = combined / 5
-
-############################################################################### iw_so
-
-combined = a_iw_so + b_iw_so + c_iw_so + d_iw_so + e_iw_so
-
-iw_so = combined / 5
-
-############################################################################### temp
-
-combined = a_temp + b_temp + c_temp + d_temp + e_temp
-
-temp_g = combined / 5
-
-############################################################################### temp_so
-
-combined = a_temp_so + b_temp_so + c_temp_so + d_temp_so + e_temp_so
-
-temp_so = combined / 5
-
-############################################################################### cf_alt_lat
-
-combined = a_cf_alt_lat + b_cf_alt_lat + c_cf_alt_lat + d_cf_alt_lat + e_cf_alt_lat
-
-cf_alt_lat = combined / 5
-
-############################################################################### lw_alt_lat
-
-combined = a_lw_alt_lat + b_lw_alt_lat + c_lw_alt_lat + d_lw_alt_lat + e_lw_alt_lat
-
-lw_alt_lat = combined / 5
-
-############################################################################### iw_alt_lat
-
-combined = a_iw_alt_lat + b_iw_alt_lat + c_iw_alt_lat + d_iw_alt_lat + e_iw_alt_lat
-
-iw_alt_lat = combined / 5
-
-############################################################################### temp_alt_lat
-
-combined = a_temp_alt_lat + b_temp_alt_lat + c_temp_alt_lat + d_temp_alt_lat + e_temp_alt_lat
-
-temp_alt_lat = combined / 5
 
 ###############################################################################
 ###############################################################################

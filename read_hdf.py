@@ -14,8 +14,8 @@ import os
 # Specify hdf file
 #f = SD.SD('C:/Users/tristan/University/University/MSc/Models/Data/CCCM/Test/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905906.20100104.hdf') #laptop
 #f = SD.SD('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2006/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20060731.hdf') #Uni laptop
-f = SD.SD('D:/Downloads/CCCM/2008/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20080101.hdf') #Home PC
-#f = SD.SD('D:/MSc/Models/Data/CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf') #ext HDD
+#f = SD.SD('D:/Downloads/CCCM/2008/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20080202.hdf') #Home PC
+f = SD.SD('D:/MSc/Models/Data/CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf') #ext HDD
 
 
 #view datasets
@@ -23,7 +23,7 @@ datasets_dic = f.datasets()
 for idx,sds in enumerate(datasets_dic.keys()):
     print (idx,sds)
     
-sds_obj = f.select('Cloud area enhanced') # select sds
+sds_obj = f.select('Cloud layer top level height') # select sds
 
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions

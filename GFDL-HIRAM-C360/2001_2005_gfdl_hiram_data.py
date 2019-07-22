@@ -20,12 +20,23 @@ from scipy import integrate
 from scipy import interpolate
 
 
+#os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-HIRAM-C360/reduced_datasets/backup_reduced_datasets')
+os.chdir('E:/University/University/MSc/Models/climate-analysis/GFDL-HIRAM-C360/reduced_datasets/backup_reduced_datasets')
+b = h5py.File('2001_2005_gfdl_hiram.h5', 'r')
+
+alt = b['alt'][:]
+b.close()
+
+
+
 os.chdir('//synthesis/e/University/University/MSc/Models/Data/CMIP5/gfdl_hiram_c360') #Home PC
 #os.chdir('D:/MSc/Models/Data/CMIP6/cesm2.1_cam6') #ext HDD
 
 f = Dataset('clt_Amon_GFDL-HIRAM-C360_amip_r1i1p1_199901-200312.nc', 'r')
 #get latitude
 lat = np.array(f.variables['lat'][:])
+
+
 #get total cloud cover keyed to latitude
 tcc1 = np.array(f.variables['clt'][24:])
 f.close()
@@ -142,7 +153,7 @@ temp_so = f(p_so)
 
 
 ###############################################################################
-
+"""
 #---convert pressure levels to altitude---#
 
 #https://www.mide.com/pages/air-pressure-at-altitude-calculator
@@ -179,13 +190,7 @@ sys.exit(0)
 alt = alt_t
 
 """
-#os.chdir('c:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-HIRAM-C360/reduced_datasets/backup_reduced_datasets')
-os.chdir('E:/University/University/MSc/Models/climate-analysis/GFDL-HIRAM-C360/reduced_datasets/backup_reduced_datasets')
-b = h5py.File('2001_2005_gfdl_hiram.h5', 'r')
 
-alt = b['alt'][:]
-b.close()
-"""
 
 #interpolate southern ocean altitudes
 
@@ -300,11 +305,9 @@ iw_so = np.vstack((alt_so, iw_so)).T
 
 #----------------------------#
 
-lwc = np.mean(lw_so , axis = -1)
-lwc = np.mean(lwc , axis = -1)
+lwc = lw_so[:,1]
 
-iwc = np.mean(iw_so , axis = -1)
-iwc = np.mean(iwc , axis = -1)
+iwc = iw_so[:,1]
 
 lw_frac = (lwc/(lwc+iwc))
 iw_frac = (iwc/(lwc+iwc))
