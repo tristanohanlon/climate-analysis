@@ -19,7 +19,7 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-"""
+
 # Uni Laptop
 #ECMWF-ERA5 Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
@@ -128,7 +128,7 @@ n = h5py.File('2001_2005_miroc5.h5', 'r')
 os.chdir('E:/University/University/MSc/Models/climate-analysis/MIROC6-AMIP/reduced_datasets')
 o = h5py.File('2001_2005_miroc6.h5', 'r')
 
-
+"""
 """
 # Laptop
 #ECMWF Data
@@ -1256,11 +1256,11 @@ end = time.time()
 print('Importing data took:', end - start, 's')
 
 
-"""
+
 
 os.chdir('c:/Users/toha006/University/University/MSc/Models/Images/')
-"""
-os.chdir('E:/University/University/MSc/Models/Images/Meeting 17.7 - 12 models')
+
+#os.chdir('E:/University/University/MSc/Models/Images/Meeting 17.7 - 12 models')
 
 ############################################################################### Temperature Profiles
 
@@ -1454,8 +1454,8 @@ ax2.plot(miroc6_tcc_lat_g[:,0],miroc6_tcc_lat_g[:,1], '-y', label='CMIP6-MIROC6-
 ax2.plot(ipsl6_tcc_lat_g[:,0],ipsl6_tcc_lat_g[:,1], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
 ax2.plot(giss6_tcc_lat_g[:,0],giss6_tcc_lat_g[:,1], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
-ax2.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
+ax1.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
+ax2.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
 
 ax1.set_ylabel('Cloud Fraction')
 ax2.set_ylabel('Cloud Fraction')
@@ -1478,25 +1478,25 @@ fig, (ax1, ax2) = plt.subplots(2, sharex=True, sharey=True,figsize=(5, 6))
 ax1.plot(gfdl_hiram_tclw_frac_lat_g[:,0],gfdl_hiram_tclw_frac_lat_g[:,1], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_lat_g[:,0],mri_cgcm_tclw_frac_lat_g[:,1], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 ax1.plot(cam5_tclw_frac_lat_g[:,0],cam5_tclw_frac_lat_g[:,1], '-c', label='CMIP5-CESM1-CAM5-AMIP')
-ax1.plot(miroc5_tclw_lat_g[:,0],miroc5_tclw_lat_g[:,1], '-y', label='CMIP5-MIROC5-AMIP')
-ax1.plot(ipsl5_tclw_lat_g[:,0],ipsl5_tclw_lat_g[:,1], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
-ax1.plot(giss5_tclw_lat_g[:,0],giss5_tclw_lat_g[:,1], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
+ax1.plot(miroc5_tclw_frac_lat_g[:,0],miroc5_tclw_frac_lat_g[:,1], '-y', label='CMIP5-MIROC5-AMIP')
+ax1.plot(ipsl5_tclw_frac_lat_g[:,0],ipsl5_tclw_frac_lat_g[:,1], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
+ax1.plot(giss5_tclw_frac_lat_g[:,0],giss5_tclw_frac_lat_g[:,1], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
 
 ax2.plot(gfdl4_tclw_frac_lat_g[:,0],gfdl4_tclw_frac_lat_g[:,1], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_lat_g[:,0],mri_tclw_frac_lat_g[:,1], '-m', label='CMIP6-MRI_ESM2-AMIP')
 ax2.plot(cam6_tclw_frac_lat_g[:,0],cam6_tclw_frac_lat_g[:,1], '-c', label='CMIP6-CESM2-CAM6-AMIP')
-ax2.plot(miroc6_tclw_lat_g[:,0],miroc6_tclw_lat_g[:,1], '-y', label='CMIP6-MIROC6-AMIP')
-ax2.plot(ipsl6_tclw_lat_g[:,0],ipsl6_tclw_lat_g[:,1], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
-ax2.plot(giss6_tclw_lat_g[:,0],giss6_tclw_lat_g[:,1], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+ax2.plot(miroc6_tclw_frac_lat_g[:,0],miroc6_tclw_frac_lat_g[:,1], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tclw_frac_lat_g[:,0],ipsl6_tclw_frac_lat_g[:,1], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tclw_frac_lat_g[:,0],giss6_tclw_frac_lat_g[:,1], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
-ax2.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
+ax1.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
+ax2.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
 
 ax2.set_xlabel('Latitude')
 ax1.set_ylabel('Cloud Liquid Water Fraction')
 ax2.set_ylabel('Cloud Liquid Water Fraction')
 
-ax1.set_title('2001 to 2005 Global Liquid Fractions of Clouds vs Latitude')
+#ax1.set_title('2001 to 2005 Global Liquid Fractions of Clouds vs Latitude')
 
 ax1.grid(True)
 ax2.grid(True)
@@ -1543,20 +1543,20 @@ ax1.plot(ecmwf_tcc_alt_g[9:,1],ecmwf_tcc_alt_g[9:,0], '-k', label='ECMWF-ERA5')
 ax1.plot(gfdl_hiram_tcc_alt_g[:23,1],gfdl_hiram_tcc_alt_g[:23,0], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tcc_alt_g[:25,1],mri_cgcm_tcc_alt_g[:25,0], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 ax1.plot(cam5_tcc_alt_g[:16,1],cam5_tcc_alt_g[:16,0], '-c', label='CMIP5-CESM1-CAM5-AMIP')
-ax1.plot(miroc5_tcc_alt_g[:,1],miroc5_tcc_alt_g[:,0], '-y', label='CMIP5-MIROC5-AMIP')
-ax1.plot(ipsl5_tcc_alt_g[:,1],ipsl5_tcc_alt_g[:,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
-ax1.plot(giss5_tcc_alt_g[:,1],giss5_tcc_alt_g[:,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
+ax1.plot(miroc5_tcc_alt_g[:27,1],miroc5_tcc_alt_g[:27,0], '-y', label='CMIP5-MIROC5-AMIP')
+ax1.plot(ipsl5_tcc_alt_g[:20,1],ipsl5_tcc_alt_g[:20,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
+ax1.plot(giss5_tcc_alt_g[:24,1],giss5_tcc_alt_g[:24,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
 
 ax2.plot(ecmwf_tcc_alt_g[9:,1],ecmwf_tcc_alt_g[9:,0], '-k', label='ECMWF-ERA5')
 ax2.plot(gfdl4_tcc_alt_g[:23,1],gfdl4_tcc_alt_g[:23,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tcc_alt_g[:42,1],mri_tcc_alt_g[:42,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tcc_alt_g[10:,1],cam6_tcc_alt_g[10:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
-ax2.plot(miroc6_tcc_alt_g[:,1],miroc6_tcc_alt_g[:,0], '-y', label='CMIP6-MIROC6-AMIP')
-ax2.plot(ipsl6_tcc_alt_g[:,1],ipsl6_tcc_alt_g[:,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
-ax2.plot(giss6_tcc_alt_g[:,1],giss6_tcc_alt_g[:,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+ax2.plot(miroc6_tcc_alt_g[:31,1],miroc6_tcc_alt_g[:31,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tcc_alt_g[:47,1],ipsl6_tcc_alt_g[:47,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tcc_alt_g[:24,1],giss6_tcc_alt_g[:24,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.2));
-ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.2));
+ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.3));
+ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.3));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Fraction')
@@ -1587,20 +1587,20 @@ ax1.plot(ecmwf_tclw_frac_alt_g[18:,1],ecmwf_tclw_frac_alt_g[18:,0], '-k', label=
 ax1.plot(gfdl_hiram_tclw_frac_alt_g[:18,1],gfdl_hiram_tclw_frac_alt_g[:18,0], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_alt_g[:19,1],mri_cgcm_tclw_frac_alt_g[:19,0], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 ax1.plot(cam5_tclw_frac_alt_g[:13,1],cam5_tclw_frac_alt_g[:13,0], '-c', label='CMIP5-CESM1-CAM5-AMIP')
-ax1.plot(miroc5_tclw_frac_alt_g[:,1],miroc5_tclw_frac_alt_g[:,0], '-y', label='CMIP5-MIROC5-AMIP')
-ax1.plot(ipsl5_tclw_frac_alt_g[:,1],ipsl5_tclw_frac_alt_g[:,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
-ax1.plot(giss5_tclw_frac_alt_g[:,1],giss5_tclw_frac_alt_g[:,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
+ax1.plot(miroc5_tclw_frac_alt_g[:20,1],miroc5_tclw_frac_alt_g[:20,0], '-y', label='CMIP5-MIROC5-AMIP')
+ax1.plot(ipsl5_tclw_frac_alt_g[:15,1],ipsl5_tclw_frac_alt_g[:15,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
+ax1.plot(giss5_tclw_frac_alt_g[:15,1],giss5_tclw_frac_alt_g[:15,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
 
 ax2.plot(ecmwf_tclw_frac_alt_g[18:,1],ecmwf_tclw_frac_alt_g[18:,0], '-k', label='ECMWF-ERA5')
 ax2.plot(gfdl4_tclw_frac_alt_g[:19,1],gfdl4_tclw_frac_alt_g[:19,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_alt_g[:26,1],mri_tclw_frac_alt_g[:26,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tclw_frac_alt_g[17:,1],cam6_tclw_frac_alt_g[17:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
-ax2.plot(miroc6_tclw_frac_alt_g[:,1],miroc6_tclw_frac_alt_g[:,0], '-y', label='CMIP6-MIROC6-AMIP')
-ax2.plot(ipsl6_tclw_frac_alt_g[:,1],ipsl6_tclw_frac_alt_g[:,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
-ax2.plot(giss6_tclw_frac_alt_g[:,1],giss6_tclw_frac_alt_g[:,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+ax2.plot(miroc6_tclw_frac_alt_g[:21,1],miroc6_tclw_frac_alt_g[:21,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tclw_frac_alt_g[:30,1],ipsl6_tclw_frac_alt_g[:30,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tclw_frac_alt_g[:17,1],giss6_tclw_frac_alt_g[:17,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.2));
-ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.2));
+ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.3));
+ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.3));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Liquid Water Fraction')
@@ -1611,8 +1611,8 @@ ax2.set_xlabel('Cloud Liquid Water Fraction')
 ax1.set_xlim(0, 0.35)
 ax2.set_xlim(0, 0.35)
 
-ax1.text(-0.1, 9, 'a)')
-ax2.text(-0.05, 9, 'b)')
+ax1.text(-0.1, 9.5, 'a)')
+ax2.text(-0.05, 9.5, 'b)')
 ax1.grid(True)
 ax2.grid(True)
 plt.savefig("2001_2005_tclw_frac_alt_g.svg", format="svg", bbox_inches='tight')
@@ -1674,20 +1674,20 @@ ax1.plot(ecmwf_tcc_alt_so[13:,1],ecmwf_tcc_alt_so[13:,0], '-k', label='ECMWF-ERA
 ax1.plot(gfdl_hiram_tcc_alt_so[:23,1],gfdl_hiram_tcc_alt_so[:23,0], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tcc_alt_so[:25,1],mri_cgcm_tcc_alt_so[:25,0], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 ax1.plot(cam5_tcc_alt_so[:16,1],cam5_tcc_alt_so[:16,0], '-c', label='CMIP5-CESM1-CAM5-AMIP')
-ax1.plot(miroc5_tcc_alt_so[:,1],miroc5_tcc_alt_so[:,0], '-y', label='CMIP5-MIROC5-AMIP')
-ax1.plot(ipsl5_tcc_alt_so[:,1],ipsl5_tcc_alt_so[:,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
-ax1.plot(giss5_tcc_alt_so[:,1],giss5_tcc_alt_so[:,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
+ax1.plot(miroc5_tcc_alt_so[:27,1],miroc5_tcc_alt_so[:27,0], '-y', label='CMIP5-MIROC5-AMIP')
+ax1.plot(ipsl5_tcc_alt_so[:20,1],ipsl5_tcc_alt_so[:20,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
+ax1.plot(giss5_tcc_alt_so[:24,1],giss5_tcc_alt_so[:24,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
 
 ax2.plot(ecmwf_tcc_alt_so[9:,1],ecmwf_tcc_alt_so[9:,0], '-k', label='ECMWF-ERA5')
 ax2.plot(gfdl4_tcc_alt_so[:23,1],gfdl4_tcc_alt_so[:23,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tcc_alt_so[:42,1],mri_tcc_alt_so[:42,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tcc_alt_so[10:,1],cam6_tcc_alt_so[10:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
-ax2.plot(miroc6_tcc_alt_so[:,1],miroc6_tcc_alt_so[:,0], '-y', label='CMIP6-MIROC6-AMIP')
-ax2.plot(ipsl6_tcc_alt_so[:,1],ipsl6_tcc_alt_so[:,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
-ax2.plot(giss6_tcc_alt_so[:,1],giss6_tcc_alt_so[:,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+ax2.plot(miroc6_tcc_alt_so[:31,1],miroc6_tcc_alt_so[:31,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tcc_alt_so[:47,1],ipsl6_tcc_alt_so[:47,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tcc_alt_so[:24,1],giss6_tcc_alt_so[:24,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.2));
-ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.2));
+ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.3));
+ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.3));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Fraction')
@@ -1718,20 +1718,20 @@ ax1.plot(ecmwf_tclw_frac_alt_so[18:,1],ecmwf_tclw_frac_alt_so[18:,0], '-k', labe
 ax1.plot(gfdl_hiram_tclw_frac_alt_so[:18,1],gfdl_hiram_tclw_frac_alt_so[:18,0], '-g', label='CMIP5-GFDL-HIRAM-AMIP')
 ax1.plot(mri_cgcm_tclw_frac_alt_so[:19,1],mri_cgcm_tclw_frac_alt_so[:19,0], '-m', label='CMIP5-MRI_CGCM3-AMIP')
 ax1.plot(cam5_tclw_frac_alt_so[:13,1],cam5_tclw_frac_alt_so[:13,0], '-c', label='CMIP5-CESM1-CAM5-AMIP')
-ax1.plot(miroc5_tclw_frac_alt_so[:,1],miroc5_tclw_frac_alt_so[:,0], '-y', label='CMIP5-MIROC5-AMIP')
-ax1.plot(ipsl5_tclw_frac_alt_so[:,1],ipsl5_tclw_frac_alt_so[:,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
-ax1.plot(giss5_tclw_frac_alt_so[:,1],giss5_tclw_frac_alt_so[:,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
+ax1.plot(miroc5_tclw_frac_alt_so[:20,1],miroc5_tclw_frac_alt_so[:20,0], '-y', label='CMIP5-MIROC5-AMIP')
+ax1.plot(ipsl5_tclw_frac_alt_so[:15,1],ipsl5_tclw_frac_alt_so[:15,0], '--m', label='CMIP5-IPSL-CM5A-LR-AMIP')
+ax1.plot(giss5_tclw_frac_alt_so[:15,1],giss5_tclw_frac_alt_so[:15,0], '--g', label='CMIP5-NASA-GISS-E2R-AMIP')
 
 ax2.plot(ecmwf_tclw_frac_alt_so[18:,1],ecmwf_tclw_frac_alt_so[18:,0], '-k', label='ECMWF-ERA5')
 ax2.plot(gfdl4_tclw_frac_alt_so[:19,1],gfdl4_tclw_frac_alt_so[:19,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_alt_so[:26,1],mri_tclw_frac_alt_so[:26,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tclw_frac_alt_so[17:,1],cam6_tclw_frac_alt_so[17:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
-ax2.plot(miroc6_tclw_frac_alt_so[:,1],miroc6_tclw_frac_alt_so[:,0], '-y', label='CMIP6-MIROC6-AMIP')
-ax2.plot(ipsl6_tclw_frac_alt_so[:,1],ipsl6_tclw_frac_alt_so[:,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
-ax2.plot(giss6_tclw_frac_alt_so[:,1],giss6_tclw_frac_alt_so[:,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+ax2.plot(miroc6_tclw_frac_alt_so[:21,1],miroc6_tclw_frac_alt_so[:21,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tclw_frac_alt_so[:30,1],ipsl6_tclw_frac_alt_so[:30,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tclw_frac_alt_so[:17,1],giss6_tclw_frac_alt_so[:17,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.2));
-ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.2));
+ax1.legend(loc='center', bbox_to_anchor=(0.3, -0.3));
+ax2.legend(loc='center', bbox_to_anchor=(0.7, -0.3));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Liquid Water Fraction')
@@ -1739,11 +1739,11 @@ ax2.set_xlabel('Cloud Liquid Water Fraction')
 
 #ax1.set_title('2001 to 2005 Southern Ocean Cloud Liquid Water Fraction vs Altitude')
 
-ax1.set_xlim(0, 0.35)
-ax2.set_xlim(0, 0.35)
+ax1.set_xlim(0, 0.6)
+ax2.set_xlim(0, 0.6)
 
-ax1.text(-0.10, 9, 'a)')
-ax2.text(-0.05, 9, 'b)')
+ax1.text(-0.10, 9.5, 'a)')
+ax2.text(-0.07, 9.5, 'b)')
 
 ax1.grid(True)
 ax2.grid(True)
@@ -1796,8 +1796,8 @@ plt.show()
 ############################################################################### Contour plots
 
 #---Combined Grid tclw_frac---#
-
-fig, ax = plt.subplots(nrows=6, ncols=3, figsize=(10, 10))
+"""
+fig, ax = plt.subplots(nrows=6, ncols=3, figsize=(10, 20))
 
 ax[0, 2].contourf(ecmwf_lat, ecmwf_alt[19:], ecmwf_tclw_frac_alt_lat[19:], vmin=0, vmax=0.4)
 ax[0, 2].set_xlabel('Latitude')
@@ -1837,7 +1837,7 @@ mri_temp.collections[5].set_linewidth(2)
 mri_temp.collections[5].set_color('white')
 ax[1, 1].clabel(mri_temp, inline=1, fontsize=10)
 
-ax[2, 0].contourf(cam5_lat, cam5_alt[:13], cam5_tclw_frac_alt_lat[:13], vmin=0, vmax=0.4)
+ax[2, 0].contourf(cam5_lat, cam5_alt[:12], cam5_tclw_frac_alt_lat[:12], vmin=0, vmax=0.4)
 ax[2, 0].set_title('f) CMIP5-CESM1-CAM5')
 ax[2, 0].set_ylabel('Altitude (km)')
 cam5_temp = ax[2, 0].contour(cam5_lat, cam5_alt_temp[1:7], (cam5_temp_alt_lat[1:7] - 273.15), colors='grey')
@@ -1845,14 +1845,14 @@ cam5_temp.collections[6].set_linewidth(2)
 cam5_temp.collections[6].set_color('white')
 ax[2, 0].clabel(cam5_temp, inline=1, fontsize=10)
 
-ax[2, 1].contourf(cam6_lat, cam6_alt[17:32], cam6_tclw_frac_alt_lat[17:32], vmin=0, vmax=0.4)
+ax[2, 1].contourf(cam6_lat, cam6_alt[18:32], cam6_tclw_frac_alt_lat[18:32], vmin=0, vmax=0.4)
 ax[2, 1].set_title('g) CMIP6-CESM2.1-CAM6')
-cam6_temp = ax[2, 1].contour(cam6_lat, cam6_alt[17:32], (cam6_temp_alt_lat[17:32] - 273.15), colors='grey')
+cam6_temp = ax[2, 1].contour(cam6_lat, cam6_alt[18:32], (cam6_temp_alt_lat[18:32] - 273.15), colors='grey')
 cam6_temp.collections[5].set_linewidth(2)
 cam6_temp.collections[5].set_color('white')
 ax[2, 1].clabel(cam6_temp, cam6_temp.levels[:5:], inline=1, fontsize=10)
 
-ax[3, 0].contourf(miroc5_lat, miroc5_alt[:13], miroc5_tclw_frac_alt_lat[:13], vmin=0, vmax=0.4)
+ax[3, 0].contourf(miroc5_lat, miroc5_alt[1:19], miroc5_tclw_frac_alt_lat[1:19], vmin=0, vmax=0.4)
 ax[3, 0].set_title('h) CMIP5-MIROC5')
 ax[3, 0].set_ylabel('Altitude (km)')
 miroc5_temp = ax[3, 0].contour(miroc5_lat, miroc5_alt_temp[1:7], (miroc5_temp_alt_lat[1:7] - 273.15), colors='grey')
@@ -1860,14 +1860,14 @@ miroc5_temp.collections[6].set_linewidth(2)
 miroc5_temp.collections[6].set_color('white')
 ax[3, 0].clabel(miroc5_temp, inline=1, fontsize=10)
 
-ax[3, 1].contourf(miroc6_lat, miroc6_alt[17:32], miroc6_tclw_frac_alt_lat[17:32], vmin=0, vmax=0.4)
+ax[3, 1].contourf(miroc6_lat, miroc6_alt[1:19], miroc6_tclw_frac_alt_lat[1:19], vmin=0, vmax=0.4)
 ax[3, 1].set_title('i) CMIP6-MIROC6')
-miroc6_temp = ax[3, 1].contour(miroc6_lat, miroc6_alt[17:32], (miroc6_temp_alt_lat[17:32] - 273.15), colors='grey')
+miroc6_temp = ax[3, 1].contour(miroc6_lat, miroc6_alt_temp[1:7], (miroc6_temp_alt_lat[1:7] - 273.15), colors='grey')
 miroc6_temp.collections[5].set_linewidth(2)
 miroc6_temp.collections[5].set_color('white')
-ax[3, 1].clabel(miroc6_temp, miroc6_temp.levels[:5:], inline=1, fontsize=10)
+ax[3, 1].clabel(miroc6_temp, inline=1, fontsize=10)
 
-ax[4, 0].contourf(giss5_lat, giss5_alt[:13], giss5_tclw_frac_alt_lat[:13], vmin=0, vmax=0.4)
+ax[4, 0].contourf(giss5_lat, giss5_alt[:16], giss5_tclw_frac_alt_lat[:16], vmin=0, vmax=0.4)
 ax[4, 0].set_title('j) CMIP5-GISS-E2R')
 ax[4, 0].set_ylabel('Altitude (km)')
 giss5_temp = ax[4, 0].contour(giss5_lat, giss5_alt_temp[1:7], (giss5_temp_alt_lat[1:7] - 273.15), colors='grey')
@@ -1875,14 +1875,14 @@ giss5_temp.collections[6].set_linewidth(2)
 giss5_temp.collections[6].set_color('white')
 ax[4, 0].clabel(giss5_temp, inline=1, fontsize=10)
 
-ax[4, 1].contourf(giss6_lat, giss6_alt[17:32], giss6_tclw_frac_alt_lat[17:32], vmin=0, vmax=0.4)
+ax[4, 1].contourf(giss6_lat, giss6_alt[:16], giss6_tclw_frac_alt_lat[:16], vmin=0, vmax=0.4)
 ax[4, 1].set_title('k) CMIP6-GISS-E21G')
-giss6_temp = ax[4, 1].contour(giss6_lat, giss6_alt[17:32], (giss6_temp_alt_lat[17:32] - 273.15), colors='grey')
-giss6_temp.collections[5].set_linewidth(2)
-giss6_temp.collections[5].set_color('white')
-ax[4, 1].clabel(giss6_temp, giss6_temp.levels[:5:], inline=1, fontsize=10)
+giss6_temp = ax[4, 1].contour(giss6_lat, giss6_alt_temp[1:7], (giss6_temp_alt_lat[1:7] - 273.15), colors='grey')
+giss6_temp.collections[6].set_linewidth(2)
+giss6_temp.collections[6].set_color('white')
+ax[4, 1].clabel(giss6_temp, inline=1, fontsize=10)
 
-ax[5, 0].contourf(ipsl5_lat, ipsl5_alt[:13], ipsl5_tclw_frac_alt_lat[:13], vmin=0, vmax=0.4)
+ax[5, 0].contourf(ipsl5_lat, ipsl5_alt[:14], ipsl5_tclw_frac_alt_lat[:14], vmin=0, vmax=0.4)
 ax[5, 0].set_title('l) CMIP5-IPSL-CM5A-LR')
 ax[5, 0].set_ylabel('Altitude (km)')
 ax[5, 0].set_xlabel('Latitude')
@@ -1891,13 +1891,13 @@ ipsl5_temp.collections[6].set_linewidth(2)
 ipsl5_temp.collections[6].set_color('white')
 ax[5, 0].clabel(ipsl5_temp, inline=1, fontsize=10)
 
-ax[5, 1].contourf(ipsl6_lat, ipsl6_alt[17:32], ipsl6_tclw_frac_alt_lat[17:32], vmin=0, vmax=0.4)
+ax[5, 1].contourf(ipsl6_lat, ipsl6_alt[:36], ipsl6_tclw_frac_alt_lat[:36], vmin=0, vmax=0.4)
 ax[5, 1].set_title('m) CMIP6-IPSL-CM6A-LR')
 ax[5, 1].set_xlabel('Latitude')
-ipsl6_temp = ax[5, 1].contour(ipsl6_lat, ipsl6_alt[17:32], (ipsl6_temp_alt_lat[17:32] - 273.15), colors='grey')
-ipsl6_temp.collections[5].set_linewidth(2)
-ipsl6_temp.collections[5].set_color('white')
-ax[5, 1].clabel(ipsl6_temp, ipsl6_temp.levels[:5:], inline=1, fontsize=10)
+ipsl6_temp = ax[5, 1].contour(ipsl6_lat, ipsl6_alt_temp[1:7], (ipsl6_temp_alt_lat[1:7] - 273.15), colors='grey')
+ipsl6_temp.collections[6].set_linewidth(2)
+ipsl6_temp.collections[6].set_color('white')
+ax[5, 1].clabel(ipsl6_temp, inline=1, fontsize=10)
 
 
 
@@ -1917,13 +1917,13 @@ cbar.set_label('Cloud Liquid Water Fraction')
 plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
 plt.savefig("2001_2005_contour_tclw.svg", format="svg", bbox_inches='tight')
 plt.show()
-
+"""
 
 
 #---Combined Grid tciw_frac---#
 """
 
-fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+fig, ax = plt.subplots(nrows=6, ncols=3, figsize=(10, 20))
 
 cont=ax[0, 2].contourf(ecmwf_lat, ecmwf_alt[9:], ecmwf_tciw_frac_alt_lat[9:], vmin=0, vmax=0.5)
 ax[0, 2].set_xlabel('Latitude')
@@ -1981,8 +1981,60 @@ cam6_temp.collections[6].set_color('white')
 ax[2, 1].clabel(cam6_temp, inline=1, fontsize=10)
 
 
+ax[3, 0].contourf(miroc5_lat, miroc5_alt[1:32], miroc5_tciw_frac_alt_lat[1:32], vmin=0, vmax=0.5)
+ax[3, 0].set_title('h) CMIP5-MIROC5')
+ax[3, 0].set_ylabel('Altitude (km)')
+miroc5_temp = ax[3, 0].contour(miroc5_lat, miroc5_alt_temp[1:13], (miroc5_temp_alt_lat[1:13] - 273.15), colors='grey')
+miroc5_temp.collections[6].set_linewidth(2)
+miroc5_temp.collections[6].set_color('white')
+ax[3, 0].clabel(miroc5_temp, inline=1, fontsize=10)
+
+ax[3, 1].contourf(miroc6_lat, miroc6_alt[1:37], miroc6_tciw_frac_alt_lat[1:37], vmin=0, vmax=0.5)
+ax[3, 1].set_title('i) CMIP6-MIROC6')
+miroc6_temp = ax[3, 1].contour(miroc6_lat, miroc6_alt_temp[1:13], (miroc6_temp_alt_lat[1:13] - 273.15), colors='grey')
+miroc6_temp.collections[5].set_linewidth(2)
+miroc6_temp.collections[5].set_color('white')
+ax[3, 1].clabel(miroc6_temp, inline=1, fontsize=10)
+
+ax[4, 0].contourf(giss5_lat, giss5_alt[:28], giss5_tciw_frac_alt_lat[:28], vmin=0, vmax=0.5)
+ax[4, 0].set_title('j) CMIP5-GISS-E2R')
+ax[4, 0].set_ylabel('Altitude (km)')
+giss5_temp = ax[4, 0].contour(giss5_lat, giss5_alt_temp[1:13], (giss5_temp_alt_lat[1:13] - 273.15), colors='grey')
+giss5_temp.collections[6].set_linewidth(2)
+giss5_temp.collections[6].set_color('white')
+ax[4, 0].clabel(giss5_temp, inline=1, fontsize=10)
+
+ax[4, 1].contourf(giss6_lat, giss6_alt[:28], giss6_tciw_frac_alt_lat[:28], vmin=0, vmax=0.5)
+ax[4, 1].set_title('k) CMIP6-GISS-E21G')
+giss6_temp = ax[4, 1].contour(giss6_lat, giss6_alt_temp[1:13], (giss6_temp_alt_lat[1:13] - 273.15), colors='grey')
+giss6_temp.collections[6].set_linewidth(2)
+giss6_temp.collections[6].set_color('white')
+ax[4, 1].clabel(giss6_temp, inline=1, fontsize=10)
+
+ax[5, 0].contourf(ipsl5_lat, ipsl5_alt[:24], ipsl5_tciw_frac_alt_lat[:24], vmin=0, vmax=0.5)
+ax[5, 0].set_title('l) CMIP5-IPSL-CM5A-LR')
+ax[5, 0].set_ylabel('Altitude (km)')
+ax[5, 0].set_xlabel('Latitude')
+ipsl5_temp = ax[5, 0].contour(ipsl5_lat, ipsl5_alt_temp[1:13], (ipsl5_temp_alt_lat[1:13] - 273.15), colors='grey')
+ipsl5_temp.collections[6].set_linewidth(2)
+ipsl5_temp.collections[6].set_color('white')
+ax[5, 0].clabel(ipsl5_temp, inline=1, fontsize=10)
+
+ax[5, 1].contourf(ipsl6_lat, ipsl6_alt[:51], ipsl6_tciw_frac_alt_lat[:51], vmin=0, vmax=0.5)
+ax[5, 1].set_title('m) CMIP6-IPSL-CM6A-LR')
+ax[5, 1].set_xlabel('Latitude')
+ipsl6_temp = ax[5, 1].contour(ipsl6_lat, ipsl6_alt_temp[1:13], (ipsl6_temp_alt_lat[1:13] - 273.15), colors='grey')
+ipsl6_temp.collections[6].set_linewidth(2)
+ipsl6_temp.collections[6].set_color('white')
+ax[5, 1].clabel(ipsl6_temp, inline=1, fontsize=10)
+
+
+
 ax[1, 2].remove()  # don't display empty ax
 ax[2, 2].remove()  # don't display empty ax
+ax[3, 2].remove()  # don't display empty ax
+ax[4, 2].remove()  # don't display empty ax
+ax[5, 2].remove()  # don't display empty ax
 
 cbaxes = fig.add_axes([0.8, 0.2, 0.03, 0.3]) 
 cbar = fig.colorbar(cont, cax=cbaxes)

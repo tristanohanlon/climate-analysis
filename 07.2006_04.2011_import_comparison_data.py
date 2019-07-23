@@ -19,11 +19,11 @@ start = time.time()
 
 
 #---Importing Data from Reduced Datasets---#
-"""
+
 # Uni Laptop
 #ECMWF-ERA5 Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
-a = h5py.File('07.2006_04.2011_ecmwf.h5', 'r')
+a = h5py.File('07.2006_04.2011_ecmwf_era5.h5', 'r')
 
 #GFDL-AM4-AMIP Data
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets')
@@ -49,6 +49,17 @@ f = h5py.File('07.2006_04.2011_calipso.h5', 'r')
 os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('07.2006_04.2011_ceres.h5', 'r')
 
+#GISS-E21G-AMIP Data
+os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/GISS-E21G-AMIP/reduced_datasets')
+k = h5py.File('07.2006_04.2011_giss_e21g.h5', 'r')
+
+#IPSL-CM6A-LR-AMIP Data
+os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/IPSL-CM6A-LR-AMIP/reduced_datasets')
+m = h5py.File('07.2006_04.2011_ipsl_cm6a_lr.h5', 'r')
+
+#MIROC6-AMIP Data
+os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/MIROC6-AMIP/reduced_datasets')
+o = h5py.File('07.2006_04.2011_miroc6.h5', 'r')
 """
 # Home PC
 #ECMWF Data
@@ -79,11 +90,23 @@ f = h5py.File('07.2006_04.2011_calipso.h5', 'r')
 os.chdir('E:/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('07.2006_04.2011_ceres.h5', 'r')
 
+#GISS-E21G-AMIP Data
+os.chdir('E:/University/University/MSc/Models/climate-analysis/GISS-E21G-AMIP/reduced_datasets')
+k = h5py.File('07.2006_04.2011_giss_e21g.h5', 'r')
+
+#IPSL-CM6A-LR-AMIP Data
+os.chdir('E:/University/University/MSc/Models/climate-analysis/IPSL-CM6A-LR-AMIP/reduced_datasets')
+m = h5py.File('07.2006_04.2011_ipsl_cm6a_lr.h5', 'r')
+
+#MIROC6-AMIP Data
+os.chdir('E:/University/University/MSc/Models/climate-analysis/MIROC6-AMIP/reduced_datasets')
+o = h5py.File('07.2006_04.2011_miroc6.h5', 'r')
+"""
 """
 # Laptop
 #ECMWF Data
 os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/ECMWF-ERA5/reduced_datasets')
-a = h5py.File('07.2006_04.2011_ecmwf.h5', 'r')
+a = h5py.File('07.2006_04.2011_ecmwf_era5.h5', 'r')
 
 #GFDL-AM4-AMIP Data
 os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/GFDL-AM4-AMIP/reduced_datasets')
@@ -108,6 +131,18 @@ f = h5py.File('07.2006_04.2011_calipso.h5', 'r')
 #CERES Data
 os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/CERES/reduced_datasets')
 g = h5py.File('07.2006_04.2011_ceres.h5', 'r')
+
+#GISS-E21G-AMIP Data
+os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/GISS-E21G-AMIP/reduced_datasets')
+k = h5py.File('07.2006_04.2011_giss_e21g.h5', 'r')
+
+#IPSL-CM6A-LR-AMIP Data
+os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/IPSL-CM6A-LR-AMIP/reduced_datasets')
+m = h5py.File('07.2006_04.2011_ipsl_cm6a_lr.h5', 'r')
+
+#MIROC6-AMIP Data
+os.chdir('C:/Users/tristan/University/University/MSc/Models/climate-analysis/MIROC6-AMIP/reduced_datasets')
+o = h5py.File('07.2006_04.2011_miroc6.h5', 'r')
 """
 
 ############################################################################### ECMWF Data
@@ -499,6 +534,262 @@ cam6_tclw_frac_temp_so = e['lw_frac_t_so'][:]
 cam6_tciw_frac_temp_so = e['lw_frac_t_so'][:]
 
 
+############################################################################### GISS-E21G-AMIP Data
+
+#---GISS-E21G-AMIP Global Latitude Data---#
+
+giss6_tcc_lat_g = k['tcc'][:] # 0-1
+giss6_tclw_lat_g = k['tclw'][:] #kgm^-2
+giss6_tciw_lat_g = k['tciw'][:] #kgm^-2
+
+
+#---GISS-E21G-AMIP Global Latitude Phase Fractions---#
+
+# 0-1 derived from fraction of mean liquid and ice water content at specific latitude * total cloud fraction at the latitude
+giss6_tclw_frac_lat_g = k['tclw_frac'][:] 
+giss6_tciw_frac_lat_g = k['tciw_frac'][:]
+
+
+
+#---GISS-E21G-AMIP Southern Ocean Latitude Data---#
+
+giss6_tcc_lat_so = giss6_tcc_lat_g[giss6_tcc_lat_g[:,0]>=-70]
+giss6_tcc_lat_so = giss6_tcc_lat_so[giss6_tcc_lat_so[:,0]<=-50] # 0-1
+
+giss6_tclw_lat_so = giss6_tclw_lat_g[giss6_tclw_lat_g[:,0]>=-70]
+giss6_tclw_lat_so = giss6_tclw_lat_so[giss6_tclw_lat_so[:,0]<=-50] #kgm^-2
+
+giss6_tciw_lat_so = giss6_tciw_lat_g[giss6_tciw_lat_g[:,0]>=-70]
+giss6_tciw_lat_so = giss6_tciw_lat_so[giss6_tciw_lat_so[:,0]<=-50] #kgm^-2
+
+
+#---GISS-E21G-AMIP lat-alt contour data---#
+
+giss6_tcc_alt_lat = k['cf_alt_lat'][:] #kg/kg
+giss6_tclw_alt_lat = k['lw_alt_lat'][:] #kg/kg
+giss6_tciw_alt_lat = k['iw_alt_lat'][:] #kg/kg
+giss6_temp_alt_lat = k['temp_alt_lat'][:] #kg/kg
+giss6_lat = k['lat'][:]
+giss6_alt = k['alt'][:]
+giss6_alt_temp = k['alt_temp'][:]
+
+
+giss6_tclw_frac_alt_lat = (giss6_tclw_alt_lat / (giss6_tclw_alt_lat + giss6_tciw_alt_lat)) * giss6_tcc_alt_lat
+giss6_tciw_frac_alt_lat = (giss6_tciw_alt_lat / (giss6_tclw_alt_lat + giss6_tciw_alt_lat)) * giss6_tcc_alt_lat
+
+
+#---GISS-E21G-AMIP Global Profile---#
+
+giss6_tcc_alt_g = k['cf'][:] # 0-1
+giss6_tclw_alt_g = k['lw'][:] #kg/kg
+giss6_tciw_alt_g = k['iw'][:] #kg/kg
+giss6_temp_alt_g = k['temp'][:] #K
+giss6_plevel_alt_g = k['pressure'][:] #hPa
+
+
+giss6_tcc_temp_g = k['cf_t'][:] # 0-1
+giss6_tclw_temp_g = k['lw_t'][:] #kg/kg
+giss6_tciw_temp_g = k['iw_t'][:] #kg/kg
+
+giss6_tclw_frac_temp_g = k['lw_frac_t'][:]
+giss6_tciw_frac_temp_g = k['iw_frac_t'][:]
+
+
+
+#---GISS-E21G-AMIP Phase Profile Fractions---#
+
+giss6_tclw_frac_alt_g = k['lw_frac'][:]
+giss6_tciw_frac_alt_g = k['iw_frac'][:]
+giss6_tclw_frac_alt_so = k['lw_frac_so'][:]
+giss6_tciw_frac_alt_so = k['iw_frac_so'][:]
+
+
+#---GISS-E21G-AMIP Southern Ocean Profile---#
+
+giss6_tcc_alt_so = k['cf_so'][:] # 0-1
+giss6_tclw_alt_so = k['lw_so'][:] #kg/kg
+giss6_tciw_alt_so = k['iw_so'][:] #kg/kg
+
+
+giss6_tcc_temp_so = k['cf_t_so'][:] # 0-1
+giss6_tclw_temp_so = k['lw_t_so'][:] #kg/kg
+giss6_tciw_temp_so = k['iw_t_so'][:] #kg/kg
+
+giss6_tclw_frac_temp_so = k['lw_frac_t_so'][:]
+giss6_tciw_frac_temp_so = k['lw_frac_t_so'][:]
+
+
+############################################################################### IPSL-CM6A-LR-AMIP Data
+
+#---IPSL-CM6A-LR-AMIP Global Latitude Data---#
+
+ipsl6_tcc_lat_g = m['tcc'][:] # 0-1
+ipsl6_tclw_lat_g = m['tclw'][:] #kgm^-2
+ipsl6_tciw_lat_g = m['tciw'][:] #kgm^-2
+
+
+#---IPSL-CM6A-LR-AMIP Global Latitude Phase Fractions---#
+
+# 0-1 derived from fraction of mean liquid and ice water content at specific latitude * total cloud fraction at the latitude
+ipsl6_tclw_frac_lat_g = m['tclw_frac'][:] 
+ipsl6_tciw_frac_lat_g = m['tciw_frac'][:]
+
+
+
+#---IPSL-CM6A-LR-AMIP Southern Ocean Latitude Data---#
+
+ipsl6_tcc_lat_so = ipsl6_tcc_lat_g[ipsl6_tcc_lat_g[:,0]>=-70]
+ipsl6_tcc_lat_so = ipsl6_tcc_lat_so[ipsl6_tcc_lat_so[:,0]<=-50] # 0-1
+
+ipsl6_tclw_lat_so = ipsl6_tclw_lat_g[ipsl6_tclw_lat_g[:,0]>=-70]
+ipsl6_tclw_lat_so = ipsl6_tclw_lat_so[ipsl6_tclw_lat_so[:,0]<=-50] #kgm^-2
+
+ipsl6_tciw_lat_so = ipsl6_tciw_lat_g[ipsl6_tciw_lat_g[:,0]>=-70]
+ipsl6_tciw_lat_so = ipsl6_tciw_lat_so[ipsl6_tciw_lat_so[:,0]<=-50] #kgm^-2
+
+
+#---IPSL-CM6A-LR-AMIP lat-alt contour data---#
+
+ipsl6_tcc_alt_lat = m['cf_alt_lat'][:] #kg/kg
+ipsl6_tclw_alt_lat = m['lw_alt_lat'][:] #kg/kg
+ipsl6_tciw_alt_lat = m['iw_alt_lat'][:] #kg/kg
+ipsl6_temp_alt_lat = m['temp_alt_lat'][:] #kg/kg
+ipsl6_lat = m['lat'][:]
+ipsl6_alt = m['alt'][:]
+ipsl6_alt_temp = m['alt_temp'][:]
+
+
+ipsl6_tclw_frac_alt_lat = (ipsl6_tclw_alt_lat / (ipsl6_tclw_alt_lat + ipsl6_tciw_alt_lat)) * ipsl6_tcc_alt_lat
+ipsl6_tciw_frac_alt_lat = (ipsl6_tciw_alt_lat / (ipsl6_tclw_alt_lat + ipsl6_tciw_alt_lat)) * ipsl6_tcc_alt_lat
+
+
+#---IPSL-CM6A-LR-AMIP Global Profile---#
+
+ipsl6_tcc_alt_g = m['cf'][:] # 0-1
+ipsl6_tclw_alt_g = m['lw'][:] #kg/kg
+ipsl6_tciw_alt_g = m['iw'][:] #kg/kg
+ipsl6_temp_alt_g = m['temp'][:] #K
+ipsl6_plevel_alt_g = m['pressure'][:] #hPa
+
+
+ipsl6_tcc_temp_g = m['cf_t'][:] # 0-1
+ipsl6_tclw_temp_g = m['lw_t'][:] #kg/kg
+ipsl6_tciw_temp_g = m['iw_t'][:] #kg/kg
+
+ipsl6_tclw_frac_temp_g = m['lw_frac_t'][:]
+ipsl6_tciw_frac_temp_g = m['iw_frac_t'][:]
+
+
+
+#---IPSL-CM6A-LR-AMIP Phase Profile Fractions---#
+
+ipsl6_tclw_frac_alt_g = m['lw_frac'][:]
+ipsl6_tciw_frac_alt_g = m['iw_frac'][:]
+ipsl6_tclw_frac_alt_so = m['lw_frac_so'][:]
+ipsl6_tciw_frac_alt_so = m['iw_frac_so'][:]
+
+
+#---IPSL-CM6A-LR-AMIP Southern Ocean Profile---#
+
+ipsl6_tcc_alt_so = m['cf_so'][:] # 0-1
+ipsl6_tclw_alt_so = m['lw_so'][:] #kg/kg
+ipsl6_tciw_alt_so = m['iw_so'][:] #kg/kg
+
+
+ipsl6_tcc_temp_so = m['cf_t_so'][:] # 0-1
+ipsl6_tclw_temp_so = m['lw_t_so'][:] #kg/kg
+ipsl6_tciw_temp_so = m['iw_t_so'][:] #kg/kg
+
+ipsl6_tclw_frac_temp_so = m['lw_frac_t_so'][:]
+ipsl6_tciw_frac_temp_so = m['lw_frac_t_so'][:]
+
+
+############################################################################### MIROC6-AMIP Data
+
+#---MIROC6-AMIP Global Latitude Data---#
+
+miroc6_tcc_lat_g = o['tcc'][:] # 0-1
+miroc6_tclw_lat_g = o['tclw'][:] #kgm^-2
+miroc6_tciw_lat_g = o['tciw'][:] #kgm^-2
+
+
+#---MIROC6-AMIP Global Latitude Phase Fractions---#
+
+# 0-1 derived from fraction of mean liquid and ice water content at specific latitude * total cloud fraction at the latitude
+miroc6_tclw_frac_lat_g = o['tclw_frac'][:] 
+miroc6_tciw_frac_lat_g = o['tciw_frac'][:]
+
+
+
+#---MIROC6-AMIP Southern Ocean Latitude Data---#
+
+miroc6_tcc_lat_so = miroc6_tcc_lat_g[miroc6_tcc_lat_g[:,0]>=-70]
+miroc6_tcc_lat_so = miroc6_tcc_lat_so[miroc6_tcc_lat_so[:,0]<=-50] # 0-1
+
+miroc6_tclw_lat_so = miroc6_tclw_lat_g[miroc6_tclw_lat_g[:,0]>=-70]
+miroc6_tclw_lat_so = miroc6_tclw_lat_so[miroc6_tclw_lat_so[:,0]<=-50] #kgm^-2
+
+miroc6_tciw_lat_so = miroc6_tciw_lat_g[miroc6_tciw_lat_g[:,0]>=-70]
+miroc6_tciw_lat_so = miroc6_tciw_lat_so[miroc6_tciw_lat_so[:,0]<=-50] #kgm^-2
+
+
+#---MIROC6-AMIP lat-alt contour data---#
+
+miroc6_tcc_alt_lat = o['cf_alt_lat'][:] #kg/kg
+miroc6_tclw_alt_lat = o['lw_alt_lat'][:] #kg/kg
+miroc6_tciw_alt_lat = o['iw_alt_lat'][:] #kg/kg
+miroc6_temp_alt_lat = o['temp_alt_lat'][:] #kg/kg
+miroc6_lat = o['lat'][:]
+miroc6_alt = o['alt'][:]
+miroc6_alt_temp = o['alt_temp'][:]
+
+
+miroc6_tclw_frac_alt_lat = (miroc6_tclw_alt_lat / (miroc6_tclw_alt_lat + miroc6_tciw_alt_lat)) * miroc6_tcc_alt_lat
+miroc6_tciw_frac_alt_lat = (miroc6_tciw_alt_lat / (miroc6_tclw_alt_lat + miroc6_tciw_alt_lat)) * miroc6_tcc_alt_lat
+
+
+#---MIROC6-AMIP Global Profile---#
+
+miroc6_tcc_alt_g = o['cf'][:] # 0-1
+miroc6_tclw_alt_g = o['lw'][:] #kg/kg
+miroc6_tciw_alt_g = o['iw'][:] #kg/kg
+miroc6_temp_alt_g = o['temp'][:] #K
+miroc6_plevel_alt_g = o['pressure'][:] #hPa
+
+
+miroc6_tcc_temp_g = o['cf_t'][:] # 0-1
+miroc6_tclw_temp_g = o['lw_t'][:] #kg/kg
+miroc6_tciw_temp_g = o['iw_t'][:] #kg/kg
+
+miroc6_tclw_frac_temp_g = o['lw_frac_t'][:]
+miroc6_tciw_frac_temp_g = o['iw_frac_t'][:]
+
+
+
+#---MIROC6-AMIP Phase Profile Fractions---#
+
+miroc6_tclw_frac_alt_g = o['lw_frac'][:]
+miroc6_tciw_frac_alt_g = o['iw_frac'][:]
+miroc6_tclw_frac_alt_so = o['lw_frac_so'][:]
+miroc6_tciw_frac_alt_so = o['iw_frac_so'][:]
+
+
+#---MIROC6-AMIP Southern Ocean Profile---#
+
+miroc6_tcc_alt_so = o['cf_so'][:] # 0-1
+miroc6_tclw_alt_so = o['lw_so'][:] #kg/kg
+miroc6_tciw_alt_so = o['iw_so'][:] #kg/kg
+
+
+miroc6_tcc_temp_so = o['cf_t_so'][:] # 0-1
+miroc6_tclw_temp_so = o['lw_t_so'][:] #kg/kg
+miroc6_tciw_temp_so = o['iw_t_so'][:] #kg/kg
+
+miroc6_tclw_frac_temp_so = o['lw_frac_t_so'][:]
+miroc6_tciw_frac_temp_so = o['lw_frac_t_so'][:]
+
+
+
 ############################################################################### CALIPSO Data
 
 #---CALIPSO Global Latitude Data---#
@@ -592,10 +883,10 @@ print('Importing data took:', end - start, 's')
 
 
 
-os.chdir('E:/University/University/MSc/Models/Images')
-"""
-os.chdir('C:/Users/toha006/University/University/MSc/Models/Images/Meeting 1.7/07.2006 - 04.2011')
-"""
+#os.chdir('E:/University/University/MSc/Models/Images')
+
+os.chdir('C:/Users/toha006/University/University/MSc/Models/Images/Meeting 25.7')
+
 
 ############################################################################### Temperature Profiles
 
@@ -678,6 +969,9 @@ ax1.plot(ecmwf_tclw_frac_temp_g[18:,0],(ecmwf_tclw_frac_temp_g[18:,1]/ecmwf_tcc_
 ax1.plot(gfdl4_tclw_frac_temp_g[:20,0],(gfdl4_tclw_frac_temp_g[:20,1]/gfdl4_tcc_temp_g[:20,1]), '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax1.plot(mri_tclw_frac_temp_g[:28,0],(mri_tclw_frac_temp_g[:28,1]/mri_tcc_temp_g[:28,1]), '-m', label='CMIP6-MRI_ESM2-AMIP')
 ax1.plot(cam6_tclw_frac_temp_g[16:,0],(cam6_tclw_frac_temp_g[16:,1]/cam6_tcc_temp_g[16:,1]), '-c', label='CMIP6-CESM2-CAM6-AMIP')
+ax1.plot(miroc6_tclw_frac_temp_g[:24,0],(miroc6_tclw_frac_temp_g[:24,1]/miroc6_tcc_temp_g[:24,1]), '-y', label='CMIP6-MIROC6-AMIP')
+ax1.plot(ipsl6_tclw_frac_temp_g[:39,0],(ipsl6_tclw_frac_temp_g[:39,1]/ipsl6_tcc_temp_g[:39,1]), '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax1.plot(giss6_tclw_frac_temp_g[:19,0],(giss6_tclw_frac_temp_g[:19,1]/giss6_tcc_temp_g[:19,1]), '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
 ax2.plot(cccm_tclw_frac_temp_so[2:40,0],(cccm_tclw_frac_temp_so[2:40,1]/cccm_tcc_temp_so[2:40,1]), ':r', label='CCCM')
 ax2.plot(calipso_tclw_frac_temp_so[17:34,0],(calipso_tclw_frac_temp_so[17:34,1]/calipso_tcc_temp_so[17:34,1]), ':b', label='CALIPSO')
@@ -685,11 +979,16 @@ ax2.plot(ecmwf_tclw_frac_temp_so[18:,0],(ecmwf_tclw_frac_temp_so[18:,1]/ecmwf_tc
 ax2.plot(gfdl4_tclw_frac_temp_so[:20,0],(gfdl4_tclw_frac_temp_so[:20,1]/gfdl4_tcc_temp_so[:20,1]), '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_temp_so[:28,0],(mri_tclw_frac_temp_so[:28,1]/mri_tcc_temp_so[:28,1]), '-m', label='CMIP6-MRI_ESM2-AMIP')
 ax2.plot(cam6_tclw_frac_temp_so[16:,0],(cam6_tclw_frac_temp_so[16:,1]/cam6_tcc_temp_so[16:,1]), '-c', label='CMIP6-CESM2-CAM6-AMIP')
+ax2.plot(miroc6_tclw_frac_temp_so[:24,0],(miroc6_tclw_frac_temp_so[:24,1]/miroc6_tcc_temp_so[:24,1]), '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tclw_frac_temp_so[:39,0],(ipsl6_tclw_frac_temp_so[:39,1]/ipsl6_tcc_temp_so[:39,1]), '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tclw_frac_temp_so[:19,0],(giss6_tclw_frac_temp_so[:19,1]/giss6_tcc_temp_so[:19,1]), '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
+
+
 ax1.axvline(x=273, label = '273K', color = 'black', linestyle='--')
 ax2.axvline(x=273, label = '273K', color = 'black', linestyle='--')
 
 ax1.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
-ax2.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
+#ax2.legend(loc='upper center', bbox_to_anchor=(1.4, 1.0));
 
 ax1.set_xlabel('Temperature (K)')
 ax1.set_ylabel('Liquid Cloud Fraction')
@@ -698,8 +997,8 @@ ax2.set_ylabel('Liquid Cloud Fraction')
 
 #ax1.set_title('07.2006 to 04.2011 Liquid Cloud Fraction vs Temperature')
 
-ax1.text(200, 1, 'a)')
-ax2.text(200, 1, 'b)')
+ax1.text(197, 1, 'a)')
+ax2.text(197, 1, 'b)')
 
 ax1.grid(True)
 ax2.grid(True)
@@ -722,13 +1021,16 @@ ax.plot(ecmwf_tcc_lat_g[:,0],ecmwf_tcc_lat_g[:,1], '-k', label='ECMWF-ERA5')
 ax.plot(gfdl4_tcc_lat_g[:,0],gfdl4_tcc_lat_g[:,1], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax.plot(mri_tcc_lat_g[:,0],mri_tcc_lat_g[:,1], '-m', label='CMIP6-MRI_ESM2-AMIP')
 ax.plot(cam6_tcc_lat_g[:,0],cam6_tcc_lat_g[:,1], '-c', label='CMIP6-CESM2-CAM6-AMIP')
+ax.plot(miroc6_tcc_lat_g[:,0],miroc6_tcc_lat_g[:,1], '-y', label='CMIP6-MIROC6-AMIP')
+ax.plot(ipsl6_tcc_lat_g[:,0],ipsl6_tcc_lat_g[:,1], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax.plot(giss6_tcc_lat_g[:,0],giss6_tcc_lat_g[:,1], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
 ax.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
 
 ax.set_xlabel('Latitude')
 ax.set_ylabel('Cloud Fraction')
 
-plt.title('07.2006 to 04.2011 Global Cloud Fraction vs Latitude')
+#plt.title('07.2006 to 04.2011 Global Cloud Fraction vs Latitude')
 
 plt.grid(True)
 plt.savefig("07.2006_04.2011_tcc_lat_g.svg", format="svg", bbox_inches='tight')
@@ -805,6 +1107,9 @@ ax1.plot(ecmwf_tcc_alt_g[9:,1],ecmwf_tcc_alt_g[9:,0], '-k', label='ECMWF-ERA5')
 ax1.plot(gfdl4_tcc_alt_g[:23,1],gfdl4_tcc_alt_g[:23,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax1.plot(mri_tcc_alt_g[:42,1],mri_tcc_alt_g[:42,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax1.plot(cam6_tcc_alt_g[10:,1],cam6_tcc_alt_g[10:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
+ax1.plot(miroc6_tcc_alt_g[:31,1],miroc6_tcc_alt_g[:31,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax1.plot(ipsl6_tcc_alt_g[:47,1],ipsl6_tcc_alt_g[:47,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax1.plot(giss6_tcc_alt_g[:24,1],giss6_tcc_alt_g[:24,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
 ax2.plot(cccm_tcc_alt_so[4:92,1],cccm_tcc_alt_so[4:92,0], ':r', label='CCCM')
 ax2.plot(calipso_tcc_alt_so[:,1],calipso_tcc_alt_so[:,0], ':b', label='CALIPSO')
@@ -812,9 +1117,11 @@ ax2.plot(ecmwf_tcc_alt_so[9:,1],ecmwf_tcc_alt_so[9:,0], '-k', label='ECMWF-ERA5'
 ax2.plot(gfdl4_tcc_alt_so[:23,1],gfdl4_tcc_alt_so[:23,0], '-g', label='CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tcc_alt_so[:39,1],mri_tcc_alt_so[:39,0], '-m', label='CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tcc_alt_so[12:,1],cam6_tcc_alt_so[12:,0], '-c', label='CMIP6-CESM2.1-CAM6-AMIP')
+ax2.plot(miroc6_tcc_alt_so[:31,1],miroc6_tcc_alt_so[:31,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tcc_alt_so[:47,1],ipsl6_tcc_alt_so[:47,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tcc_alt_so[:24,1],giss6_tcc_alt_so[:24,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.2, -0.3));
-ax2.legend(loc='center', bbox_to_anchor=(1, -0.3));
+ax1.legend(loc='center', bbox_to_anchor=(1, -0.325));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Fraction')
@@ -847,6 +1154,9 @@ ax1.plot(ecmwf_tclw_frac_alt_g[20:,1],ecmwf_tclw_frac_alt_g[20:,0], '-k', label=
 ax1.plot(gfdl4_tclw_frac_alt_g[:20,1],gfdl4_tclw_frac_alt_g[:20,0], '-g', label='Global - CMIP6-GFDL-AM4-AMIP')
 ax1.plot(mri_tclw_frac_alt_g[:30,1],mri_tclw_frac_alt_g[:30,0], '-m', label='Global - CMIP6-MRI-ESM2-AMIP')
 ax1.plot(cam6_tclw_frac_alt_g[15:,1],cam6_tclw_frac_alt_g[15:,0], '-c', label='Global - CMIP6-CESM2.1-CAM6-AMIP')
+ax1.plot(miroc6_tclw_frac_alt_g[:21,1],miroc6_tclw_frac_alt_g[:21,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax1.plot(ipsl6_tclw_frac_alt_g[:40,1],ipsl6_tclw_frac_alt_g[:40,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax1.plot(giss6_tclw_frac_alt_g[:17,1],giss6_tclw_frac_alt_g[:17,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
 ax2.plot(cccm_tclw_frac_alt_so[4:50,1],cccm_tclw_frac_alt_so[4:50,0], ':r', label='Southern Ocean - CCCM')
 ax2.plot(calipso_tclw_frac_alt_so[:20,1],calipso_tclw_frac_alt_so[:20,0], ':b', label='Southern Ocean - CALIPSO')
@@ -854,9 +1164,12 @@ ax2.plot(ecmwf_tclw_frac_alt_so[20:,1],ecmwf_tclw_frac_alt_so[20:,0], '-k', labe
 ax2.plot(gfdl4_tclw_frac_alt_so[:22,1],gfdl4_tclw_frac_alt_so[:22,0], '-g', label='Southern Ocean - CMIP6-GFDL-AM4-AMIP')
 ax2.plot(mri_tclw_frac_alt_so[:25,1],mri_tclw_frac_alt_so[:25,0], '-m', label='Southern Ocean - CMIP6-MRI-ESM2-AMIP')
 ax2.plot(cam6_tclw_frac_alt_so[16:,1],cam6_tclw_frac_alt_so[16:,0], '-c', label='Southern Ocean - CMIP6-CESM2.1-CAM6-AMIP')
+ax2.plot(miroc6_tclw_frac_alt_so[:21,1],miroc6_tclw_frac_alt_so[:21,0], '-y', label='CMIP6-MIROC6-AMIP')
+ax2.plot(ipsl6_tclw_frac_alt_so[:40,1],ipsl6_tclw_frac_alt_so[:40,0], '--m', label='CMIP6-IPSL-CM6A-LR-AMIP')
+ax2.plot(giss6_tclw_frac_alt_so[:17,1],giss6_tclw_frac_alt_so[:17,0], '--g', label='CMIP6-NASA-GISS-E21G-AMIP')
 
-ax1.legend(loc='center', bbox_to_anchor=(0.2, -0.3));
-ax2.legend(loc='center', bbox_to_anchor=(1, -0.3));
+ax1.legend(loc='center', bbox_to_anchor=(1, -0.325));
+#ax2.legend(loc='center', bbox_to_anchor=(1, -0.3));
 
 ax1.set_ylabel('Altitude (km)')
 ax1.set_xlabel('Cloud Liquid Water Fraction')
@@ -926,20 +1239,16 @@ plt.show()
 
 #---Combined Grid tclw_frac---#
 """
-fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+fig, ax = plt.subplots(nrows=4, ncols=3, figsize=(10, 12))
 
 ax[0, 1].contourf(ecmwf_lat, ecmwf_alt[19:], ecmwf_tclw_frac_alt_lat[19:], vmin=0, vmax=0.5)
 ax[0, 0].set_ylabel('Altitude (km)')
-ax[0, 1].set_title('c) ECMWF-ERA5')
+ax[0, 1].set_title('b) ECMWF-ERA5')
 ecmwf_temp = ax[0, 1].contour(ecmwf_lat, ecmwf_alt[19:], (ecmwf_temp_alt_lat[19:] - 273.15), colors='grey')
 ecmwf_temp.collections[5].set_linewidth(2)
 ecmwf_temp.collections[5].set_color('white')
 ax[0, 1].clabel(ecmwf_temp, inline=1, fontsize=10)
 
-#ax[0, 0].contourf(cccm_lat, cccm_alt[0:17], cccm_tclw_frac_alt_lat[0:17], vmin=0, vmax=0.6)
-#ax[0, 0].set_title('a) CCCM')
-#cccm_temp = ax[0, 0].contour(cccm_lat, cccm_alt_temp[1:7], (cccm_temp_alt_lat[1:7] - 273.15), colors='grey')
-#ax[0, 0].clabel(cccm_temp, inline=1, fontsize=10)
 
 ax[0, 0].contourf(calipso_lat, calipso_alt[0:16], calipso_tclw_frac_alt_lat[0:16], vmin=0, vmax=0.5)
 ecmwf_temp = ax[0, 0].contour(ecmwf_lat, ecmwf_alt[19:], (ecmwf_temp_alt_lat[19:] - 273.15), colors='grey')
@@ -949,7 +1258,7 @@ ecmwf_temp.collections[5].set_color('white')
 ax[0, 0].clabel(ecmwf_temp, inline=1, fontsize=10)
 
 ax[1, 0].contourf(gfdl4_lat, gfdl4_alt[0:18], gfdl4_tclw_frac_alt_lat[0:18], vmin=0, vmax=0.5)
-ax[1, 0].set_title('e) CMIP6-GFDL-AM4')
+ax[1, 0].set_title('c) CMIP6-GFDL-AM4')
 ax[1, 0].set_ylabel('Altitude (km)')
 gfdl4_temp = ax[1, 0].contour(gfdl4_lat, gfdl4_alt_temp[1:7], (gfdl4_temp_alt_lat[1:7] - 273.15), colors='grey')
 gfdl4_temp.collections[6].set_linewidth(2)
@@ -957,8 +1266,7 @@ gfdl4_temp.collections[6].set_color('white')
 ax[1, 0].clabel(gfdl4_temp, inline=1, fontsize=10)
 
 cont=ax[1, 1].contourf(mri_lat, mri_alt[0:25], mri_tclw_frac_alt_lat[0:25], vmin=0, vmax=0.5)
-ax[1, 1].set_title('g) CMIP6-MRI_ESM2')
-ax[1, 1].set_xlabel('Latitude')
+ax[1, 1].set_title('d) CMIP6-MRI_ESM2')
 mri_temp = ax[1, 1].contour(mri_lat, mri_alt_temp[1:7], (mri_temp_alt_lat[1:7] - 273.15), colors='grey')
 mri_temp.collections[6].set_linewidth(2)
 mri_temp.collections[6].set_color('white')
@@ -966,19 +1274,43 @@ ax[1, 1].clabel(mri_temp, inline=1, fontsize=10)
 
 
 ax[2, 0].contourf(cam6_lat, cam6_alt[18:32], cam6_tclw_frac_alt_lat[18:32], vmin=0, vmax=0.5)
-ax[2, 0].set_title('h) CMIP6-CESM2.1-CAM6')
+ax[2, 0].set_title('e) CMIP6-CESM2.1-CAM6')
 ax[2, 0].set_ylabel('Altitude (km)')
-ax[2, 0].set_xlabel('Latitude')
 cam6_temp = ax[2, 0].contour(cam6_lat, cam6_alt[18:32], (cam6_temp_alt_lat[18:32] - 273.15), colors='grey')
 cam6_temp.collections[5].set_linewidth(2)
 cam6_temp.collections[5].set_color('white')
 ax[2, 0].clabel(cam6_temp, inline=1, fontsize=10)
 
+ax[2, 1].contourf(miroc6_lat, miroc6_alt[1:19], miroc6_tclw_frac_alt_lat[1:19], vmin=0, vmax=0.4)
+ax[2, 1].set_title('f) CMIP6-MIROC6')
+miroc6_temp = ax[2, 1].contour(miroc6_lat, miroc6_alt_temp[1:7], (miroc6_temp_alt_lat[1:7] - 273.15), colors='grey')
+miroc6_temp.collections[5].set_linewidth(2)
+miroc6_temp.collections[5].set_color('white')
+ax[2, 1].clabel(miroc6_temp, inline=1, fontsize=10)
+
+ax[3, 0].contourf(giss6_lat, giss6_alt[:16], giss6_tclw_frac_alt_lat[:16], vmin=0, vmax=0.4)
+ax[3, 0].set_title('g) CMIP6-GISS-E21G')
+ax[3, 0].set_ylabel('Altitude (km)')
+ax[3, 0].set_xlabel('Latitude')
+giss6_temp = ax[3, 0].contour(giss6_lat, giss6_alt_temp[1:7], (giss6_temp_alt_lat[1:7] - 273.15), colors='grey')
+giss6_temp.collections[6].set_linewidth(2)
+giss6_temp.collections[6].set_color('white')
+ax[3, 0].clabel(giss6_temp, inline=1, fontsize=10)
+
+
+ax[3, 1].contourf(ipsl6_lat, ipsl6_alt[:36], ipsl6_tclw_frac_alt_lat[:36], vmin=0, vmax=0.4)
+ax[3, 1].set_title('h) CMIP6-IPSL-CM6A-LR')
+ax[3, 1].set_xlabel('Latitude')
+ipsl6_temp = ax[3, 1].contour(ipsl6_lat, ipsl6_alt_temp[1:7], (ipsl6_temp_alt_lat[1:7] - 273.15), colors='grey')
+ipsl6_temp.collections[6].set_linewidth(2)
+ipsl6_temp.collections[6].set_color('white')
+ax[3, 1].clabel(ipsl6_temp, inline=1, fontsize=10)
+
 
 ax[0, 2].remove()  # don't display empty ax
 ax[1, 2].remove()  # don't display empty ax
 ax[2, 2].remove()  # don't display empty ax
-ax[2, 1].remove()  # don't display empty ax
+ax[3, 2].remove()  # don't display empty ax
 
 cbaxes = fig.add_axes([0.7, 0.5, 0.03, 0.3]) #(x-position, y-position, thickness, length)
 cbar = fig.colorbar(cont, cax=cbaxes)
@@ -991,32 +1323,27 @@ plt.show()
 
 
 #---Combined Grid tciw_frac---#
-
-fig, ax = plt.subplots(nrows=3, ncols=3, figsize=(10, 10))
+"""
+fig, ax = plt.subplots(nrows=4, ncols=3, figsize=(10, 12))
 
 ax[0, 1].contourf(ecmwf_lat, ecmwf_alt[9:], ecmwf_tciw_frac_alt_lat[9:], vmin=0, vmax=0.4)
 ax[0, 1].set_xlabel('Latitude')
 ax[0, 0].set_ylabel('Altitude (km)')
-ax[0, 1].set_title('c) ECMWF-ERA5')
+ax[0, 1].set_title('b) ECMWF-ERA5')
 ecmwf_temp = ax[0, 1].contour(ecmwf_lat, ecmwf_alt[9:], (ecmwf_temp_alt_lat[9:] - 273.15), colors='grey')
 ecmwf_temp.collections[6].set_linewidth(2)
 ecmwf_temp.collections[6].set_color('white')
 ax[0, 1].clabel(ecmwf_temp, inline=1, fontsize=10)
 
-#ax[0, 0].contourf(cccm_lat, cccm_alt[0:17], cccm_tciw_frac_alt_lat[0:17], vmin=0, vmax=0.6)
-#ax[0, 0].set_title('a) CCCM')
-#cccm_temp = ax[0, 0].contour(cccm_lat, cccm_alt_temp[1:7], (cccm_temp_alt_lat[1:7] - 273.15), colors='grey')
-#ax[0, 0].clabel(cccm_temp, inline=1, fontsize=10)
-
 ax[0, 0].contourf(calipso_lat, calipso_alt, calipso_tciw_frac_alt_lat, vmin=0, vmax=0.4)
-ax[0, 0].set_title('b) CALIPSO-GOCCP')
+ax[0, 0].set_title('a) CALIPSO-GOCCP')
 ecmwf_temp = ax[0, 0].contour(ecmwf_lat, ecmwf_alt[19:], (ecmwf_temp_alt_lat[19:] - 273.15), colors='grey')
 ecmwf_temp.collections[5].set_linewidth(2)
 ecmwf_temp.collections[5].set_color('white')
 ax[0, 0].clabel(ecmwf_temp, inline=1, fontsize=10)
 
 ax[1, 0].contourf(gfdl4_lat, gfdl4_alt[:26], gfdl4_tciw_frac_alt_lat[:26], vmin=0, vmax=0.4)
-ax[1, 0].set_title('b) CMIP6-GFDL-AM4')
+ax[1, 0].set_title('c) CMIP6-GFDL-AM4')
 ax[1, 0].set_ylabel('Altitude (km)')
 gfdl4_temp = ax[1, 0].contour(gfdl4_lat, gfdl4_alt_temp[1:13], (gfdl4_temp_alt_lat[1:13] - 273.15), colors='grey')
 gfdl4_temp.collections[6].set_linewidth(2)
@@ -1024,7 +1351,7 @@ gfdl4_temp.collections[6].set_color('white')
 ax[1, 0].clabel(gfdl4_temp, inline=1, fontsize=10)
 
 cont=ax[1, 1].contourf(mri_lat, mri_alt[:44], mri_tciw_frac_alt_lat[:44], vmin=0, vmax=0.4)
-ax[1, 1].set_title('e) CMIP6-MRI_ESM2')
+ax[1, 1].set_title('d) CMIP6-MRI_ESM2')
 ax[1, 1].set_xlabel('Latitude')
 mri_temp = ax[1, 1].contour(mri_lat, mri_alt_temp[1:12], (mri_temp_alt_lat[1:12] - 273.15), colors='grey')
 mri_temp.collections[6].set_linewidth(2)
@@ -1032,7 +1359,7 @@ mri_temp.collections[6].set_color('white')
 ax[1, 1].clabel(mri_temp, inline=1, fontsize=10)
 
 ax[2, 0].contourf(cam6_lat, cam6_alt[7:32], cam6_tciw_frac_alt_lat[7:32], vmin=0, vmax=0.4)
-ax[2, 0].set_title('g) CMIP6-CESM2.1-CAM6')
+ax[2, 0].set_title('e) CMIP6-CESM2.1-CAM6')
 ax[2, 0].set_ylabel('Altitude (km)')
 ax[2, 0].set_xlabel('Latitude')
 cam6_temp = ax[2, 0].contour(cam6_lat, cam6_alt[7:32], (cam6_temp_alt_lat[7:32] - 273.15), colors='grey')
@@ -1040,11 +1367,42 @@ cam6_temp.collections[6].set_linewidth(2)
 cam6_temp.collections[6].set_color('white')
 ax[2, 0].clabel(cam6_temp, inline=1, fontsize=10)
 
+ax[2, 1].contourf(miroc6_lat, miroc6_alt[1:37], miroc6_tciw_frac_alt_lat[1:37], vmin=0, vmax=0.4)
+ax[2, 1].set_title('f) CMIP6-MIROC6')
+miroc6_temp = ax[2, 1].contour(miroc6_lat, miroc6_alt_temp[1:13], (miroc6_temp_alt_lat[1:13] - 273.15), colors='grey')
+miroc6_temp.collections[5].set_linewidth(2)
+miroc6_temp.collections[5].set_color('white')
+ax[2, 1].clabel(miroc6_temp, inline=1, fontsize=10)
+
+ax[3, 0].contourf(giss6_lat, giss6_alt[:28], giss6_tciw_frac_alt_lat[:28], vmin=0, vmax=0.4)
+ax[3, 0].set_title('g) CMIP6-GISS-E21G')
+ax[3, 0].set_ylabel('Altitude (km)')
+ax[3, 0].set_xlabel('Latitude')
+giss6_temp = ax[3, 0].contour(giss6_lat, giss6_alt_temp[1:13], (giss6_temp_alt_lat[1:13] - 273.15), colors='grey')
+giss6_temp.collections[6].set_linewidth(2)
+giss6_temp.collections[6].set_color('white')
+ax[3, 0].clabel(giss6_temp, inline=1, fontsize=10)
+
+
+ax[3, 1].contourf(ipsl6_lat, ipsl6_alt[:51], ipsl6_tciw_frac_alt_lat[:51], vmin=0, vmax=0.4)
+ax[3, 1].set_title('h) CMIP6-IPSL-CM6A-LR')
+ax[3, 1].set_xlabel('Latitude')
+ipsl6_temp = ax[3, 1].contour(ipsl6_lat, ipsl6_alt_temp[1:13], (ipsl6_temp_alt_lat[1:13] - 273.15), colors='grey')
+ipsl6_temp.collections[6].set_linewidth(2)
+ipsl6_temp.collections[6].set_color('white')
+ax[3, 1].clabel(ipsl6_temp, inline=1, fontsize=10)
+
+
+
+
+
+
+
 
 ax[0, 2].remove()  # don't display empty ax
 ax[1, 2].remove()  # don't display empty ax
 ax[2, 2].remove()  # don't display empty ax
-ax[2, 1].remove()  # don't display empty ax
+ax[3, 2].remove()  # don't display empty ax
 
 
 cbaxes = fig.add_axes([0.7, 0.5, 0.03, 0.3]) 
@@ -1054,7 +1412,7 @@ cbar.set_label('Cloud Ice Water Fraction')
 plt.tight_layout(pad=0.4, w_pad=0.6, h_pad=3)
 plt.savefig("07.2006_04.2011_contour_tciw.svg", format="svg", bbox_inches='tight')
 plt.show()
-
+"""
 
 
 
