@@ -3,44 +3,52 @@
 Created on Tue Mar  5 09:26:33 2019
 
 @author: Tristan O'Hanlon
+
+
+CCCM data_types:
+    'Cloud fraction profile',
+    'Liquid water content profile used'
+    'Ice water content profile used'
+    'Temperature profile'
+    
+    'Irradiance layer center height profile'
+    'Layer center height profile (clouds and aerosol)' 
+    'Irradiance level height profile'
+    'Colatitude of subsatellite point at surface at observation'
+    
+MISR data_types:
+    'CorrCloudTopHeightFraction_Avg'
+    
+CERES data_types:
+    'latitude'
+    'cld_eff_hgt_glob'
+    'cld_amount_zon'
+    'cld_amount_glob'
+    'cld_lwp_zon'
+    'cld_iwp_zon'
+
+
 """
 
-import datetime as dt  # Python standard library datetime  module
 import numpy as np
 from pyhdf import SD
 import pprint
-import os
+import constants
 
-# Specify hdf file
-#f = SD.SD('C:/Users/tristan/University/University/MSc/Models/Data/CCCM/Test/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905906.20100104.hdf') #laptop
-#f = SD.SD('C:/Users/toha006/University/University/MSc/Models/Data/CCCM/2006/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20060731.hdf') #Uni laptop
-#f = SD.SD('D:/Downloads/CCCM/2008/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20080202.hdf') #Home PC
-f = SD.SD('D:/MSc/Models/Data/CCCM/2010/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20100201.hdf') #ext HDD
+#specify location and data source - stored in constants
+location = constants.hdd + '/Data/'
+data = 'MISR'
+data_type = 'CorrCloudTopHeightFraction_Avg'
 
+f = SD.SD( location + constants.satellite_dict[ data ])
 
 #view datasets
 datasets_dic = f.datasets()
 for idx,sds in enumerate(datasets_dic.keys()):
     print (idx,sds)
     
-sds_obj = f.select('Cloud layer top level height') # select sds
-
+sds_obj = f.select( data_type ) # select sds
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
 
-pprint.pprint( sds_obj.attributes() ) # print data attributes
-
-"""
-#read hdf5
-import h5py
-import os
-#os.chdir('E:/University/University/MSc/Models/climate-analysis/gfdl/reduced_datasets') #Home PC
-os.chdir('C:/Users/toha006/University/University/MSc/Models/climate-analysis/GFDL_AM4/reduced_datasets') #Uni Laptop
-
-
-h5f = h5py.File("07.2006_04.2011_gfdl.h5", "r")
-
-for index,key in enumerate(h5f.keys()):
-    print (index, key)
-
-"""
+pprint.pprint( sds_obj.attributes()['_FillValue'] ) # print data attributes

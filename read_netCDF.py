@@ -3,19 +3,46 @@
 Spyder Editor
 
 @author: Tristan O'Hanlon
+
+    CMIP5-CESM1-CAM5
+    CMIP5-GFDL-HIRAM-C360
+    CMIP5-GISS-E2R
+    CMIP5-IPSL-CM5A-LR
+    CMIP5-MIROC5
+    CMIP5-MRI-CGCM3
+    
+    CMIP6-CESM2-CAM6
+    CMIP6-GFDL-AM4
+    CMIP6-GISS-E21G
+    CMIP6-IPSL-CM6A-LR
+    CMIP6-MIROC6
+    CMIP6-MRI-ESM2
+    
+    ECMWF
+
 """
 
-import datetime as dt  # Python standard library datetime  module
 import numpy as np
 from netCDF4 import Dataset  # http://code.google.com/p/netcdf4-python/
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import os
+import constants
+import numpy as np
 
-# Specify nc file
-#dataset = Dataset('E:/University/University/MSc/Models/Data/CMIP6/cesm2.1_cam6/f.e21.FHIST_BGC.f09_f09_mg17.CMIP6-AMIP.001.cam.h0.CLOUD.195001-201412.nc', 'r') #Home PC
-#dataset = Dataset('D:/MSc/Models/Data/CMIP5/ipsl_cm5a_lr_amip/cl_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc', 'r') #ext HDD
-dataset = Dataset('//Synthesis/E/University/University/MSc/Models/Data/CMIP6/ipsl_cm6a_lr_amip/cl_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc', 'r') #Laptop
-#dataset = Dataset('C:/Users/toha006/University/University/MSc/Models/Data/CMIP5/gfdl_cm3_rcp4.5/cl_Amon_GFDL-CM3_rcp45_r1i1p1_200601-201012.nc', 'r') #Uni Laptop
 
-print (dataset.variables)
-#x = dataset.variables['ta'][:]
+#specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
+data = 'ECMWF'
+location = constants.home + '/Data/'
+data_type = 'cl'
+
+if data == 'ECMWF':
+    with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: #Laptop
+        print(f.variables)
+
+else:   
+    with Dataset(location + data + '/' + data_type + constants.model_dict[ data ], 'r') as f: #Laptop
+        print(f.variables)
+    
+    #    time = f.variables['time']
+    #    print(date2index(datetime.datetime(2006,1,1), time, select='before'))
+
+
