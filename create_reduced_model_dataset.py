@@ -30,8 +30,11 @@ import constants
 
 #--- Set Location and model ---#
 
-model = 'CMIP6-CESM2-CAM6' # see above
+model = 'CMIP6-MRI-ESM2' # see above
 location = constants.home # home, uni, hdd or laptop
 os.chdir( location + 'Data' )
 
-reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2006, 1, 1 ), datetime.datetime( 2010, 12, 1 ) )
+if model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model == 'CMIP5-GISS-E2R' or model == 'CMIP5-IPSL-CM5A-LR' or model == 'CMIP5-MIROC5' or model == 'CMIP5-MRI-CGCM3': 
+    reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2001, 1, 1 ), datetime.datetime( 2005, 12, 1 ) )
+else:
+    reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2006, 1, 1 ), datetime.datetime( 2010, 12, 1 ) )

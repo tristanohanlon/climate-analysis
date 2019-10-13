@@ -2,7 +2,7 @@
 """
 Created on Tue Mar  5 09:26:33 2019
 
-@author: Tristan O'Hanlon
+@author: Tristan O'Hanlon - University of Auckland & Jonathan Rogers
 
 
 """
@@ -25,8 +25,56 @@ from scipy import ndimage as nd
 start = time.time()
 
 #set location
-
 location = constants.home
+os.chdir( location + 'Data/ECMWF/' )
+
+dataset = Dataset('1979-03.2019_ECMWF_amon_tcc_tciw_tclw.nc', 'r')
+
+#lon = dataset.variables['longitude'][:] #Extract longitude data
+raw_lat = np.flip(np.array(dataset.variables['latitude'][:]), axis = 0) #Extract latitude data
+raw_lon = np.array(dataset.variables['longitude'][:]) #Extract latitude data
+
+clt = np.array(dataset.variables['tcc'][312:372]) #Extract total cloud cover, keyed to time, lon and lat
+clt_lat_lon = np.flip(np.mean(clt, axis = 0), axis = 0)
+
+clivi = np.array(dataset.variables['tciw'][312:372]) #Extract Ice water path (kg/m^2), keyed to time, lon and lat
+clivi_lat_lon = np.flip(np.mean(clivi, axis = 0), axis = 0)
+
+clwvi = np.array(dataset.variables['tclw'][312:372]) #Extract liquid water path (kg/m^2), keyed to time, lon and lat
+clwvi_lat_lon = np.flip(np.mean(clwvi, axis = 0), axis = 0)
+
+lwp_frac_lat_lon = (clwvi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
+iwp_frac_lat_lon = (clivi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
+clwvi = np.nanmean(lwp_frac_lat_lon , axis = -1)
+clivi = np.nanmean(iwp_frac_lat_lon , axis = -1)
+clt = np.nanmean(clt_lat_lon , axis = -1)
+
+interpolated = interpolate.interp1d(raw_lat, clt, kind = 'cubic')
+clt = interpolated(constants.lat)
+
+interpolated = interpolate.interp1d(raw_lat, clwvi, kind = 'cubic')
+clwvi = interpolated(constants.lat)
+
+interpolated = interpolate.interp1d(raw_lat, clivi, kind = 'cubic')
+clivi = interpolated(constants.lat)
+
+interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( clt_lat_lon ), kind = 'cubic')
+clt_lat_lon = interpolated(constants.lat, constants.lon)
+clt_lat_lon = np.transpose(clt_lat_lon)
+
+interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( lwp_frac_lat_lon ), kind = 'cubic')
+clwvi_lat_lon = interpolated(constants.lat, constants.lon)
+clwvi_lat_lon = np.transpose(clwvi_lat_lon)
+
+interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( iwp_frac_lat_lon ), kind = 'cubic')
+clivi_lat_lon = interpolated(constants.lat, constants.lon)
+clivi_lat_lon = np.transpose(clivi_lat_lon)
+
+
+
+
+
+
 os.chdir( location + 'Data/ECMWF/pressure_levels' )
 
 #lat = constants.lat
@@ -87,7 +135,7 @@ def fill(data, invalid=None):
 # Load every file in the directory
 for filename in os.listdir(): 
     with Dataset( filename, 'r') as f:
-        p = np.flip( extract_data( 'level', f ) )        
+        p = np.flip( extract_data( 'level', f ), axis = 0 )        
         raw_alt = np.empty((p.size,1),dtype=float)
         state = 0
         i = 0
@@ -105,11 +153,11 @@ for filename in os.listdir():
             raw_alt[i] = newalt
             i+=1
         raw_alt = np.transpose( raw_alt )[0]
-        raw_lat = np.flip( extract_data( 'latitude', f ) )
+        raw_lat = extract_data( 'latitude', f )
         for data_set in data_sets:  
             data = extract_data( data_set.type_name, f )
             data = np.mean( data, axis = 0 )
-            data = np.transpose( np.flip( np.mean( data, axis = -1 ) ) )
+            data = np.transpose( np.flip( np.mean( data, axis = -1 ), axis = 0 ) )
             
             for l_index, l in enumerate( raw_lat ):
                 if l <= constants.min_lat or l >= constants.max_lat:
@@ -130,44 +178,59 @@ for data_set in data_sets:
 cl_alt_lat = fill( data_sets[0].new_data )
 clw_alt_lat = fill( data_sets[1].new_data )
 cli_alt_lat = fill( data_sets[2].new_data )
-ta_alt_lat = fill( data_sets[3].new_data )
+full_ta_alt_lat = fill( data_sets[3].new_data )
 
 #---create liquid and ice fractions---#
 
-lw_frac_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
+full_clw_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
 cli_alt_lat = (cli_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
 
 #---create reduced altitude liquid fraction and temperatures---#
 
-interpolated = interpolate.interp2d( constants.alt, constants.lat, lw_frac_alt_lat, kind = 'cubic')
+interpolated = interpolate.interp2d( constants.alt, constants.lat, full_clw_alt_lat, kind = 'cubic')
 clw_alt_lat = interpolated( constants.liq_alt, constants.lat )
 
-interpolated = interpolate.interp2d( constants.alt, constants.lat, ta_alt_lat, kind = 'cubic', fill_value="extrapolate")
-ta_liq_alt_lat = interpolated( constants.liq_alt, constants.lat )
+interpolated = interpolate.interp2d( constants.alt, constants.lat, full_ta_alt_lat, kind = 'cubic', fill_value="extrapolate")
+ta_alt_lat = interpolated( constants.liq_alt, constants.lat )
+
 
 #---create southern ocean and global datasets---#
     
 cl_so = create_southern_ocean_data( constants.lat, cl_alt_lat)
 clw_so = create_southern_ocean_data( constants.lat, clw_alt_lat)
 cli_so = create_southern_ocean_data( constants.lat, cli_alt_lat)
-ta_liq_so = create_southern_ocean_data( constants.lat, ta_liq_alt_lat)
+ta_liq_so = create_southern_ocean_data( constants.lat, ta_alt_lat)
 
 cl_g = np.nanmean( cl_alt_lat, axis = 0 )
 clw_g = np.nanmean( clw_alt_lat, axis = 0 )
 cli_g = np.nanmean( cli_alt_lat, axis = 0 )
-ta_liq_g = np.nanmean( ta_liq_alt_lat, axis = 0 )
+ta_liq_g = np.nanmean( ta_alt_lat, axis = 0 )
+
+interpolated = interpolate.interp1d(ta_liq_g, clw_g, kind = 'linear', fill_value="extrapolate")
+clw_t_g = interpolated(constants.ta_g)
+clw_t_g[clw_t_g < 0] = np.nan
+
+interpolated = interpolate.interp1d(ta_liq_so, clw_so, kind = 'linear', fill_value="extrapolate")
+clw_t_so = interpolated(constants.ta_so)
+clw_t_so[clw_t_so < 0] = np.nan
 
 #----------------------------#
 
 os.chdir( location + '/climate-analysis/reduced_data' )
 
-save_filename = 'ECMWF.h5'
+save_filename = 'Jan_2006_Dec_2010_ECMWF.h5'
 
 with h5py.File(save_filename, 'w') as p:
+
+    p.create_dataset('clt', data=clt) # total cloud fraction corresponding to lat
+    p.create_dataset('clt_lat_lon', data=clt_lat_lon ) # total cloud fraction corresponding to lat, lon
+  
+    p.create_dataset('clwvi', data=clwvi) # total cloud liquid water fraction corresponding to lat
+    p.create_dataset('clwvi_lat_lon', data=clwvi_lat_lon ) # total cloud fraction corresponding to lat, lon
+
+    p.create_dataset('clivi', data=clivi) # total cloud ice fraction corresponding to lat
+    p.create_dataset('clivi_lat_lon', data=clivi_lat_lon ) # total cloud fraction corresponding to lat, lon
     
-    p.create_dataset('ta_liq_g', data=ta_liq_g) # global layer temperature corresponding to liq_alt
-    p.create_dataset('ta_liq_so', data=ta_liq_so) # southern ocean layer temperature corresponding to liq_alt
-         
     p.create_dataset('cl_g', data=cl_g) # global layer total cloud fraction corresponding to alt
     p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water fraction corresponding to liq_alt
     p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water fraction corresponding to alt
@@ -175,14 +238,17 @@ with h5py.File(save_filename, 'w') as p:
     p.create_dataset('cl_so', data=cl_so) # southern ocean layer total cloud fraction corresponding to alt
     p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
     p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water fraction corresponding to alt
-    
-    p.create_dataset('lw_frac_alt_lat', data= np.transpose( lw_frac_alt_lat )) # temperature corresponding to alt and lat
-    
-    p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat )) # temperature corresponding to alt and lat
-    p.create_dataset('ta_liq_alt_lat', data= np.transpose( ta_liq_alt_lat )) # temperature corresponding to liq_alt and lat
+
+    p.create_dataset('clw_t_g', data=clw_t_g) # global layer cloud liquid water fraction corresponding to ta_g
+    p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water fraction corresponding to ta_so
+      
+    p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat )) # temperature corresponding to liq_alt and lat
     p.create_dataset('cl_alt_lat', data=np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
     p.create_dataset('clw_alt_lat', data=np.transpose( clw_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
     p.create_dataset('cli_alt_lat', data=np.transpose( cli_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
+
+    p.create_dataset('full_ta_alt_lat', data= np.transpose( full_ta_alt_lat )) # temperature corresponding to alt and lat
+    p.create_dataset('full_clw_alt_lat', data=np.transpose( full_clw_alt_lat ) ) # total cloud fraction corresponding to alt and lat
 
     p.close()
 

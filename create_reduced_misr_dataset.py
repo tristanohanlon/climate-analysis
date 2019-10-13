@@ -2,7 +2,7 @@
 """
 Created on Tue Mar  5 09:26:33 2019
 
-@author: Tristan O'Hanlon
+@author: Tristan O'Hanlon - University of Auckland & Jonathan Rogers
 
 
 """

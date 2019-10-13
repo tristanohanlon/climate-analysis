@@ -19,7 +19,15 @@ Spyder Editor
     CMIP6-MRI-ESM2
     
     ECMWF
-
+    
+    CALIPSO-GOCCP:
+        3D_CloudFraction_OPAQ330m
+        3D_CloudFraction_Phase330m
+        3D_CloudFraction_Temp330m
+        3D_CloudFraction330m
+        Map_OPAQ330m
+        MapLowMidHigh_Phase330m
+        MapLowMidHigh330m
 """
 
 import numpy as np
@@ -30,14 +38,14 @@ import numpy as np
 
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'ECMWF'
-location = constants.home + '/Data/'
-data_type = 'cl'
+data = 'CALIPSO-GOCCP'
+location = constants.home + 'Data/'
+data_type = 'MapLowMidHigh330m'
 
 if data == 'ECMWF':
     with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: #Laptop
         print(f.variables)
-
+        data = f.variables['latitude'][:]
 else:   
     with Dataset(location + data + '/' + data_type + constants.model_dict[ data ], 'r') as f: #Laptop
         print(f.variables)

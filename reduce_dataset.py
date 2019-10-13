@@ -2,7 +2,7 @@
 """
 Created on Thu Mar 28 18:40:37 2019
 
-@author: Tristan O'Hanlon
+@author: Tristan O'Hanlon - University of Auckland & Jonathan Rogers
 
 These functions will create a standard model dataset when parsed:
     
@@ -25,6 +25,7 @@ import datetime
 from pprint import pprint
 from sklearn.impute import SimpleImputer
 import constants
+from scipy import ndimage as nd
 
 
 #---prime values for interpolation---#
@@ -56,83 +57,59 @@ def create_southern_ocean_data( raw_lat, global_data ):
 
 def reduce_dataset( directory, filename, save_location, start, end):
     os.chdir( directory )
+  
 
+    with Dataset( 'clt' + filename, 'r') as f:
+        raw_lat = extract_data( f, 'lat')
+        raw_lon = extract_data( f, 'lon')
+        clt = extract_data_over_time('clt', f, start, end )
+        if directory == 'CMIP6-GFDL-AM4':
+            pass
+        else:
+            clt = clt / 100
+
+    with Dataset( 'clwvi' + filename, 'r') as f:
+        clwvi = extract_data_over_time('clwvi', f, start, end )
+
+    with Dataset( 'clivi' + filename, 'r') as f:
+        clivi = extract_data_over_time('clivi', f, start, end )
+
+
+    with Dataset( 'cl' + filename, 'r') as f:
+        cl = extract_data_over_time( 'cl',f, start, end )
+        cl = np.mean( cl, axis = 0 ) # average over time
+        if directory == 'CMIP5-CESM1-CAM5':
+            pass
+        else:
+            cl = cl / 100
+            
+        if directory == 'CMIP6-GFDL-AM4' or directory == 'CMIP5-IPSL-CM5A-LR' or directory == 'CMIP6-IPSL-CM6A-LR':
+            a = extract_data( f, 'ap')
+            b = extract_data( f, 'b')
+        else:
+            a = extract_data( f, 'a')
+            b = extract_data( f, 'b')
+
+        if directory == 'CMIP6-GFDL-AM4' or directory == 'CMIP5-IPSL-CM5A-LR' or directory == 'CMIP6-IPSL-CM6A-LR':
+            pass
+        else:
+            p0 = np.array(f.variables['p0'][:]) #in hPa
     
 
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'clt' + filename, 'r') as f:
-            clt = extract_data_over_time( 'CLDTOT', f, start, end ) # average over time
-            raw_lat = extract_data( f, 'lat')
-            alt = constants.alt[::-1]
-            liq_alt = constants.liq_alt[::-1]
-    else:
-        with Dataset( 'clt' + filename, 'r') as f:
-            raw_lat = extract_data( f, 'lat')
-            clt = extract_data_over_time('clt', f, start, end )
+    with Dataset( 'clw' + filename, 'r') as f:
+        clw = np.nanmean( extract_data_over_time( 'clw', f, start, end ), axis = 0 ) # average over time
 
-    clt = np.mean(clt, axis = 0) # average over time
-    clt = np.mean(clt, axis = -1) # average over longitude
+    with Dataset( 'cli' + filename, 'r') as f:
+        cli = np.nanmean( extract_data_over_time( 'cli', f, start, end ), axis = 0 ) # average over time
 
+    with Dataset( 'ps' + filename, 'r') as f:
+        ps = np.mean( extract_data_over_time( 'ps', f, start, end ), axis = 0 ) # average over time
 
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'cl' + filename, 'r') as f:
-            cl = extract_data_over_time( 'CLOUD', f, start, end ) # average over time
-            cl = np.mean( cl, axis = 0 ) # average over time
-            a = extract_data( f, 'hyam')
-            b = extract_data( f, 'hybm')      
-            p0 = np.array(f.variables['P0'][:]) #in hPa
-
-    else:
-        with Dataset( 'cl' + filename, 'r') as f:
-            cl = extract_data_over_time( 'cl',f, start, end )
-            cl = np.mean( cl, axis = 0 ) # average over time
-            cl = cl / 100 
-                
-            if directory == 'CMIP6-GFDL-AM4' or directory == 'CMIP5-IPSL-CM5A-LR' or directory == 'CMIP6-IPSL-CM6A-LR':
-                a = extract_data( f, 'ap')
-                b = extract_data( f, 'b')
-            else:
-                a = extract_data( f, 'a')
-                b = extract_data( f, 'b')
-
-            if directory == 'CMIP6-GFDL-AM4' or directory == 'CMIP5-IPSL-CM5A-LR' or directory == 'CMIP6-IPSL-CM6A-LR':
-                pass
-            else:
-                p0 = np.array(f.variables['p0'][:]) #in hPa
-    
-
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'clw' + filename, 'r') as f:
-            clw = np.nanmean( extract_data_over_time( 'CLDLIQ', f, start, end ), axis = 0 ) # average over time
-    else:
-        with Dataset( 'clw' + filename, 'r') as f:
-            clw = np.nanmean( extract_data_over_time( 'clw', f, start, end ), axis = 0 ) # average over time
-
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'cli' + filename, 'r') as f:
-            cli = np.nanmean( extract_data_over_time( 'CLDICE', f, start, end ), axis = 0 ) # average over time
-    else:
-        with Dataset( 'cli' + filename, 'r') as f:
-            cli = np.nanmean( extract_data_over_time( 'cli', f, start, end ), axis = 0 ) # average over time
-
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'ps' + filename, 'r') as f:
-            ps = np.nanmean( extract_data_over_time( 'PS', f, start, end ), axis = 0 ) # average over time
-    else:
-        with Dataset( 'ps' + filename, 'r') as f:
-            ps = np.mean( extract_data_over_time( 'ps', f, start, end ), axis = 0 ) # average over time
-
-    if directory == 'CMIP6-CESM2-CAM6':
-        with Dataset( 'ta' + filename, 'r') as f:
-            ta = extract_data_over_time( 'T', f, start, end )
-            ta[ta > 400] = np.nan
-            ta = np.nanmean(ta, axis = 0) # average over time  
-    else:
-        with Dataset( 'ta' + filename, 'r' ) as f:
-            ta = extract_data_over_time( 'ta', f, start, end )
-            ta[ta > 400] = np.nan
-            ta = np.nanmean(ta, axis = 0) # average over time  
-            plev_t = extract_data( f, 'plev') / 100
+    with Dataset( 'ta' + filename, 'r' ) as f:
+        ta = extract_data_over_time( 'ta', f, start, end )
+        ta[ta > 400] = np.nan
+        ta = np.nanmean(ta, axis = 0) # average over time  
+        plev_t = extract_data( f, 'plev') / 100
 
     #---get SO surface pressure---#
     ps_so = create_southern_ocean_data( raw_lat, np.mean(ps, axis = -1)) # average over longitude
@@ -153,22 +130,15 @@ def reduce_dataset( directory, filename, save_location, start, end):
     
     #---Approximate missing nan values in temperature data---#  
 
-    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-    imp.fit(np.transpose(np.nanmean(ta, axis = -1)))  
-    a = imp.transform(np.transpose(np.nanmean(ta, axis = -1)))
-    ta_fixed = np.transpose(a)    
   
-    if directory == 'CMIP6-CESM2-CAM6':
-        ta_fixed = np.flip( ta_fixed, axis = 0 ) # average over longitude
    
     #---convert pressure levels to altitude---#
     #https://www.mide.com/pages/air-pressure-at-altitude-calculator
     #https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
     raw_alt = np.empty((p.size,1),dtype=float)
     state = 0
-
     if directory == 'CMIP6-CESM2-CAM6':
-        p = np.flip(p)
+        p = np.flip(p, axis = 0)
 
     i = 0
     for item in p:
@@ -188,12 +158,14 @@ def reduce_dataset( directory, filename, save_location, start, end):
     
     raw_alt = np.transpose( raw_alt )[0]
 
-    if directory == 'CMIP6-IPSL-CM6A-LR':
-        raw_alt = raw_alt[:40]
-        p = p[:40]
-        cl_alt_lat = np.nanmean(cl , axis = -1)[:40] # average over longitude
-        clw_alt_lat = np.nanmean(clw , axis = -1)[:40] # average over longitude
-        cli_alt_lat = np.nanmean(cli , axis = -1)[:40] # average over longitude      
+
+
+    #-------------Create grid sets---------------#
+
+    clt_lat_lon = np.mean(clt, axis = 0) # average over time
+    clwvi_lat_lon = np.mean(clwvi, axis = 0) # average over time
+    clivi_lat_lon = np.mean(clivi, axis = 0) # average over time
+
     if directory == 'CMIP6-CESM2-CAM6':
         cl_alt_lat = np.flip( np.nanmean( cl , axis = -1 ), axis = 0 ) # average over longitude
         clw_alt_lat = np.flip( np.nanmean( clw , axis = -1 ), axis = 0 ) # average over longitude
@@ -202,74 +174,194 @@ def reduce_dataset( directory, filename, save_location, start, end):
         cl_alt_lat = np.nanmean(cl , axis = -1) # average over longitude
         clw_alt_lat = np.nanmean(clw , axis = -1) # average over longitude
         cli_alt_lat = np.nanmean(cli , axis = -1) # average over longitude      
-    
-    #interpolate corresponding temp altitudes
 
-    if directory == 'CMIP6-CESM2-CAM6':
-        alt_temp = raw_alt
-    else:
-        interpolated = interpolate.interp1d(p, raw_alt, fill_value="extrapolate", kind = 'cubic')
-        alt_temp = interpolated(plev_t)
-   
+    full_ta_alt_lat = np.nanmean(ta, axis = -1)
 
-    #-------------interpolate to common lat, alt and liq_alt---------------#
-
-    interpolated = interpolate.interp1d(raw_lat, clt, kind = 'cubic', fill_value="extrapolate")
-    clt = interpolated(constants.lat)
-
-    interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( cl_alt_lat ), kind = 'cubic')
-    cl_alt_lat = interpolated(constants.alt, constants.lat)
-
-    interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( clw_alt_lat ), kind = 'cubic')
-    clw_alt_lat = interpolated(constants.alt, constants.lat)
-    
-    interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( cli_alt_lat ), kind = 'cubic')
-    cli_alt_lat = interpolated(constants.alt, constants.lat)
-
-    if directory == 'CMIP6-IPSL-CM6A-LR':
-        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'linear')
-        ta_alt_lat = interpolated(constants.liq_alt, constants.lat)
-    else:
-        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'cubic')
-        ta_alt_lat = interpolated(constants.liq_alt, constants.lat)
-        
-    
+    lwp_frac_lat_lon = (clwvi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
+    iwp_frac_lat_lon = (clivi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
     
     lw_frac_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
     iw_frac_alt_lat = (cli_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
 
-    interpolated = interpolate.interp2d(constants.alt, constants.lat, lw_frac_alt_lat, kind = 'cubic')
-    clw_alt_lat = interpolated(constants.liq_alt, constants.lat)
 
+    interpolated = interpolate.interp1d(p, raw_alt, fill_value="extrapolate", kind = 'cubic')
+    alt_temp = interpolated(plev_t)
 
-    #-------------create cloud fraction datasets---------------#
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        raw_alt = raw_alt[:79]
+        interpolated = interpolate.interp1d(p[:40], raw_alt[:40], fill_value="extrapolate", kind = 'cubic')
+        alt_temp = interpolated(plev_t)
+    else:
+        interpolated = interpolate.interp1d(p, raw_alt, fill_value="extrapolate", kind = 'cubic')
+        alt_temp = interpolated(plev_t)
+
+      #-------------create cloud fraction datasets---------------#
+
+    clt = np.nanmean(clt_lat_lon , axis = -1)
+
     cl_alt_lat[cl_alt_lat < 0] = 0
 
-    cl_g = np.nanmean(cl_alt_lat , axis = 0) # average over latitude
-    cl_so = create_southern_ocean_data( constants.lat, cl_alt_lat )
+    cl_g = np.nanmean(cl_alt_lat , axis = -1) # average over latitude
+    cl_so = create_southern_ocean_data( raw_lat, np.transpose(cl_alt_lat) )
     cl_so = np.nanmean(cl_so , axis = 0)
 
     #-------------create liquid and ice cloud fraction datasets---------------#
-    clw_alt_lat[clw_alt_lat < 0] = 0
 
-    clw_g = np.nanmean(clw_alt_lat , axis = 0)  # average over latitude
-    clw_so = create_southern_ocean_data( constants.lat, clw_alt_lat )
+    clwvi = np.nanmean(lwp_frac_lat_lon , axis = -1)
+    clivi = np.nanmean(iwp_frac_lat_lon , axis = -1)
+
+    lw_frac_alt_lat[lw_frac_alt_lat < 0] = 0
+
+    clw_g = np.nanmean(lw_frac_alt_lat , axis = -1)  # average over latitude
+    clw_so = create_southern_ocean_data( raw_lat, np.transpose(lw_frac_alt_lat) )
     clw_so = np.nanmean(clw_so , axis = 0)
-
+    lw_frac_alt_lat[np.isnan(lw_frac_alt_lat)] = 0
+    clw_g[np.isnan(clw_g)] = 0
+    clw_so[np.isnan(clw_so)] = 0
 
     iw_frac_alt_lat[iw_frac_alt_lat < 0] = 0
 
-    cli_g = np.nanmean(iw_frac_alt_lat , axis = 0)  # average over latitude
-    cli_so = create_southern_ocean_data( constants.lat, iw_frac_alt_lat )
+    cli_g = np.nanmean(iw_frac_alt_lat , axis = -1)  # average over latitude
+    cli_so = create_southern_ocean_data( raw_lat, np.transpose(iw_frac_alt_lat) )
     cli_so = np.nanmean(cli_so , axis = 0)
-     
+    iw_frac_alt_lat[np.isnan(iw_frac_alt_lat)] = 0
+    cli_g[np.isnan(cli_g)] = 0
+    cli_so[np.isnan(cli_so)] = 0
+    
     #--------------temp datasets--------------#
     
-    ta_liq_g = np.nanmean(ta_alt_lat , axis = 0) # average over latitude
-    ta_liq_so = create_southern_ocean_data( constants.lat, ta_alt_lat )
+    ta_liq_g = np.nanmean(full_ta_alt_lat , axis = -1) # average over latitude
+    ta_liq_so = create_southern_ocean_data( raw_lat, np.transpose(full_ta_alt_lat) )
     ta_liq_so = np.nanmean(ta_liq_so , axis = 0)
+  
    
+
+    #-------------interpolate to common lat, alt and liq_alt---------------#
+
+    interpolated = interpolate.interp1d(raw_lat, clt, kind = 'cubic')
+    clt = interpolated(constants.lat)
+
+    interpolated = interpolate.interp1d(raw_lat, clwvi, kind = 'cubic')
+    clwvi = interpolated(constants.lat)
+
+    interpolated = interpolate.interp1d(raw_lat, clivi, kind = 'cubic')
+    clivi = interpolated(constants.lat)
+
+    interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( clt_lat_lon ), kind = 'cubic')
+    clt_lat_lon = interpolated(constants.lat, constants.lon)
+
+    interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( lwp_frac_lat_lon ), kind = 'cubic')
+    clwvi_lat_lon = interpolated(constants.lat, constants.lon)
+
+    interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( iwp_frac_lat_lon ), kind = 'cubic')
+    clivi_lat_lon = interpolated(constants.lat, constants.lon)
+
+    pprint(clt_lat_lon)
+    pprint(clwvi_lat_lon)
+
+
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        cl_alt_lat = constants.fit_2d_data(np.transpose(cl_alt_lat), raw_lat, raw_alt)
+        cl_alt_lat = constants.fill(cl_alt_lat)
+    else:
+        interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( cl_alt_lat ), kind = 'cubic')
+        cl_alt_lat = interpolated(constants.alt, constants.lat)
+
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        interpolated = interpolate.interp2d(raw_alt[:40], raw_lat, np.transpose( lw_frac_alt_lat[:40] ), kind = 'cubic')
+        full_clw_alt_lat = interpolated(constants.alt, constants.lat)
+#    elif directory == 'CMIP6-GFDL-AM4':
+#        full_clw_alt_lat = constants.fit_2d_data(np.transpose(lw_frac_alt_lat), raw_lat, raw_alt)
+#        full_clw_alt_lat = constants.fill(full_clw_alt_lat)
+    else:
+        interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( lw_frac_alt_lat ), kind = 'cubic')
+        full_clw_alt_lat = interpolated(constants.alt, constants.lat)
+
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        interpolated = interpolate.interp2d(raw_alt[:40], raw_lat, np.transpose( lw_frac_alt_lat[:40] ), kind = 'cubic')
+        clw_alt_lat = interpolated(constants.liq_alt, constants.lat)
+#    elif directory == 'CMIP6-GFDL-AM4':
+#        clw_alt_lat = constants.fit_2d_liq_data(np.transpose(lw_frac_alt_lat), raw_lat, raw_alt)
+#        clw_alt_lat = constants.fill(clw_alt_lat)
+    else:
+        interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( lw_frac_alt_lat ), kind = 'cubic')
+        clw_alt_lat = interpolated(constants.liq_alt, constants.lat)
+
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        interpolated = interpolate.interp2d(raw_alt[:40], raw_lat, np.transpose( iw_frac_alt_lat[:40] ), kind = 'cubic')
+        cli_alt_lat = interpolated(constants.alt, constants.lat)
+#    elif directory == 'CMIP6-GFDL-AM4':
+#        cli_alt_lat = constants.fit_2d_data(np.transpose(iw_frac_alt_lat), raw_lat, raw_alt)
+#        cli_alt_lat = constants.fill(cli_alt_lat)
+    else:    
+        interpolated = interpolate.interp2d(raw_alt, raw_lat, np.transpose( iw_frac_alt_lat ), kind = 'cubic')
+        cli_alt_lat = interpolated(constants.alt, constants.lat)
+
+        
+    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+    imp.fit(np.transpose(full_ta_alt_lat))  
+    a = imp.transform(np.transpose(full_ta_alt_lat))
+    ta_fixed = np.transpose(a)    
+  
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'cubic')
+        full_ta_alt_lat = interpolated(constants.alt, constants.lat)
+    else:
+        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'cubic')
+        full_ta_alt_lat = interpolated(constants.alt, constants.lat)
+
+    if directory == 'CMIP6-IPSL-CM6A-LR':
+        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'cubic')
+        ta_alt_lat = interpolated(constants.liq_alt, constants.lat)
+    else:
+        interpolated = interpolate.interp2d(alt_temp, raw_lat, np.transpose( ta_fixed ), kind = 'cubic')
+        ta_alt_lat = interpolated(constants.liq_alt, constants.lat)
+
+
+    
+#    ta_alt_lat = constants.fit_2d_liq_data(np.transpose(np.nanmean(ta, axis = -1)), raw_lat, alt_temp)
+#    ta_alt_lat = constants.fill(ta_alt_lat)
+#    
+#    full_ta_alt_lat = constants.fit_2d_data(np.transpose(np.nanmean(ta, axis = -1)), raw_lat, alt_temp)
+#    full_ta_alt_lat = constants.fill(full_ta_alt_lat)
+
+
+    interpolated = interpolate.interp1d(raw_alt, cl_g, kind = 'cubic', fill_value="extrapolate")
+    cl_g = interpolated(constants.alt)
+
+    interpolated = interpolate.interp1d(raw_alt, clw_g, kind = 'cubic', fill_value="extrapolate")
+    clw_g = interpolated(constants.liq_alt)
+
+    interpolated = interpolate.interp1d(raw_alt, cli_g, kind = 'cubic', fill_value="extrapolate")
+    cli_g = interpolated(constants.alt)
+
+    interpolated = interpolate.interp1d(raw_alt, cl_so, kind = 'cubic', fill_value="extrapolate")
+    cl_so = interpolated(constants.alt)
+
+    interpolated = interpolate.interp1d(raw_alt, clw_so, kind = 'cubic', fill_value="extrapolate")
+    clw_so = interpolated(constants.liq_alt)
+
+    interpolated = interpolate.interp1d(raw_alt, cli_so, kind = 'cubic', fill_value="extrapolate")
+    cli_so = interpolated(constants.alt)
+
+    interpolated = interpolate.interp1d(alt_temp, ta_liq_g, kind = 'cubic', fill_value="extrapolate")
+    ta_liq_g = interpolated(constants.liq_alt)
+
+    interpolated = interpolate.interp1d(alt_temp, ta_liq_so, kind = 'cubic', fill_value="extrapolate")
+    ta_liq_so = interpolated(constants.liq_alt)
+
+  
     #----------------------------#
+    interpolated = interpolate.interp1d(ta_liq_g, clw_g, kind = 'cubic', fill_value="extrapolate")
+    clw_t_g = interpolated(constants.ta_g)
+    clw_t_g[clw_t_g < 0] = np.nan
+
+    interpolated = interpolate.interp1d(ta_liq_so, clw_so, kind = 'cubic', fill_value="extrapolate")
+    clw_t_so = interpolated(constants.ta_so)
+    clw_t_so[clw_t_so < 0] = np.nan
+
+    #----------------------------#
+
 
     os.chdir(save_location)
 
@@ -277,11 +369,15 @@ def reduce_dataset( directory, filename, save_location, start, end):
 
     with h5py.File(save_filename, 'w') as p:
         
-        p.create_dataset('ta_liq_g', data=ta_liq_g) # global layer temperature corresponding to liq_alt
-        p.create_dataset('ta_liq_so', data=ta_liq_so) # southern ocean layer temperature corresponding to liq_alt
-           
         p.create_dataset('clt', data=clt) # total cloud fraction corresponding to lat
-        
+        p.create_dataset('clt_lat_lon', data=np.transpose( clt_lat_lon )) # total cloud fraction corresponding to lat, lon
+  
+        p.create_dataset('clwvi', data=clwvi) # total cloud liquid water fraction corresponding to lat
+        p.create_dataset('clwvi_lat_lon', data=np.transpose( clwvi_lat_lon )) # total cloud fraction corresponding to lat, lon
+
+        p.create_dataset('clivi', data=clivi) # total cloud ice fraction corresponding to lat
+        p.create_dataset('clivi_lat_lon', data=np.transpose( clivi_lat_lon )) # total cloud fraction corresponding to lat, lon
+      
         p.create_dataset('cl_g', data=cl_g) # global layer total cloud fraction corresponding to alt
         p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water fraction corresponding to liq_alt
         p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water fraction corresponding to alt
@@ -289,10 +385,16 @@ def reduce_dataset( directory, filename, save_location, start, end):
         p.create_dataset('cl_so', data=cl_so) # southern ocean layer total cloud fraction corresponding to alt
         p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
         p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water fraction corresponding to alt
-        
-        p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat )) # temperature corresponding to alt and lat
+ 
+        p.create_dataset('clw_t_g', data=clw_t_g) # global layer cloud liquid water fraction corresponding to ta_g
+        p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water fraction corresponding to ta_so
+       
+        p.create_dataset('ta_alt_lat', data=np.transpose( ta_alt_lat )) # temperature corresponding to liq_alt and lat
         p.create_dataset('cl_alt_lat', data=np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
         p.create_dataset('clw_alt_lat', data=np.transpose( clw_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
-        p.create_dataset('cli_alt_lat', data=np.transpose( iw_frac_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
-    
+        p.create_dataset('cli_alt_lat', data=np.transpose( cli_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
+
+        p.create_dataset('full_ta_alt_lat', data= np.transpose( full_ta_alt_lat )) # temperature corresponding to alt and lat
+        p.create_dataset('full_clw_alt_lat', data=np.transpose( full_clw_alt_lat ) ) # total cloud fraction corresponding to alt and lat
+  
         p.close()

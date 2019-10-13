@@ -22,10 +22,18 @@ MISR data_types:
 CERES data_types:
     'latitude'
     'cld_eff_hgt_glob'
-    'cld_amount_zon'
+    'cld_amount_zon'           # alt, lat - alt[4] is total at the top
     'cld_amount_glob'
-    'cld_lwp_zon'
-    'cld_iwp_zon'
+    'cld_lwp_zon'           # alt, lat - alt[4] is total at the top
+    'cld_iwp_zon'           # alt, lat - alt[4] is total at the top
+    'clr_toa_sw_reg'        # lat and lon 
+    'clr_toa_lw_reg'       # lat and lon  
+    'clr_toa_net_reg'       # lat and lon  
+    'all_toa_sw_reg'       # lat and lon  
+    'all_toa_lw_reg'       # lat and lon  
+    'all_toa_net_reg'       # lat and lon  
+    
+    
 
 
 """
@@ -36,9 +44,9 @@ import pprint
 import constants
 
 #specify location and data source - stored in constants
-location = constants.hdd + '/Data/'
-data = 'MISR'
-data_type = 'CorrCloudTopHeightFraction_Avg'
+location = constants.hdd + 'Data/'
+data = 'CCCM'
+data_type = 'Liquid water content profile used'
 
 f = SD.SD( location + constants.satellite_dict[ data ])
 

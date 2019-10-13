@@ -2,7 +2,7 @@
 """
 Created on Tue Mar  5 09:26:33 2019
 
-@author: Tristan O'Hanlon
+@author: Tristan O'Hanlon - University of Auckland, Samual Crookes & Jonathan Rogers
 
 
 """
@@ -59,12 +59,11 @@ def create_southern_ocean_data( lat, global_data ):
 
 # Load every file in the directory
 for filename in os.listdir(): 
-    
+    pprint( filename )
     # Load the file
     f = SD.SD(filename)
     
-    raw_lat = f.select('Colatitude of subsatellite point at surface at observation').get() - 90
-    
+    raw_lat = 90 - f.select('Colatitude of subsatellite point at surface at observation').get()
     altitudes = []
     for altitude_type in altitude_types:
         altitudes.append( f.select(altitude_type).get() )
@@ -97,11 +96,11 @@ for data_set in data_sets:
 cl_alt_lat = data_sets[0].data
 clw_alt_lat = data_sets[1].data
 cli_alt_lat = data_sets[2].data
-ta_alt_lat = data_sets[3].data
+full_ta_alt_lat = data_sets[3].data
 
 #---create liquid and ice fractions---#
 
-lw_frac_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
+full_clw_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
 cli_alt_lat = (cli_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
 
 #---create reduced altitude liquid fraction and temperatures---#
@@ -117,7 +116,7 @@ for l_index, l in enumerate( constants.lat ):
         if a < constants.min_liq_alt or a > constants.max_liq_alt:
             continue
         liq_alt_bin = int( ( a - constants.min_liq_alt ) / constants.liq_alt_division )
-        val = lw_frac_alt_lat[l_index, a_index]
+        val = full_clw_alt_lat[l_index, a_index]
         if np.isnan(val):
             continue
         new_liq_data[ lat_bin, liq_alt_bin ] += val
@@ -125,32 +124,39 @@ for l_index, l in enumerate( constants.lat ):
             
 clw_alt_lat = new_liq_data / liq_data_counts
 
-interpolated = interpolate.interp2d( constants.alt, constants.lat, ta_alt_lat, kind = 'cubic', fill_value="extrapolate")
-ta_liq_alt_lat = interpolated( constants.liq_alt, constants.lat )
+interpolated = interpolate.interp2d( constants.alt, constants.lat, full_ta_alt_lat, kind = 'cubic', fill_value="extrapolate")
+ta_alt_lat = interpolated( constants.liq_alt, constants.lat )
 
 #---create southern ocean and global datasets---#
     
 cl_so = create_southern_ocean_data( constants.lat, cl_alt_lat)
 clw_so = create_southern_ocean_data( constants.lat, clw_alt_lat)
 cli_so = create_southern_ocean_data( constants.lat, cli_alt_lat)
-ta_liq_so = create_southern_ocean_data( constants.lat, ta_liq_alt_lat)
+ta_liq_so = create_southern_ocean_data( constants.lat, ta_alt_lat)
 
 cl_g = np.nanmean( cl_alt_lat, axis = 0 )
 clw_g = np.nanmean( clw_alt_lat, axis = 0 )
 cli_g = np.nanmean( cli_alt_lat, axis = 0 )
-ta_liq_g = np.nanmean( ta_liq_alt_lat, axis = 0 )
+ta_liq_g = np.nanmean( ta_alt_lat, axis = 0 )
+
+#----------------------------#
+
+interpolated = interpolate.interp1d(ta_liq_g, clw_g, kind = 'cubic', fill_value="extrapolate")
+clw_t_g = interpolated(constants.ta_g)
+clw_t_g[clw_t_g < 0] = np.nan
+
+interpolated = interpolate.interp1d(ta_liq_so, clw_so, kind = 'cubic', fill_value="extrapolate")
+clw_t_so = interpolated(constants.ta_so)
+clw_t_so[clw_t_so < 0] = np.nan
 
 #----------------------------#
 
 os.chdir( location + '/climate-analysis/reduced_data' )
 
-save_filename = 'CCCM.h5'
+save_filename = 'Jun_2006_Apr_2011_CCCM.h5'
 
 with h5py.File(save_filename, 'w') as p:
-    
-    p.create_dataset('ta_liq_g', data=ta_liq_g) # global layer temperature corresponding to liq_alt
-    p.create_dataset('ta_liq_so', data=ta_liq_so) # southern ocean layer temperature corresponding to liq_alt
-         
+            
     p.create_dataset('cl_g', data=cl_g) # global layer total cloud fraction corresponding to alt
     p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water fraction corresponding to liq_alt
     p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water fraction corresponding to alt
@@ -159,13 +165,16 @@ with h5py.File(save_filename, 'w') as p:
     p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
     p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water fraction corresponding to alt
     
-    p.create_dataset('lw_frac_alt_lat', data= np.transpose( lw_frac_alt_lat )) # temperature corresponding to alt and lat
+    p.create_dataset('clw_t_g', data=clw_t_g) # global layer cloud liquid water fraction corresponding to ta_g
+    p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water fraction corresponding to ta_so
     
-    p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat )) # temperature corresponding to alt and lat
-    p.create_dataset('ta_liq_alt_lat', data= np.transpose( ta_liq_alt_lat )) # temperature corresponding to liq_alt and lat
-    p.create_dataset('cl_alt_lat', data=np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
-    p.create_dataset('clw_alt_lat', data=np.transpose( clw_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
-    p.create_dataset('cli_alt_lat', data=np.transpose( cli_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
+    p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat ) ) # temperature corresponding to liq_alt and lat
+    p.create_dataset('cl_alt_lat', data= np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
+    p.create_dataset('clw_alt_lat', data= np.transpose( clw_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
+    p.create_dataset('cli_alt_lat', data= np.transpose( cli_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
+
+    p.create_dataset('full_ta_alt_lat', data= np.transpose( full_ta_alt_lat ) ) # temperature corresponding to alt and lat
+    p.create_dataset('full_clw_alt_lat', data= np.transpose( full_clw_alt_lat ) ) # tcloud liquid water fraction corresponding to alt and lat
 
     p.close()
 
