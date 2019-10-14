@@ -35,7 +35,7 @@ import cartopy.crs as ccrs
 
 #--- Set Location, date period and model ---#
 
-model = 'CERES'
+model = 'CMIP5-GFDL-HIRAM-C360'
 location = constants.home + 'climate-analysis/reduced_data'
 date_cmip5 = 'Jan_2001_Dec_2005'
 date_cmip6 = 'Jan_2006_Dec_2010'
@@ -106,26 +106,26 @@ elif model == 'ECMWF':
 
 elif model == 'CALIPSO':    
     h5f = h5py.File( 'Jun_2006_Jun_2011_CALIPSO.h5', 'r')
-    cl_alt_lat = h5f['cl_alt_lat'][:]
-    cl_g = h5f['cl_g'][:]
-    cl_so = h5f['cl_so'][:]
-    cli_alt_lat = h5f['cli_alt_lat'][:]
-    cli_g = h5f['cli_g'][:]
-    cli_so = h5f['cli_so'][:]
-    clw_g = h5f['clw_g'][:]
-    clw_so = h5f['clw_so'][:]
-    clw_t_g = h5f['clw_t_g'][:]
-    clw_t_so = h5f['clw_t_so'][:]
-    clw_alt_lat = h5f['clw_alt_lat'][:]
-    clt = h5f['clt'][:]
-    clt_lat_lon = h5f['clt_lat_lon'][:]
-    clwvi = h5f['clwvi'][:]
-    clwvi_lat_lon = h5f['clwvi_lat_lon'][:]
-    clivi = h5f['clivi'][:]
-    clivi_lat_lon = h5f['clivi_lat_lon'][:]
-    full_clw_alt_lat = h5f['full_clw_alt_lat'][:]
-    full_ta_alt_lat = h5f['full_ta_alt_lat'][:]
-    ta_alt_lat = h5f['ta_alt_lat'][:]
+    cal_cl_alt_lat = h5f['cl_alt_lat'][:]
+    cal_cl_g = h5f['cl_g'][:]
+    cal_cl_so = h5f['cl_so'][:]
+    cal_cli_alt_lat = h5f['cli_alt_lat'][:]
+    cal_cli_g = h5f['cli_g'][:]
+    cal_cli_so = h5f['cli_so'][:]
+    cal_clw_g = h5f['clw_g'][:]
+    cal_clw_so = h5f['clw_so'][:]
+    cal_clw_t_g = h5f['clw_t_g'][:]
+    cal_clw_t_so = h5f['clw_t_so'][:]
+    cal_clw_alt_lat = h5f['clw_alt_lat'][:]
+    cal_clt = h5f['clt'][:]
+    cal_clt_lat_lon = h5f['clt_lat_lon'][:]
+    cal_clwvi = h5f['clwvi'][:]
+    cal_clwvi_lat_lon = h5f['clwvi_lat_lon'][:]
+    cal_clivi = h5f['clivi'][:]
+    cal_clivi_lat_lon = h5f['clivi_lat_lon'][:]
+    cal_full_clw_alt_lat = h5f['full_clw_alt_lat'][:]
+#    cal_full_ta_alt_lat = h5f['full_ta_alt_lat'][:]
+#    cal_ta_alt_lat = h5f['ta_alt_lat'][:]
 
 elif model == 'MISR':    
     h5f = h5py.File( 'Jan_2006_Dec_2010_MISR.h5', 'r')
@@ -188,7 +188,7 @@ for index,key in enumerate(h5f.keys()):
 #--- sample plots for confirmation ---#
 
 fig, ax = plt.subplots()
-ax.plot( constants.lat, clt )
+ax.plot( constants.lat, clivi )
 ax.set_ylabel('Cloud Fraction')
 ax.set_xlabel('Latitude')
 ax.set_title ('Global Cloud Fraction vs Latitude')
@@ -227,7 +227,7 @@ cbar.set_label('Cloud liquid Water Fraction')
 plt.show()
 
 
-ax = plt.axes(projection=ccrs.Mollweide())
+ax = plt.axes(projection=ccrs.Mollweide(central_longitude=180))
 ax.coastlines()
 p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree())
 cbar = plt.colorbar(p, orientation='horizontal')

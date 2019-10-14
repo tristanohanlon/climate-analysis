@@ -45,6 +45,7 @@ max_lat = 75.0
 lat_division = 0.5
 lat = np.arange(min_lat, max_lat, lat_division)
 
+# if reducing CALIPSO data, these need to be changed to min = -180, max = 180
 min_lon = 0
 max_lon = 360
 lon_division = 1

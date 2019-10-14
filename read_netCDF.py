@@ -38,9 +38,9 @@ import numpy as np
 
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'CALIPSO-GOCCP'
+data = 'CMIP5-CESM1-CAM5'
 location = constants.home + 'Data/'
-data_type = 'MapLowMidHigh330m'
+data_type = 'clt'
 
 if data == 'ECMWF':
     with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: #Laptop
@@ -50,7 +50,7 @@ else:
     with Dataset(location + data + '/' + data_type + constants.model_dict[ data ], 'r') as f: #Laptop
         print(f.variables)
     
-    #    time = f.variables['time']
+        time = f.variables['lon'][:]
     #    print(date2index(datetime.datetime(2006,1,1), time, select='before'))
 
 

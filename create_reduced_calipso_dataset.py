@@ -13,6 +13,8 @@ reduce_dataset( 'gfdl_am4', '_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc',
 
 use ECMWF ta_alt_lat over contour data
 Specify time range at the bottom
+
+Change lon in constants from 0-360 to -180 to 180
 """
 import numpy as np
 import os
@@ -54,7 +56,9 @@ os.chdir( location + 'Data/CALIPSO-GOCCP' )
 
 f = Dataset('Map_OPAQ330m_200606-201803_avg_CFMIP2_sat_3.1.2.nc', 'r')
 raw_lat = np.array(f.variables['latitude'][4:85])
-raw_lon = np.array(f.variables['longitude'][:]) + 180
+
+##### IMPORTANT - change lon in constants to -180 to 180
+raw_lon = np.array(f.variables['longitude'][:])
 
 #opaque (thick) clouds
 cc = np.array(f.variables['cltcalipso_opaque'][:60]) # 7.2006 to 12.2020 - 54 months
