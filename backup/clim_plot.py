@@ -1,0 +1,362 @@
+# -*- coding: utf-8 -*-
+"""
+
+@author: Tristan O'Hanlon
+
+"""
+import h5py
+import os
+import matplotlib.pyplot as plt
+import constants
+import numpy as np
+import cartopy.crs as ccrs
+
+#---Importing Data from Reduced Datasets---#
+location = constants.uni
+
+class Model:
+    def __init__( self, path, name ):
+        self.name = name
+        a = h5py.File(path, 'r')
+
+        self.data = {}
+        for e in a.keys():
+            self.data[ e ] = a[ e ][:]
+        
+
+
+models = {
+    'CMIP5-GFDL-HIRAM-C360' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-GFDL-HIRAM-C360.h5', 'CMIP5-GFDL-HIRAM-C360' ),
+    'CMIP5-GISS-E2R' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-GISS-E2R.h5', 'CMIP5-GISS-E2R' ),
+    'CMIP5-IPSL-CM5A-LR' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-IPSL-CM5A-LR.h5', 'CMIP5-IPSL-CM5A-LR' ),
+    'CMIP5-MIROC5' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-MIROC5.h5', 'CMIP5-MIROC5' ),
+    'CMIP5-MRI-CGCM3' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-MRI-CGCM3.h5', 'CMIP5-MRI-CGCM3' ),
+    'CMIP5-CESM1-CAM5' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip5 + '_CMIP5-CESM1-CAM5.h5', 'CMIP5-CESM1-CAM5' ),
+    
+    'CMIP6-GFDL-AM4' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-GFDL-AM4.h5', 'CMIP6-GFDL-AM4' ),
+    'CMIP6-GISS-E21G' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-GISS-E21G.h5', 'CMIP6-GISS-E21G' ),
+    'CMIP6-IPSL-CM6A-LR' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-IPSL-CM6A-LR.h5', 'CMIP6-IPSL-CM6A-LR' ),
+    'CMIP6-MIROC6' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-MIROC6.h5', 'CMIP6-MIROC6' ),
+    'CMIP6-MRI-ESM2' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-MRI-ESM2.h5', 'CMIP6-MRI-ESM2' ),
+    'CMIP6-CESM2-CAM6' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_CMIP6-CESM2-CAM6.h5', 'CMIP6-CESM2-CAM6' ),
+
+    'ECMWF' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cmip6 + '_ECMWF.h5', 'ECMWF-ERA5' ),
+    'CALIPSO' : Model( location + 'climate-analysis/reduced_data/' + constants.date_ceres + '_CALIPSO.h5', 'CALIPSO-GOCCP' ),
+
+    'CCCM' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cccm + '_CCCM.h5', 'CCCM' ),
+    'CERES' : Model( location + 'climate-analysis/reduced_data/' + constants.date_ceres + '_CERES.h5', 'CERES' ),
+}
+
+
+
+
+
+quantity = {
+    'clt' : 'Cloud Fraction',
+    'clwvi' : 'Cloud Liquid Water Fraction',
+    'clivi' : 'Cloud Ice Water Fraction',
+    'cl' : 'Cloud Fraction',
+    'clw' : 'Cloud Liquid Water Fraction',
+    'cli' : 'Cloud Ice Water Fraction',
+    'clt_lc' : 'Low Cloud Fraction',
+    'clwvi_lc' : 'Low Cloud Liquid Water Fraction',
+    'mmrdust' : 'Dust Aerosol Mass Mixing Ratio',
+    'mmroa' : 'Total Organic Aerosol Mass Mixing Ratio',
+    'mmrso4' : 'Sulphate Aerosol Mass Mixing Ratio',
+    'rsdt' : 'TOA Incoming Shortwave Flux',
+    'rsut' : 'TOA Outgoing Shortwave Flux',
+    'rsutcs' : 'TOA Outgoing Shortwave Flux Assuming Clear Sky',
+    'rtmt' : 'Net Downwards Radiative Flux at TOA',
+    'aerosol_norm' : 'Normalised Aerosol Contribution (Dust, Organic, SO4, Black Carbon, Sea Salt)',
+    'mmrbc' : 'Black Carbon Aerosol Mass Mixing Ratio',
+    'mmrss' : 'Sea Salt Aerosol Mass Mixing Ratio',
+    'albedo_reg' : 'Albedo'
+}
+
+
+
+#This needs to be at least as long as the number of models you will ever graph at the same time  
+colours = ['-k', '-b', '-r', '-g', '-m', '-c', '--k', '--b', '--r', '--g', '--m', '--c', ':k', ':b', ':r', ':g', ':m', ':c' ]
+
+############################################################################### global latitude plots
+
+# plot zonal quantities: clt, clwvi or clivi with latitude
+
+def latitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
+    
+    # max and min range for all CMIP5 models - be able to turn this on or off
+    cmip5models = [ model.data[quantity_to_graph] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models = [ model.data[quantity_to_graph] for name, model in models.items() if name.startswith('CMIP6') ]
+
+    cmip5_max = np.maximum.reduce( cmip5models )
+    cmip5_min = np.minimum.reduce( cmip5models )
+    cmip6_max = np.maximum.reduce( cmip6models )
+    cmip6_min = np.minimum.reduce( cmip6models )
+
+    fig, (ax) = plt.subplots()
+    for model, col in zip( models_to_graph, colours ):
+        ax.plot( constants.lat, model.data[quantity_to_graph], col, label=model.name )
+
+    # plot the range limits from all models and fill between them.
+    if cmip5_range == True:
+        ax.fill_between( constants.lat, cmip5_min, cmip5_max, facecolor='black', alpha=0.3,
+                    label='CMIP5 Model Range' )
+        
+    if cmip6_range == True:
+        ax.fill_between( constants.lat, cmip6_min, cmip6_max, facecolor='green', alpha=0.3,
+                    label='CMIP6 Model Range' )
+
+    plt.grid( True )
+    ax.legend(loc='upper center', bbox_to_anchor=(1.25, 1.0));
+    ax.set_ylabel( quantity[quantity_to_graph] )
+    ax.set_xlabel( 'Latitude' )
+    ax.set_title ( quantity[quantity_to_graph] + ' vs Latitude' )
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+
+    plt.savefig( location + '/Images/' + quantity_to_graph + '_' + all_model_names + ".pdf", format="pdf", bbox_inches='tight' )
+    plt.show()
+
+
+
+############################################################################### altitude plots
+
+# plot zonal quantities cl, clw or cli with altitude - 2 graphs: top = global, bottom = southern ocean
+# cl and cli go with alt
+# clw goes with liq_alt
+# global = g, southern ocean = so
+
+def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
+
+    cmip5models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+    cmip5models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP6') ]
+ 
+
+    cmip5_g_max = np.maximum.reduce( cmip5models_g )
+    cmip5_g_min = np.minimum.reduce( cmip5models_g )
+    cmip6_g_max = np.maximum.reduce( cmip6models_g )
+    cmip6_g_min = np.minimum.reduce( cmip6models_g )
+
+    cmip5_so_max = np.maximum.reduce( cmip5models_so )
+    cmip5_so_min = np.minimum.reduce( cmip5models_so )
+    cmip6_so_max = np.maximum.reduce( cmip6models_so )
+    cmip6_so_min = np.minimum.reduce( cmip6models_so ) 
+   
+    
+    fig, ( ax1, ax2 ) = plt.subplots(1, 2)
+    for model, col in zip( models_to_graph, colours ):
+        if quantity_to_graph == 'clw':
+            ax1.plot( model.data[quantity_to_graph + '_g'], constants.liq_alt, col, label=model.name )
+        else:
+            ax1.plot( model.data[quantity_to_graph + '_g'], constants.alt, col, label=model.name )
+ 
+    for model, col in zip( models_to_graph, colours ):
+        if quantity_to_graph == 'clw':
+            ax2.plot( model.data[quantity_to_graph + '_so'], constants.liq_alt, col, label=model.name )
+        else:
+            ax2.plot( model.data[quantity_to_graph + '_so'], constants.alt, col, label=model.name )
+        
+
+    # plot the range limits from all models on both axes and fill between them.
+    if cmip5_range == True:
+        if quantity_to_graph == 'clw':
+            ax1.fill_betweenx( constants.liq_alt, cmip5_g_min, cmip5_g_max, facecolor='black', alpha=0.3,
+                        label='CMIP5 Model Range' )
+            ax2.fill_betweenx( constants.liq_alt, cmip5_so_min, cmip5_so_max, facecolor='black', alpha=0.3,
+                        label='CMIP5 Model Range' )
+        else:
+            ax1.fill_betweenx( constants.alt, cmip5_g_min, cmip5_g_max, facecolor='black', alpha=0.3,
+                        label='CMIP5 Model Range' )
+            ax2.fill_betweenx( constants.alt, cmip5_so_min, cmip5_so_max, facecolor='black', alpha=0.3,
+                        label='CMIP5 Model Range' )
+           
+    if cmip6_range == True:   
+        if quantity_to_graph == 'clw':
+            ax1.fill_betweenx( constants.liq_alt, cmip6_g_min, cmip6_g_max, facecolor='green', alpha=0.3,
+                        label='CMIP6 Model Range' )    
+            ax2.fill_betweenx( constants.liq_alt, cmip6_so_min, cmip6_so_max, facecolor='green', alpha=0.3,
+                        label='CMIP6 Model Range' )
+        else:
+            ax1.fill_betweenx( constants.alt, cmip6_g_min, cmip6_g_max, facecolor='green', alpha=0.3,
+                        label='CMIP6 Model Range' )    
+            ax2.fill_betweenx( constants.alt, cmip6_so_min, cmip6_so_max, facecolor='green', alpha=0.3,
+                        label='CMIP6 Model Range' )
+
+
+    ax1.set_xlabel( quantity[quantity_to_graph] )
+    ax2.set_xlabel( quantity[quantity_to_graph] )
+    ax1.set_ylabel( 'Altitude (km)' )
+    ax1.set_title ( 'Global' )
+    ax2.set_title ( 'Southern Ocean' )
+    ax2.legend(loc='upper center', bbox_to_anchor=(1.55, 1.0));
+
+    ax1.axhline(y=3, label = 'Low Cloud Boundary', color = 'black', linestyle='--')
+    ax2.axhline(y=3, label = 'Low Cloud Boundary', color = 'black', linestyle='--')
+
+    ax1.set_xlim( 0, 0.6 )
+    ax2.set_xlim( 0, 0.6 )
+    
+    ax1.grid( True )
+    ax2.grid( True )
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+
+    plt.savefig( location + '/Images/' + quantity_to_graph + '_' + all_model_names + ".pdf", format="pdf", bbox_inches='tight' )
+    plt.show()
+
+
+############################################################################### temperature plots
+
+# plot clw_t with temperature - 2 graphs: top = global, bottom = southern ocean
+# global = g, southern ocean = so
+
+def liq_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = True ):
+
+    cmip5models_g = [ model.data['clw_t_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_g = [ model.data['clw_t_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+    cmip5models_so = [ model.data['clw_t_so'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_so = [ model.data['clw_t_so'] for name, model in models.items() if name.startswith('CMIP6') ]
+ 
+    cmip5_g_max = np.maximum.reduce( cmip5models_g )
+    cmip5_g_min = np.minimum.reduce( cmip5models_g )
+    cmip6_g_max = np.maximum.reduce( cmip6models_g )
+    cmip6_g_min = np.minimum.reduce( cmip6models_g )
+
+    cmip5_so_max = np.maximum.reduce( cmip5models_so )
+    cmip5_so_min = np.minimum.reduce( cmip5models_so )
+    cmip6_so_max = np.maximum.reduce( cmip6models_so )
+    cmip6_so_min = np.minimum.reduce( cmip6models_so ) 
+    
+    fig, ( ax1, ax2 ) = plt.subplots(2,1, figsize=(10, 8))
+    for model, col in zip( models_to_graph, colours ):
+        ax1.plot( constants.ta_g, model.data['clw_t_g'],  col, label=model.name )
+ 
+    for model, col in zip( models_to_graph, colours ):
+        ax2.plot( constants.ta_so, model.data['clw_t_so'], col, label=model.name )
+        
+
+    # plot the range limits from all models on both axes and fill between them.
+    if cmip5_range == True:
+        ax1.fill_between( constants.ta_g, cmip5_g_min, cmip5_g_max, facecolor='black', alpha=0.3,
+                    label='CMIP5 Model Range' )
+        ax2.fill_between( constants.ta_so, cmip5_so_min, cmip5_so_max, facecolor='black', alpha=0.3,
+                    label='CMIP5 Model Range' )
+           
+    if cmip6_range == True:   
+        ax1.fill_between( constants.ta_g, cmip6_g_min, cmip6_g_max, facecolor='green', alpha=0.3,
+                    label='CMIP6 Model Range' )    
+        ax2.fill_between( constants.ta_so, cmip6_so_min, cmip6_so_max, facecolor='green', alpha=0.3,
+                    label='CMIP6 Model Range' )
+
+
+    ax1.set_ylabel( 'Cloud Liquid Water Fraction' )
+    ax2.set_ylabel( 'Cloud Liquid Water Fraction' )
+    ax2.set_xlabel( 'Temperature (C)' )
+    ax1.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+    ax2.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+
+    ax1.set_title ( 'Global' )
+    ax2.set_title ( 'Southern Ocean' )
+    ax1.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0));
+
+    ax1.grid( True )
+    ax2.grid( True )
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+    fig.tight_layout()
+    plt.savefig( location + '/Images/' + 'liq_temp' + '_' +  all_model_names + ".pdf", format="pdf", bbox_inches='tight' )
+    plt.show()
+
+
+############################################################################### contour plots
+
+def satellite_contours( models_to_graph, zero_lines ):
+    assert( len( models_to_graph ) == len( zero_lines ) )
+
+    fig, ax = plt.subplots( nrows=1, ncols=len( models_to_graph ), figsize=(15, 5) )
+    for count, (model, zero_line ) in enumerate( zip( models_to_graph, zero_lines ) ):
+        prime = ax[ count ].contourf( constants.lat, constants.alt, model.data['cli_alt_lat'], cmap='coolwarm' )
+        temp = ax[ count ].contour( constants.lat, constants.alt, ( model.data[ 'full_ta_alt_lat' ] - 273.15 ), colors='white' )
+        temp.collections[ zero_line ].set_linewidth( 3 )
+        temp.collections[ zero_line ].set_color( 'white' )
+        ax[ count ].clabel( temp, inline=1, fontsize=10 )
+        ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_title( model.name )
+
+    # the common color bar is based off the model labeled 'prime'
+    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
+
+    # the common color bar is based off the model labeled 'prime'
+    cbar = fig.colorbar(prime, ax=ax.ravel().tolist(), orientation='horizontal', fraction = 0.05 )
+    cbar.set_label('Cloud Ice Water Fraction')    
+    cbar.set_clim(0, 0.5)
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+
+    plt.savefig( location + '/Images/' + 'contours' + '_' +  all_model_names + ".pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+   
+
+
+def model_contours( models_to_graph, zero_lines ):
+    assert( len( models_to_graph ) == len( zero_lines ) )
+
+    fig, ax = plt.subplots( nrows=1, ncols=len( models_to_graph ), figsize=(15, 5) )
+    for count, (model, zero_line ) in enumerate( zip( models_to_graph, zero_lines ) ):
+        prime = ax[ count ].contourf( constants.lat, constants.liq_alt, model.data['clw_alt_lat'], cmap='coolwarm' )
+        temp = ax[ count ].contour( constants.lat, constants.liq_alt, ( model.data[ 'ta_alt_lat' ] - 273.15 ), colors='white' )
+        temp.collections[ zero_line ].set_linewidth( 3 )
+        temp.collections[ zero_line ].set_color( 'white' )
+        ax[ count ].clabel( temp, inline=1, fontsize=10 )
+        ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_title( model.name )
+ 
+    plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
+
+    # the common color bar is based off the model labeled 'prime'
+    cbar = fig.colorbar(prime, ax=ax.ravel().tolist(), orientation='horizontal', fraction = 0.05 )
+    cbar.set_label('Cloud liquid Water Fraction')    
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+
+    plt.savefig( location + '/Images/' + 'contours' + '_' +  all_model_names + ".pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+
+
+############################################################################### regional plots
+
+
+def region_plot( models_to_graph, quantity_to_graph ):
+    ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+    ax.coastlines()
+    for model in  models_to_graph:
+        # if model == 'CERES':
+        #     lon = constants.lon - 180
+        # else:
+        #     lon = constants.lon
+        if quantity_to_graph == 'albedo_reg':
+            prime = ax.contourf( constants.lon, constants.lat, model.data[ 'albedo_reg' ], transform=ccrs.PlateCarree(), cmap='coolwarm' )
+        elif quantity_to_graph == 'albedo_bias':
+            prime = ax.contourf( constants.lon, constants.lat, (models['CERES'].data[ 'albedo_reg' ] - model.data[ 'albedo_reg' ]), transform=ccrs.PlateCarree(), cmap='coolwarm' )
+        else:
+            prime = ax.contourf( constants.lon, constants.lat, model.data[ quantity_to_graph + '_lat_lon' ], transform=ccrs.PlateCarree(), cmap='coolwarm' )
+        ax.set_title( model.name )
+
+    cbar = plt.colorbar(prime, orientation='horizontal')
+
+    if quantity_to_graph == 'albedo_reg':
+        cbar.set_label( 'Albedo' )
+    elif quantity_to_graph == 'albedo_bias':
+        cbar.set_label( 'Albedo Bias (CERES observation - model data)' )
+    else:
+        cbar.set_label( quantity[quantity_to_graph] )
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+
+    plt.savefig( location + '/Images/' + 'regional' + '_' +  all_model_names + '_' + quantity_to_graph + ".pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+
+
+

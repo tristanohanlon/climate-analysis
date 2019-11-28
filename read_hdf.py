@@ -59,4 +59,4 @@ sds_obj = f.select( data_type ) # select sds
 data = sds_obj.get() # get sds data
 print (data.shape) # print data dimensions
 
-pprint.pprint( sds_obj.attributes()['_FillValue'] ) # print data attributes
+#pprint.pprint( sds_obj.attributes()['_FillValue'] ) # print data attributes

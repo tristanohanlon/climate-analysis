@@ -35,22 +35,25 @@ from netCDF4 import Dataset  # http://code.google.com/p/netcdf4-python/
 import os
 import constants
 import numpy as np
-
+import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'CMIP5-CESM1-CAM5'
-location = constants.home + 'Data/'
+data = 'CMIP6-GFDL-AM4'
+location = constants.hdd + 'Data/'
 data_type = 'clt'
 
 if data == 'ECMWF':
-    with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: #Laptop
-        print(f.variables)
-        data = f.variables['latitude'][:]
+    with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: 
+        print(f.variables.keys())
+        data = f.variables['level'][:]
+        print(data.shape)
+
 else:   
     with Dataset(location + data + '/' + data_type + constants.model_dict[ data ], 'r') as f: #Laptop
-        print(f.variables)
-    
-        time = f.variables['lon'][:]
+        print(f.variables.keys())
+        data = f.variables[ 'cltemp_liq' ][:]
+        print(data.shape)
+        # time = f.variables['lon'][:]
     #    print(date2index(datetime.datetime(2006,1,1), time, select='before'))
 
 

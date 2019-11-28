@@ -6,6 +6,8 @@ Created on Wed Oct  9 10:06:47 2019
 """
 import numpy as np
 from scipy import ndimage as nd
+from netCDF4 import date2index
+
 
 model_dict = {
     "CMIP5-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip_r1i1p1_197901-200512.nc",
@@ -34,16 +36,31 @@ satellite_dict = {
         }
 
 
+all_models = [ 'CMIP5-CESM1-CAM5', 'CMIP5-GFDL-HIRAM-C360', 'CMIP5-GISS-E2R', 'CMIP5-IPSL-CM5A-LR', 'CMIP5-MIROC5', 'CMIP5-MRI-CGCM3', 'CMIP6-CESM2-CAM6', 'CMIP6-GFDL-AM4', 'CMIP6-GISS-E21G', 'CMIP6-IPSL-CM6A-LR', 'CMIP6-MIROC6', 'CMIP6-MRI-ESM2' ]
+
+
 home = 'E:/University/University/MSc/Models/'
+network = '//synthesis/E/University/University/MSc/Models/'
 uni = 'C:/Users/toha006/University/University/MSc/Models/'
-hdd = 'D:/MSc/Models/'
+hdd = 'E:/MSc/Models/'
 laptop = 'C:/Users/tristan/University/University/MSc/Models/'
 
+date_cmip5 = 'Jan_2002_Dec_2005'
+date_cmip6 = 'Jan_2007_Dec_2010'
+date_ceres = 'Jan_2007_Dec_2010'
+date_cccm = 'Jan_2007_Dec_2010'
 
-min_lat = -75.0
-max_lat = 75.0
-lat_division = 0.5
+
+min_lat = -89.5
+max_lat = 90
+lat_division = 1
 lat = np.arange(min_lat, max_lat, lat_division)
+# Southern Ocean index ranges
+so_idx_1 = np.abs(lat - (-70)).argmin()
+so_idx_2 = np.abs(lat - (-50)).argmin()
+# Limit latitude plot range to -75 and 75 degrees
+lat_confine_1 = np.abs(lat - (-75)).argmin()
+lat_confine_2 = np.abs(lat - (75)).argmin()
 
 # if reducing CALIPSO data, these need to be changed to min = -180, max = 180
 min_lon = 0
@@ -51,27 +68,151 @@ max_lon = 360
 lon_division = 1
 lon = np.arange(min_lon, max_lon, lon_division)
 
-min_alt = 0.5
+min_alt = 0.25
 max_alt = 20
-alt_division = 0.5
+alt_division = 0.25
 alt = np.arange(min_alt, max_alt, alt_division)
+liq_alt_confine = np.abs(alt - (7)).argmin()
 
-min_ta_g = 250
-max_ta_g = 280
-ta_g_division = 0.5
-ta_g = np.arange(min_ta_g, max_ta_g, ta_g_division)
 
-min_ta_so = 240
-max_ta_so = 270
-ta_so_division = 0.5
-ta_so = np.arange(min_ta_so, max_ta_so, ta_so_division)
+min_lc_alt = 0.2
+max_lc_alt = 3
+lc_alt_division = 0.1
+lc_alt = np.arange(min_lc_alt, max_lc_alt, lc_alt_division)
 
-min_liq_alt = 0.5
+min_ta = 240
+max_ta = 300
+ta_division = 2
+ta = np.arange(min_ta, max_ta, ta_division)
+
+
+min_liq_alt = 0.25
 max_liq_alt = 7
 liq_alt_division = 0.25
 liq_alt = np.arange(min_liq_alt, max_liq_alt, liq_alt_division)
 
 
+# Function that extracts data over time.
+def extract_data_over_time( type, f, start, end ):
+        time_variable = f.variables['time']
+        start_index = date2index( start, time_variable, select='before' )
+        end_index = date2index( end, time_variable, select='before' )
+
+        data = np.array( f.variables[type][start_index:end_index])
+        return data
+
+
+# Function that extracts all data
+def extract_data( type, f ):
+    return np.array( f.variables[type][:] )
+
+
+
+# Function that selects only southern ocean data
+def create_southern_ocean_data( raw_lat, global_data ):
+    
+    start_index = 0
+    end_index = 0
+    for index, l in enumerate( raw_lat ):
+        if l < -70:
+            start_index = index + 1
+        if l <= -50:
+            end_index = index
+    so = global_data[start_index:end_index]
+    return so
+
+
+# Function to calculate the global mean of a variable that has
+# already been averaged over time. 
+# Data is (lat)
+# Input the raw latitudes from the variable file.
+# Output is a single value
+def globalMean(Data, latitudes): 
+    areaWeights = np.cos(latitudes*np.pi/180)
+    weightedMatrix = Data*areaWeights
+    sumWeighted = np.sum(weightedMatrix,axis=0)
+    sumWeights = np.sum(areaWeights,axis=0)
+    weightedMean = sumWeighted/sumWeights
+    return weightedMean
+
+
+# Function to calculate the zonal low cloud mean of a variable that has
+# already been averaged over time and longitude. 
+# Data is (alt, lat)
+# Input the raw pressures from the variable file.
+# Output is (lat)
+def lowregMean(Data, pressures): 
+    areaWeights = pressures
+    areaWeights3D = np.swapaxes(np.swapaxes(np.tile(areaWeights,
+                                (np.shape(Data)[1],np.shape(Data)[2],1)), 0, 2), 1, 2)  #Replicating the area weights 
+    weighted3DMatrix = Data*areaWeights3D
+    sumWeighted = np.sum(weighted3DMatrix,axis=(0))
+    sumWeights3D = np.sum(areaWeights3D,axis=(0))
+    weightedMean = sumWeighted/sumWeights3D
+    return weightedMean
+
+
+def lowlatMean(Data, pressures): 
+    areaWeights = pressures
+    areaWeights3D = np.swapaxes(np.swapaxes(np.tile(areaWeights,
+                                (np.shape(Data)[1],np.shape(Data)[2],1)), 0, 2), 1, 2)  #Replicating the area weights 
+    weighted3DMatrix = Data*areaWeights3D
+    sumWeighted = np.sum(weighted3DMatrix,axis=(0, 2))
+    sumWeights3D = np.sum(areaWeights3D,axis=(0, 2))
+    weightedMean = sumWeighted/sumWeights3D
+    return weightedMean
+
+
+# Function to calculate the global mean of a variable that has
+# already been averaged over time. 
+# Data is (lat, lon)
+# Input the raw latitudes from the variable file.
+# Output is a single value
+def global2DMean(Data, latitudes): 
+    areaWeights = np.cos(latitudes*np.pi/180)
+    areaWeights2D = np.swapaxes(np.tile(areaWeights,
+                                (np.shape(Data)[1], 1)), 0, 1)  #Replicating the area weights 
+    weighted2DMatrix = Data*areaWeights2D
+    sumWeighted = np.sum(weighted2DMatrix,axis=(0,1))
+    sumWeights2D = np.sum(areaWeights2D,axis=(0,1))
+    weightedMean = sumWeighted/sumWeights2D
+    return weightedMean
+
+# Function to calculate the global mean of a variable that has
+# already been averaged over time. 
+# Data is (alt, lat)
+# Input the raw latitudes from the variable file.
+# Output is a single value
+def globalalt_latMean(Data, latitudes): 
+    areaWeights = np.cos(latitudes*np.pi/180)
+    areaWeights2D = np.tile(areaWeights,
+                                (np.shape(Data)[0], 1))  #Replicating the area weights 
+    weighted2DMatrix = Data*areaWeights2D
+    sumWeighted = np.sum(weighted2DMatrix,axis=(1))
+    sumWeights2D = np.sum(areaWeights2D,axis=(1))
+    weightedMean = sumWeighted/sumWeights2D
+    return weightedMean
+
+
+# Function to calculate the global profile mean of a variable that has
+# already been averaged over time. 
+# Data is (alt, lat, lon)
+# Input the raw latitudes from the variable file.
+# Output is an array which corresponds to pressure levels
+def global3DMean(Data, latitudes):
+    areaWeights = np.cos(latitudes*np.pi/180)
+    areaWeights3D = np.swapaxes(np.tile(areaWeights,
+                                (np.shape(Data)[0],np.shape(Data)[2],1)),
+                                1,2)  #Replicating the area weights 
+    weighted3DMatrix = Data*areaWeights3D
+    sumWeighted = np.sum(weighted3DMatrix,axis=(1,2))
+    sumWeights3D = np.sum(areaWeights3D,axis=(1,2))
+    weightedMean = sumWeighted/sumWeights3D
+    return weightedMean
+
+
+# Function that bins the data into liquid altitudes and latitudes.
+# Input the data that is (alt, lat) as well as the raw alts and lats
 def fit_2d_liq_data ( data, raw_lat, raw_alt ):
     new_liq_data = np.zeros(( lat.size, liq_alt.size ))
     liq_data_counts = np.zeros( (lat.size, liq_alt.size ))
@@ -91,8 +232,32 @@ def fit_2d_liq_data ( data, raw_lat, raw_alt ):
             liq_data_counts[ lat_bin, liq_alt_bin ] += 1
     data = new_liq_data / liq_data_counts
     return data
-          
-  
+    
+
+# Function that bins the data into latitudes and longitude.
+# Input the data that is (lat, lon) as well as the raw lons and lats
+def fit_grid_data( data, raw_lat, raw_lon ):
+    new_data = np.zeros(( lat.size, lon.size ))
+    data_counts = np.zeros( (lat.size, lon.size ))
+    
+    for l_index, l in enumerate( raw_lat ):
+        if l <= min_lat or l >= max_lat:
+            continue
+        lat_bin = int( ( l - min_lat ) / lat_division)
+        for a_index, a in enumerate( raw_lon ):
+            if a < min_lon or a > max_lon:
+                continue
+            lon_bin = int( ( a - min_lon ) / lon_division )
+            val = data[l_index, a_index]
+            if np.isnan(val):
+                continue
+            new_data[ lat_bin, lon_bin ] += val
+            data_counts[ lat_bin, lon_bin ] += 1
+    data = new_data / data_counts
+    return data
+      
+# Function that bins the data into altitudes and latitudes.
+# Input the data that is (alt, lat) as well as the raw alts and lats 
 def fit_2d_data( data, raw_lat, raw_alt ):
     new_data = np.zeros(( lat.size, alt.size ))
     data_counts = np.zeros( (lat.size, alt.size ))
@@ -114,7 +279,8 @@ def fit_2d_data( data, raw_lat, raw_alt ):
     return data
             
            
-
+# Function that bins the data into altitudes.
+# Input the data that is (alt) as well as the raw alts
 def fit_data( data, raw_alt ):
     new_data = np.zeros(( alt.size ))
     data_counts = np.zeros( ( alt.size ))
@@ -132,6 +298,8 @@ def fit_data( data, raw_alt ):
     return data
 
 
+# Function that bins the data into liquid altitudes.
+# Input the data that is (alt) as well as the raw alts
 def fit_liq_data( data, raw_alt ):
     new_data = np.zeros(( liq_alt.size ))
     data_counts = np.zeros( ( liq_alt.size ))
@@ -149,6 +317,8 @@ def fit_liq_data( data, raw_alt ):
     return data
 
 
+# Function that bins the data into latitudes.
+# Input the data that is (lats) as well as the raw lats
 def fit_lat_data( data, raw_lat ):
     new_data = np.zeros(( lat.size ))
     data_counts = np.zeros( (lat.size ))
@@ -165,6 +335,9 @@ def fit_lat_data( data, raw_lat ):
     data = new_data / data_counts
     return data
 
+
+# Function that bins the data into temperatures.
+# Input the data that is () as well as the raw ta
 def fit_ta_g_data( data, raw_ta ):
     new_data = np.zeros(( ta_g.size ))
     data_counts = np.zeros( (ta_g.size ))
@@ -181,6 +354,8 @@ def fit_ta_g_data( data, raw_ta ):
     data = new_data / data_counts
     return data
 
+# Function that bins the data into temperatures.
+# Input the data that is () as well as the raw ta
 def fit_ta_so_data( data, raw_ta ):
     new_data = np.zeros(( ta_so.size ))
     data_counts = np.zeros( (ta_so.size ))
@@ -197,6 +372,8 @@ def fit_ta_so_data( data, raw_ta ):
     data = new_data / data_counts
     return data
 
+
+# Function that fills that nan vaules in the data based on nearby data
 def fill(data, invalid=None):
     """
     Replace the value of invalid 'data' cells (indicated by 'invalid') 
@@ -217,6 +394,8 @@ def fill(data, invalid=None):
                                     return_distances=False, 
                                     return_indices=True)
     return data[tuple(ind)]
+
+
 
 def nan_helper(y):
     """Helper to handle indices and logical indices of NaNs.
