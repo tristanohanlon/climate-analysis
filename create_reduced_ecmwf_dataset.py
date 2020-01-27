@@ -86,7 +86,7 @@ clivi_lat_lon = np.transpose(clivi_lat_lon)
 
 
 with Dataset( '200601-201012_ECMWF_plevel_T_cc_clw_cli_w.nc', 'r') as f:
-    p = np.flip( constants.extract_data( f, 'level' ), axis = 0 )        
+    p = np.flip( constants.extract_data( 'level', f ), axis = 0 )        
     raw_alt = np.empty((p.size,1),dtype=float)
     state = 0
     i = 0
@@ -104,17 +104,17 @@ with Dataset( '200601-201012_ECMWF_plevel_T_cc_clw_cli_w.nc', 'r') as f:
         raw_alt[i] = newalt
         i+=1
     raw_alt = np.transpose( raw_alt )[0]
-    raw_lat = np.flip( constants.extract_data( f, 'latitude' ), axis = 0 )
+    raw_lat = np.flip( constants.extract_data( 'latitude', f ), axis = 0 )
     start_idx = np.abs(raw_lat - (-70)).argmin()
     end_idx = np.abs(raw_lat - (-50)).argmin()
 
 
 
-    cl = np.flip( np.flip( np.mean( constants.extract_data( f, 'cc' ), axis = 0 ), axis = 0 ), axis = 1 ) 
-    clw = np.flip( np.flip( np.mean( constants.extract_data( f, 'clwc' ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
-    cli = np.flip( np.flip( np.mean( constants.extract_data( f, 'ciwc' ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
-    ta = np.flip( np.flip( np.mean( constants.extract_data( f, 't' ), axis = 0), axis = 0 ), axis = 1 ) 
-    w = np.flip( np.flip( np.mean( constants.extract_data( f, 'w' ), axis = 0), axis = 0 ), axis = 1 )  # Pa/s
+    cl = np.flip( np.flip( np.mean( constants.extract_data( 'cc', f ), axis = 0 ), axis = 0 ), axis = 1 ) 
+    clw = np.flip( np.flip( np.mean( constants.extract_data( 'clwc', f ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
+    cli = np.flip( np.flip( np.mean( constants.extract_data( 'ciwc', f ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
+    ta = np.flip( np.flip( np.mean( constants.extract_data( 't', f ), axis = 0), axis = 0 ), axis = 1 ) 
+    w = np.flip( np.flip( np.mean( constants.extract_data( 'w', f ), axis = 0), axis = 0 ), axis = 1 )  # Pa/s
 
 
 cl_alt_lat = np.mean( cl, axis = -1 ) 
@@ -210,7 +210,7 @@ w_alt_lat = interpolated( constants.alt, constants.lat )
 
 os.chdir( location + '/climate-analysis/reduced_data' )
 
-save_filename = 'Jan_2006_Dec_2010_ECMWF.h5'
+save_filename = 'Jan_2007_Dec_2010_ECMWF.h5'
 
 with h5py.File(save_filename, 'w') as p:
 

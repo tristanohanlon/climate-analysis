@@ -5,45 +5,41 @@ Created on Wed Oct  9 10:06:47 2019
 @author: Tristan O'Hanlon - University of Auckland
 """
 import numpy as np
+import os
 from scipy import ndimage as nd
 from netCDF4 import date2index
-
-
-model_dict = {
-    "CMIP5-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip_r1i1p1_197901-200512.nc",
-    "CMIP5-GFDL-HIRAM-C360" : "_Amon_GFDL-HIRAM-C360_amip_r1i1p1_199901-200812.nc",
-    "CMIP5-GISS-E2R" : "_Amon_GISS-E2-R_amip_r1i1p1_195101-201012.nc",
-    "CMIP5-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc",
-    "CMIP5-MIROC5" : "_Amon_MIROC5_amip_r1i1p1_199901-200812.nc",
-    "CMIP5-MRI-CGCM3" : "_Amon_MRI-CGCM3_amip_r1i1p1_199901-201002.nc",
-    
-    "CMIP6-CESM2-CAM6" : "_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc",
-    "CMIP6-GFDL-AM4" : "_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc",
-    "CMIP6-GISS-E21G" : "_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_200101-201412.nc",
-    "CMIP6-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc",
-    "CMIP6-MIROC6" : "_Amon_MIROC6_amip_r1i1p1f1_gn_199901-201412.nc",
-    "CMIP6-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-201412.nc",
-    
-    "ECMWF" : "pressure_levels/2008_ECMWF_amon_plevels_T_cc_clw_ciw.nc",
-    "CALIPSO-GOCCP" : "_200606-201803_avg_CFMIP2_sat_3.1.2.nc"
-   
-        }
-
-satellite_dict = {
-    "CCCM" : "CCCM/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20060731.hdf",
-    "MISR" : "MISR/MIL3YCFA/MISR_AM1_CFbA_2000.hdf",
-    "CERES" : "CERES/Run/CER_SSF1deg-Month_Terra-MODIS_Edition4A_400405.200707"
-        }
-
-
-all_models = [ 'CMIP5-CESM1-CAM5', 'CMIP5-GFDL-HIRAM-C360', 'CMIP5-GISS-E2R', 'CMIP5-IPSL-CM5A-LR', 'CMIP5-MIROC5', 'CMIP5-MRI-CGCM3', 'CMIP6-CESM2-CAM6', 'CMIP6-GFDL-AM4', 'CMIP6-GISS-E21G', 'CMIP6-IPSL-CM6A-LR', 'CMIP6-MIROC6', 'CMIP6-MRI-ESM2' ]
-
 
 home = 'E:/University/University/MSc/Models/'
 network = '//synthesis/E/University/University/MSc/Models/'
 uni = 'C:/Users/toha006/University/University/MSc/Models/'
 hdd = 'E:/MSc/Models/'
 laptop = 'C:/Users/tristan/University/University/MSc/Models/'
+
+
+all_amip_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
+                'CMIP5-AMIP-GFDL-CM3',
+                'CMIP5-AMIP-GISS-E2R', 
+                'CMIP5-AMIP-IPSL-CM5A-LR', 
+                'CMIP5-AMIP-MIROC5', 
+                'CMIP5-AMIP-MRI-CGCM3',
+
+                'CMIP6-AMIP-CESM2-CAM6', 
+                'CMIP6-AMIP-GFDL-CM4',
+                'CMIP6-AMIP-GISS-E21G', 
+                'CMIP6-AMIP-IPSL-CM6A-LR', 
+                'CMIP6-AMIP-MIROC6', 
+                'CMIP6-AMIP-MRI-ESM2' ]
+
+all_cosp_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
+                'CMIP5-AMIP-GFDL-CM3',
+                'CMIP5-AMIP-MIROC5', 
+                'CMIP5-AMIP-MRI-CGCM3',
+
+                'CMIP6-AMIP-CESM2-CAM6', 
+                'CMIP6-AMIP-GFDL-CM4',
+                'CMIP6-AMIP-MIROC6', 
+                'CMIP6-AMIP-MRI-ESM2' ]
+
 
 date_cmip5 = 'Jan_2002_Dec_2005'
 date_cmip6 = 'Jan_2007_Dec_2010'
@@ -68,28 +64,15 @@ max_lon = 360
 lon_division = 1
 lon = np.arange(min_lon, max_lon, lon_division)
 
-min_alt = 0.25
-max_alt = 20
-alt_division = 0.25
-alt = np.arange(min_alt, max_alt, alt_division)
+alt = np.array( [0.24, 0.72, 1.2, 1.68, 2.16, 2.64, 3.12, 3.6, 4.08, 4.56, 5.04, 5.52, 6.0, 6.48, 6.96, 7.44, 7.92, 8.4, 8.88, 9.36, 9.84, 10.32, 10.8, 11.28, 11.76, 12.24, 12.72, 13.2, 13.68, 14.16, 14.64, 15.12, 15.6, 16.08, 16.56, 17.04, 17.52, 18.0, 18.48, 18.96] )
 liq_alt_confine = np.abs(alt - (7)).argmin()
+liq_alt = alt[:liq_alt_confine]
 
-
-min_lc_alt = 0.2
-max_lc_alt = 3
-lc_alt_division = 0.1
-lc_alt = np.arange(min_lc_alt, max_lc_alt, lc_alt_division)
 
 min_ta = 240
 max_ta = 300
 ta_division = 2
 ta = np.arange(min_ta, max_ta, ta_division)
-
-
-min_liq_alt = 0.25
-max_liq_alt = 7
-liq_alt_division = 0.25
-liq_alt = np.arange(min_liq_alt, max_liq_alt, liq_alt_division)
 
 
 # Function that extracts data over time.
@@ -100,6 +83,14 @@ def extract_data_over_time( type, f, start, end ):
 
         data = np.array( f.variables[type][start_index:end_index])
         return data
+
+# Function that returns a filename based on the input variable
+
+def variable_to_filename( variable ):
+    dir_list = os.listdir() 
+    for f in dir_list:
+        if f.startswith(variable + '_'):
+            return f
 
 
 # Function that extracts all data
@@ -182,7 +173,7 @@ def global2DMean(Data, latitudes):
 # already been averaged over time. 
 # Data is (alt, lat)
 # Input the raw latitudes from the variable file.
-# Output is a single value
+# Output is a altitude array
 def globalalt_latMean(Data, latitudes): 
     areaWeights = np.cos(latitudes*np.pi/180)
     areaWeights2D = np.tile(areaWeights,
@@ -190,6 +181,22 @@ def globalalt_latMean(Data, latitudes):
     weighted2DMatrix = Data*areaWeights2D
     sumWeighted = np.sum(weighted2DMatrix,axis=(1))
     sumWeights2D = np.sum(areaWeights2D,axis=(1))
+    weightedMean = sumWeighted/sumWeights2D
+    return weightedMean
+
+
+# Function to calculate the global mean of a variable that has
+# already been averaged over time. 
+# Data is (alt, lat)
+# Input the raw latitudes from the variable file.
+# Output is a single value
+def globalalt_latMeanVal(Data, latitudes): 
+    areaWeights = np.cos(latitudes*np.pi/180)
+    areaWeights2D = np.tile(areaWeights,
+                                (np.shape(Data)[0], 1))  #Replicating the area weights 
+    weighted2DMatrix = Data*areaWeights2D
+    sumWeighted = np.sum(weighted2DMatrix,axis=(0,1))
+    sumWeights2D = np.sum(areaWeights2D,axis=(0,1))
     weightedMean = sumWeighted/sumWeights2D
     return weightedMean
 
@@ -210,6 +217,22 @@ def global3DMean(Data, latitudes):
     weightedMean = sumWeighted/sumWeights3D
     return weightedMean
 
+
+# Function to calculate the global profile mean of a variable that has
+# already been averaged over time. 
+# Data is (alt, lat, lon)
+# Input the raw latitudes from the variable file.
+# Output is a single mean value
+def global3DMeanVal(Data, latitudes):
+    areaWeights = np.cos(latitudes*np.pi/180)
+    areaWeights3D = np.swapaxes(np.tile(areaWeights,
+                                (np.shape(Data)[0],np.shape(Data)[2],1)),
+                                1,2)  #Replicating the area weights 
+    weighted3DMatrix = Data*areaWeights3D
+    sumWeighted = np.sum(weighted3DMatrix,axis=(0,1,2))
+    sumWeights3D = np.sum(areaWeights3D,axis=(0,1,2))
+    weightedMean = sumWeighted/sumWeights3D
+    return weightedMean
 
 # Function that bins the data into liquid altitudes and latitudes.
 # Input the data that is (alt, lat) as well as the raw alts and lats
@@ -267,9 +290,9 @@ def fit_2d_data( data, raw_lat, raw_alt ):
             continue
         lat_bin = int( ( l - min_lat ) / lat_division)
         for a_index, a in enumerate( raw_alt ):
-            if a < min_alt or a > max_alt:
+            if a < alt.min or a > alt.max:
                 continue
-            alt_bin = int( ( a - min_alt ) / alt_division )
+            alt_bin = int( ( a - alt.min ) / alt_division )
             val = data[l_index, a_index]
             if np.isnan(val):
                 continue
@@ -414,3 +437,139 @@ def nan_helper(y):
 
     return np.isnan(y), lambda z: z.nonzero()[0]
 
+
+all_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
+                'CMIP5-AMIP-GFDL-HIRAM-C360', 
+                'CMIP5-AMIP-GISS-E2R', 
+                'CMIP5-AMIP-IPSL-CM5A-LR', 
+                'CMIP5-AMIP-MIROC5', 
+                'CMIP5-AMIP-MRI-CGCM3',
+                'CMIP5-AMIP-GFDL-CM3',
+
+                # 'CMIP5-AMIP_4xCO2-GFDL-CM3',
+                'CMIP5-AMIP_4xCO2-IPSL-CM5A-LR',
+                'CMIP5-AMIP_4xCO2-MIROC5',
+                'CMIP5-AMIP_4xCO2-MRI-CGCM3',
+
+                'CMIP5-RCP45-CESM1-BGC',
+                'CMIP5-RCP45-GFDL-CM3',
+                'CMIP5-RCP45-GISS-E2R',
+                'CMIP5-RCP45-IPSL-CM5A-LR',
+                'CMIP5-RCP45-MIROC5',
+                'CMIP5-RCP45-MRI-CGCM3',
+
+                'CMIP6-AMIP-CESM2-CAM6', 
+                'CMIP6-AMIP-GFDL-AM4', 
+                'CMIP6-AMIP-GISS-E21G', 
+                'CMIP6-AMIP-IPSL-CM6A-LR', 
+                'CMIP6-AMIP-MIROC6', 
+                'CMIP6-AMIP-MRI-ESM2',
+                'CMIP6-AMIP-GFDL-CM4',
+                
+                'CMIP6-AMIP_4xCO2-CESM2-CAM6',
+                'CMIP6-AMIP_4xCO2-GFDL-CM4',
+                'CMIP6-AMIP_4xCO2-IPSL-CM6A-LR',
+                'CMIP6-AMIP_4xCO2-MIROC6',
+                'CMIP6-AMIP_4xCO2-MRI-ESM2',
+
+                'CMIP6-AMIP_future4K-CESM2',
+                # 'CMIP6-AMIP_future4K-GFDL-CM4',
+                'CMIP6-AMIP_future4K-IPSL-CM6A-LR',
+                'CMIP6-AMIP_future4K-MIROC6',
+                'CMIP6-AMIP_future4K-MRI-ESM2',
+
+                'CMIP6-SSP245-CESM2',
+                'CMIP6-SSP245-GFDL-CM4',
+                'CMIP6-SSP245-IPSL-CM6A-LR',
+                'CMIP6-SSP245-MIROC6',
+                'CMIP6-SSP245-MRI-ESM2' ]
+
+
+model_dict_cosp = {
+    "CMIP5-AMIP-CESM1-CAM5" : "_cfMon_CESM1-CAM5_amip_r2i1p1_197901-200512.nc",
+    "CMIP5-AMIP-GFDL-CM3" : "_cfMon_GFDL-CM3_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-MIROC5" : "_cfMon_MIROC5_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-MRI-CGCM3" : "_cfMon_MRI-CGCM3_amip_r1i1p1_199901-200812.nc",
+
+    "CMIP6-AMIP-CESM2-CAM6" : "_CFmon_CESM2_amip_r2i1p1f1_gn_195001-201412.nc",
+    "CMIP6-AMIP-GFDL-CM4" : "_CFmon_GFDL-CM4_amip_r1i1p1f1_gr1_200301-201412.nc",
+    "CMIP6-AMIP-MIROC6" : "_CFmon_MIROC6_amip_r1i1p1f1_gn_199901-201412.nc",
+    "CMIP6-AMIP-MRI-ESM2" : "_CFmon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-201412.nc",
+}
+
+
+model_dict_amip = {
+    "CMIP5-AMIP-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip_r1i1p1_197901-200512.nc",
+    "CMIP5-AMIP-GFDL-CM3" : "_Amon_GFDL-CM3_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-GISS-E2R" : "_Amon_GISS-E2-R_amip_r1i1p1_195101-201012.nc",
+    "CMIP5-AMIP-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc",
+    "CMIP5-AMIP-MIROC5" : "_Amon_MIROC5_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-MRI-CGCM3" : "_Amon_MRI-CGCM3_amip_r1i1p1_199901-201002.nc",
+
+    "CMIP6-AMIP-CESM2-CAM6" : "_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc",
+    "CMIP6-AMIP-GFDL-CM4" : "_Amon_GFDL-CM4_amip_r1i1p1f1_gr1_200301-201412.nc",
+    "CMIP6-AMIP-GISS-E21G" : "_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_200101-201412.nc",
+    "CMIP6-AMIP-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc",
+    "CMIP6-AMIP-MIROC6" : "_Amon_MIROC6_amip_r1i1p1f1_gn_199901-201412.nc",
+    "CMIP6-AMIP-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-201412.nc",
+}
+
+model_dict_all = {
+    "CMIP5-AMIP-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip_r1i1p1_197901-200512.nc",
+    "CMIP5-AMIP-GFDL-HIRAM-C360" : "_Amon_GFDL-HIRAM-C360_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-GISS-E2R" : "_Amon_GISS-E2-R_amip_r1i1p1_195101-201012.nc",
+    "CMIP5-AMIP-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc",
+    "CMIP5-AMIP-MIROC5" : "_Amon_MIROC5_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-MRI-CGCM3" : "_Amon_MRI-CGCM3_amip_r1i1p1_199901-201002.nc",
+    "CMIP5-AMIP-GFDL-CM3" : "_Amon_GFDL-CM3_amip_r1i1p1_199901-200812.nc",
+
+    "CMIP5-AMIP_4xCO2-GFDL-CM3" : "_Amon_GFDL-CM3_amip4xCO2_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP_4xCO2-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip4xCO2_r1i1p1_197901-200912.nc",
+    "CMIP5-AMIP_4xCO2-MIROC5" : "_Amon_MIROC5_amip4xCO2_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP_4xCO2-MRI-CGCM3" : "_Amon_MRI-CGCM3_amip4xCO2_r1i1p1_199901-200812.nc",
+
+    "CMIP5-AMIP_future4K-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip4K_r1i1p1_197901-200012.nc",
+
+    "CMIP5-RCP45-CESM1-BGC" : "_Amon_CESM1-BGC_rcp45_r1i1p1_205001-210012.nc",
+    "CMIP5-RCP45-GFDL-CM3" : "_Amon_GFDL-CM3_rcp45_r1i1p1_209601-210012.nc",
+    "CMIP5-RCP45-GISS-E2R" : "_Amon_GISS-E2-R_rcp45_r1i1p1_207601-210012.nc",
+    "CMIP5-RCP45-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_rcp45_r1i1p1_200601-210512.nc",
+    "CMIP5-RCP45-MIROC5" : "_Amon_MIROC5_rcp45_r1i1p1_209001-209912.nc",
+    "CMIP5-RCP45-MRI-CGCM3" : "_Amon_MRI-CGCM3_rcp45_r1i1p1_209601-210012.nc",
+
+    "CMIP6-AMIP-CESM2-CAM6" : "_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc",
+    "CMIP6-AMIP-GFDL-AM4" : "_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc",
+    "CMIP6-AMIP-GISS-E21G" : "_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_200101-201412.nc",
+    "CMIP6-AMIP-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc",
+    "CMIP6-AMIP-MIROC6" : "_Amon_MIROC6_amip_r1i1p1f1_gn_199901-201412.nc",
+    "CMIP6-AMIP-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-201412.nc",
+    "CMIP6-AMIP-GFDL-CM4" : "_Amon_GFDL-CM4_amip_r1i1p1f1_gr1_200301-201412.nc",
+
+    "CMIP6-AMIP_4xCO2-CESM2-CAM6" : "_Amon_CESM2_amip-4xCO2_r1i1p1f1_gn_197901-201412.nc",
+    "CMIP6-AMIP_4xCO2-GFDL-CM4" : "_Amon_GFDL-CM4_amip-4xCO2_r1i1p1f1_gr1_197901-201412.nc",
+    "CMIP6-AMIP_4xCO2-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip-4xCO2_r1i1p1f1_gr_197901-201412.nc",
+    "CMIP6-AMIP_4xCO2-MIROC6" : "_Amon_MIROC6_amip-4xCO2_r1i1p1f1_gn_199901-201412.nc",
+    "CMIP6-AMIP_4xCO2-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip-4xCO2_r1i1p1f1_gn_199901-201412.nc",
+
+    "CMIP6-AMIP_future4K-CESM2" : "_Amon_CESM2_amip-future4K_r1i1p1f1_gn_197901-201412.nc",
+    "CMIP6-AMIP_future4K-GFDL-CM4" : "_Amon_GFDL-CM4_amip-future4K_r1i1p1f1_gr1_197901-201412.nc",
+    "CMIP6-AMIP_future4K-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip-future4K_r1i1p1f1_gr_197901-201412.nc",
+    "CMIP6-AMIP_future4K-MIROC6" : "_Amon_MIROC6_amip-future4K_r1i1p1f1_gn_200901-201412.nc",
+    "CMIP6-AMIP_future4K-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip-future4K_r1i1p1f1_gn_200901-201412.nc",
+
+    "CMIP6-SSP245-CESM2" : "_Amon_CESM2_ssp245_r1i1p1f1_gn_206501-210012.nc",
+    "CMIP6-SSP245-GFDL-CM4" : "_Amon_GFDL-CM4_ssp245_r1i1p1f1_gr1_201501-210012.nc",
+    "CMIP6-SSP245-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_ssp245_r1i1p1f1_gr_201501-210012.nc",
+    "CMIP6-SSP245-MIROC6" : "_Amon_MIROC6_ssp245_r1i1p1f1_gn_209501-210012.nc",
+    "CMIP6-SSP245-MRI-ESM2" : "_Amon_MRI-ESM2-0_ssp245_r1i1p1f1_gn_209501-210012.nc",
+    
+    "ECMWF" : "pressure_levels/2008_ECMWF_amon_plevels_T_cc_clw_ciw.nc",
+    "CALIPSO-GOCCP" : "_200606-201803_avg_CFMIP2_sat_3.1.2.nc"
+   
+        }
+
+satellite_dict = {
+    "CCCM" : "CCCM/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20060731.hdf",
+    "MISR" : "MISR/MIL3YCFA/MISR_AM1_CFbA_2000.hdf",
+    "CERES" : "CERES/Run/CER_SSF1deg-Month_Terra-MODIS_Edition4A_400405.200707"
+        }

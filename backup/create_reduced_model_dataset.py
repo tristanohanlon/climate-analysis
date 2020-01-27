@@ -26,12 +26,13 @@ reduce_dataset is called by:
 import os
 import datetime
 import reduce_dataset
+# import reduce_dataset_all
 import constants
 from pprint import pprint
 
 #--- Set Location and model ---#
 
-model = 'all_models' # see comments above for available models
+model = 'CMIP6-MRI-ESM2' # see comments above for available models
 location = constants.home # home, uni, hdd or laptop
 os.chdir( location + 'Data' )
 
@@ -40,12 +41,13 @@ if model == 'all_models':
         os.chdir( location + 'Data' )
         print('Currently reducing: ' + model)
         if model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model == 'CMIP5-GISS-E2R' or model == 'CMIP5-IPSL-CM5A-LR' or model == 'CMIP5-MIROC5' or model == 'CMIP5-MRI-CGCM3': 
-            reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2001, 1, 1 ), datetime.datetime( 2005, 12, 1 ) )
+            reduce_dataset_all.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2002, 1, 1 ), datetime.datetime( 2005, 12, 1 ) )
         else:
-            reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2006, 1, 1 ), datetime.datetime( 2010, 12, 1 ) )
+            reduce_dataset_all.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2007, 1, 1 ), datetime.datetime( 2010, 12, 1 ) )
+
 else:
     if model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model == 'CMIP5-GISS-E2R' or model == 'CMIP5-IPSL-CM5A-LR' or model == 'CMIP5-MIROC5' or model == 'CMIP5-MRI-CGCM3': 
-        reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2001, 1, 1 ), datetime.datetime( 2005, 12, 1 ) )
+        reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 1999, 1, 1 ), datetime.datetime( 2008, 12, 1 ) )
     else:
-        reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2006, 1, 1 ), datetime.datetime( 2010, 12, 1 ) )
+        reduce_dataset.reduce_dataset( model, constants.model_dict[ model ], location + 'climate-analysis/reduced_data', datetime.datetime( 2005, 1, 1 ), datetime.datetime( 2014, 12, 1 ) )
 

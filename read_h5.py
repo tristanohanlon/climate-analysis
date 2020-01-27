@@ -121,7 +121,7 @@ elif model == 'ECMWF':
  
     w_alt_lat = h5f['w_alt_lat'][:]
 
-elif model == 'CALIPSO':    
+if model == 'CALIPSO':    
     h5f = h5py.File( constants.date_cmip6 + '_' + 'CALIPSO.h5', 'r')
     cl_alt_lat = h5f['cl_alt_lat'][:]
     cl_g = h5f['cl_g'][:]
@@ -138,17 +138,17 @@ elif model == 'CALIPSO':
     cl_t_so = h5f['cl_t_so'][:]
     clt = h5f['clt'][:]
     clt_lat_lon = h5f['clt_lat_lon'][:]
-    clwvi = h5f['clwvi'][:]
-    clwvi_lat_lon = h5f['clwvi_lat_lon'][:]
-    clivi = h5f['clivi'][:]
-    clivi_lat_lon = h5f['clivi_lat_lon'][:]
+    clw_frac = h5f['clw_frac'][:]
+    clw_frac_lat_lon = h5f['clw_frac_lat_lon'][:]
+    cli_frac = h5f['cli_frac'][:]
+    cli_frac_lat_lon = h5f['cli_frac_lat_lon'][:]
     full_clw_frac_alt_lat = h5f['full_clw_frac_alt_lat'][:]
     full_ta_alt_lat = h5f['full_ta_alt_lat'][:]
     ta_alt_lat = h5f['ta_alt_lat'][:]
-    clt_lc = h5f['clt_lc'][:]
-    clwvi_lc = h5f['clwvi_lc'][:]
-    clt_lc_lat_lon = h5f['clt_lc_lat_lon'][:]
-    clwvi_lc_lat_lon = h5f['clwvi_lc_lat_lon'][:]
+    clt_l = h5f['clt_l'][:]
+    clw_frac_l = h5f['clw_frac_l'][:]
+    clt_l_lat_lon = h5f['clt_l_lat_lon'][:]
+    clw_frac_l_lat_lon = h5f['clw_frac_l_lat_lon'][:]
 
     
 elif model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model == 'CMIP5-GISS-E2R' or model == 'CMIP5-IPSL-CM5A-LR' or model == 'CMIP5-MIROC5' or model == 'CMIP5-MRI-CGCM3': 
@@ -248,16 +248,26 @@ else:
 
 for index,key in enumerate(h5f.keys()):
     print (index, key)
-    
+
+# cl_alt_lat = np.transpose(cl_alt_lat)
+# clwc_alt_lat = np.transpose(clwc_alt_lat)
+# lat = constants.lat
+# print(constants.globalalt_latMeanVal(cl_alt_lat, constants.lat))
+# print(constants.globalalt_latMeanVal(cl_alt_lat[constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2]))
+# print(constants.globalalt_latMeanVal(clwc_alt_lat, constants.lat)
+
+# print(constants.globalalt_latMeanVal(clwc_alt_lat[constants.so_idx_1:constants.so_idx_2], lat[constants.so_idx_1:constants.so_idx_2]))
+
+
 #--- sample plots for confirmation ---#
 
-# fig, ax = plt.subplots()
-# ax.plot( constants.lat[constants.lat_confine_1:constants.lat_confine_2], clt[constants.lat_confine_1:constants.lat_confine_2] )
-# ax.set_ylabel('Cloud Fraction')
-# ax.set_xlabel('Latitude')
-# ax.set_title ('Global Cloud Fraction vs Latitude')
-# plt.grid(True)
-# plt.show()
+fig, ax = plt.subplots()
+ax.plot( constants.lat[constants.lat_confine_1:constants.lat_confine_2], clt[constants.lat_confine_1:constants.lat_confine_2] )
+ax.set_ylabel('Cloud Fraction')
+ax.set_xlabel('Latitude')
+ax.set_title ('Global Cloud Fraction vs Latitude')
+plt.grid(True)
+plt.show()
 
 # fig, ax = plt.subplots()
 # ax.plot( constants.lat[constants.lat_confine_1:constants.lat_confine_2], clwvi[constants.lat_confine_1:constants.lat_confine_2] )
@@ -301,17 +311,17 @@ for index,key in enumerate(h5f.keys()):
 # plt.show()
 
 
-fig, ax = plt.subplots()
-cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, full_clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
-temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
-temp.collections[5].set_linewidth(3)
-temp.collections[5].set_color('white')
-ax.clabel(temp, inline=1, fontsize=10)
-ax.set_xlabel('Latitude')
-ax.set_ylabel('Altitude (km)')
-cbar = fig.colorbar(cont, orientation='horizontal')
-cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air (kg/kg)')
-plt.show()
+# fig, ax = plt.subplots()
+# cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, full_clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
+# temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
+# temp.collections[5].set_linewidth(3)
+# temp.collections[5].set_color('white')
+# ax.clabel(temp, inline=1, fontsize=10)
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Altitude (km)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air (kg/kg)')
+# plt.show()
 
 
 # ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
@@ -321,7 +331,3 @@ plt.show()
 # cbar.set_label('Cloud Fraction')
 # ax.set_title('Total Cloud Fraction - ' + model)
 # plt.show()
-
-
-
-
