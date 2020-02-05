@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 import constants
 from scipy import ndimage as nd
+import cartopy.crs as ccrs
 
 ###############################################################################
 start = time.time()
@@ -90,7 +91,7 @@ glob_radiation_data_sets = [
 ]        
 
 # The directory where your HDF files are stored
-os.chdir(location + 'Data/CERES/Run' )
+os.chdir(location + 'Data/CERES/All' )
 
 # Load every file in the directory
 
@@ -336,6 +337,77 @@ print( 'SO CRE SW = ' + str( constants.global2DMean(cre_sw_reg_so, raw_lat[start
 print( 'SO CRE LW = ' + str( constants.global2DMean(cre_lw_reg_so, raw_lat[start_idx:end_idx]) ) )
 
 
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Cloud Fraction')
+ax.set_title('CERES Global Mean Cloud Fraction')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'clt' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_alb_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Albedo')
+ax.set_title('CERES Global Mean Albedo')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'albedo' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_net_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Net Radiation W/m^2')
+ax.set_title('CERES Global Mean Net Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rtmt' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_net_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Net Radiation W/m^2')
+ax.set_title('CERES Global Mean Net Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rtmt_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_sw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing SW W/m^2')
+ax.set_title('CERES Global Mean Outgoing SW Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rsut' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_lw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing LW W/m^2')
+ax.set_title('CERES Global Mean Outgoing LW Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rlut' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_sw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing SW W/m^2')
+ax.set_title('CERES Global Mean Outgoing SW Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rsut_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_lw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing LW W/m^2')
+ax.set_title('CERES Global Mean Outgoing LW Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rlut_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
 
 #----------------------------#
 

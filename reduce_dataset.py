@@ -122,10 +122,10 @@ def reduce_dataset( directory, save_location, start, end, location ):
             loadss_lat_lon = np.nanmean( constants.extract_data_over_time( 'loadss', f, start, end ), axis = 0 ) # average over time
 
         interpolated = interpolate.interp2d( load_lon, load_lat, loaddust_lat_lon, kind = 'cubic', fill_value = np.nan)
-        loaddust_lat_lon = interpolated(constants.lon, constants.lat)
+        loaddust_lat_lon = interpolated(constants.lon, constants.lat) * 1000 #g/m2
 
         interpolated = interpolate.interp2d( load_lon, load_lat, loadss_lat_lon, kind = 'cubic', fill_value = np.nan)
-        loadss_lat_lon = interpolated(constants.lon, constants.lat)
+        loadss_lat_lon = interpolated(constants.lon, constants.lat) * 1000 #g/m2
 
 
     #---reduce and interpolate regional data---#
@@ -542,8 +542,8 @@ def reduce_dataset( directory, save_location, start, end, location ):
         if 'MRI-ESM2' in directory or 'CAM5' in directory:
             pass        
         else:
-            p.create_dataset('loaddust_lat_lon', data= loaddust_lat_lon ) # # aerosol dust mixing ratio corresponding to lat, lon
-            p.create_dataset('loadss_lat_lon', data= loadss_lat_lon ) # aerosol sea salt mixing ratio corresponding to lat, lon
+            p.create_dataset('loaddust_lat_lon', data= loaddust_lat_lon ) # The total dry mass of dust aerosol particles per unit area g/m2. corresponding to lat, lon
+            p.create_dataset('loadss_lat_lon', data= loadss_lat_lon ) # The total dry mass of sea salt aerosol particles per unit area. corresponding to lat, lon
 
 
         p.close()

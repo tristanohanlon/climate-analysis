@@ -30,7 +30,7 @@ import os
 import matplotlib.pyplot as plt
 import constants
 import numpy as np
-# import cartopy.crs as ccrs
+import cartopy.crs as ccrs
 
 #--- Set Location, date period and model ---#
 
@@ -71,7 +71,7 @@ if model == 'CCCM':
     # clivi_lat_lon = h5f['clivi_lat_lon'][:]
    
 elif model == 'CERES':
-    h5f = h5py.File( constants.date_ceres + '_' + model + '.h5', 'r')
+    h5f = h5py.File('all_CERES.h5', 'r')
     clt = h5f['clt'][:]
     clt_lat_lon = h5f['clt_lat_lon'][:]
     clwvi = h5f['clwvi'][:]
@@ -121,7 +121,7 @@ elif model == 'ECMWF':
  
     w_alt_lat = h5f['w_alt_lat'][:]
 
-if model == 'CALIPSO':    
+elif model == 'CALIPSO':    
     h5f = h5py.File( constants.date_cmip6 + '_' + 'CALIPSO.h5', 'r')
     cl_alt_lat = h5f['cl_alt_lat'][:]
     cl_g = h5f['cl_g'][:]
@@ -265,7 +265,7 @@ fig, ax = plt.subplots()
 ax.plot( constants.lat[constants.lat_confine_1:constants.lat_confine_2], clt[constants.lat_confine_1:constants.lat_confine_2] )
 ax.set_ylabel('Cloud Fraction')
 ax.set_xlabel('Latitude')
-ax.set_title ('Global Cloud Fraction vs Latitude')
+ax.set_title ('CERES Global Mean Cloud Fraction vs Latitude')
 plt.grid(True)
 plt.show()
 

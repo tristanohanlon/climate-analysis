@@ -79,13 +79,13 @@ quantity = {
     'clt_lc' : 'Low Cloud Fraction',
     'clwvi_lc' : 'Mean Low Cloud Liquid Water Path (kg/m^2)',
     'clivi_lc' : 'Mean Low Cloud Ice Water Path (kg/m^2)',
-    'loaddust' : 'Dust Aerosol Mass Mixing Ratio',
-    'loadss' : 'Sea Salt  Aerosol Mass Mixing Ratio',
-    'loadso4' : 'Sulphate Aerosol Mass Mixing Ratio',
-    'rsdt' : 'TOA Incoming Shortwave Flux',
-    'rsut' : 'TOA Outgoing Shortwave Flux',
-    'rsutcs' : 'TOA Outgoing Shortwave Flux Assuming Clear Sky',
-    'rtmt' : 'Net Downwards Radiative Flux at TOA',
+    'loaddust' : 'The total dry mass of dust aerosol particles per unit area g/m^2',
+    'loadss' : 'The total dry mass of sea salt aerosol particles per unit area g/m^2',
+    'loadso4' : 'The total dry mass of sulphate aerosol particles per unit area g/m^2',
+    'rsdt' : 'TOA Incoming Shortwave Flux W/m^2',
+    'rsut' : 'TOA Outgoing Shortwave Flux W/m^2',
+    'rsutcs' : 'TOA Outgoing Shortwave Flux Assuming Clear Sky W/m^2',
+    'rtmt' : 'Net Downwards Radiative Flux at TOA W/m^2',
     'albedo_reg' : 'Albedo'
 }
 
@@ -233,10 +233,10 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
 
 def cloud_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = True ):
 
-    cmip5models_g = [ model.data['cl_t_g'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
-    cmip6models_g = [ model.data['cl_t_g'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
-    cmip5models_so = [ model.data['cl_t_so'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
-    cmip6models_so = [ model.data['cl_t_so'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
+    cmip5models_g = [ model.data['cl_t_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_g = [ model.data['cl_t_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+    cmip5models_so = [ model.data['cl_t_so'] for name, model in models.items() if name.startswith('CMIP5') ]
+    cmip6models_so = [ model.data['cl_t_so'] for name, model in models.items() if name.startswith('CMIP6') ]
  
     cmip5_g_max = np.maximum.reduce( cmip5models_g )
     cmip5_g_min = np.minimum.reduce( cmip5models_g )
@@ -285,7 +285,7 @@ def cloud_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = T
 
     all_model_names = '_'.join( [ model.name for model in models_to_graph ])
     fig.tight_layout()
-    plt.savefig( location + '/Images/' + 'cloud_temp' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
+    plt.savefig( location + '/Images/' + 'cl_t' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
     plt.show()
 
 #---------------------------------------------------------------------#
@@ -356,7 +356,7 @@ def liq_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = Tru
 # plot clwc_t with temperature - 2 graphs: top = global, bottom = southern ocean
 # global = g, southern ocean = so
 
-def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
+def clw_frac_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
 
     fig, ( ax1, ax2 ) = plt.subplots(2,1, figsize=(15, 7))
     for model, col in zip( models_to_graph, colours ):
@@ -407,7 +407,7 @@ def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = Tru
 
     all_model_names = '_'.join( [ model.name for model in models_to_graph ])
     fig.tight_layout()
-    plt.savefig( location + '/Images/' + 'liq_temp' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
+    plt.savefig( location + '/Images/' + 'clw_frac_t' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
     plt.show()
 
 #---------------------------------------------------------------------#
@@ -416,10 +416,10 @@ def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = Tru
 # plot clwc_t with temperature - 2 graphs: top = global, bottom = southern ocean
 # global = g, southern ocean = so
 
-def ice_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
+def cli_frac_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
 
     fig, ( ax1, ax2 ) = plt.subplots(2,1, figsize=(15, 7))
-    for model, col in zip( models_to_graph, colours_cosp ):
+    for model, col in zip( models_to_graph, colours ):
         ax1.plot( constants.ta, model.data[quantity_to_graph + '_t_g'],  col, label=model.name )
         ax2.plot( constants.ta, model.data[quantity_to_graph + '_t_so'], col, label=model.name )
         
@@ -483,6 +483,7 @@ def satellite_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax.clabel( temp, inline=1, fontsize=10 )
         ax.set_xlabel( 'Latitude' )
+        ax.set_ylabel( 'Altitude (km)' )
         ax.set_title( model.name )
 
     # the common color bar is based off the model labeled 'prime'
@@ -513,6 +514,7 @@ def model_clw_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax[ count ].clabel( temp, inline=1, fontsize=10 )
         ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_ylabel( 'Altitude (km)' )
         ax[ count ].set_title( model.name )
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
@@ -541,6 +543,7 @@ def model_clw_frac_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax[ count ].clabel( temp, inline=1, fontsize=10 )
         ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_ylabel( 'Altitude (km)' )
         ax[ count ].set_title( model.name )
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
@@ -567,6 +570,7 @@ def model_clwc_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax[ count ].clabel( temp, inline=1, fontsize=10 )
         ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_ylabel( 'Altitude (km)' )
         ax[ count ].set_title( model.name )
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
@@ -596,6 +600,7 @@ def model_cl_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax[ count ].clabel( temp, inline=1, fontsize=10 )
         ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_ylabel( 'Altitude (km)' )
         ax[ count ].set_title( model.name )
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
@@ -625,6 +630,7 @@ def model_cli_contours( models_to_graph, zero_lines ):
         temp.collections[ zero_line ].set_color( 'white' )
         ax[ count ].clabel( temp, inline=1, fontsize=10 )
         ax[ count ].set_xlabel( 'Latitude' )
+        ax[ count ].set_ylabel( 'Altitude (km)' )
         ax[ count ].set_title( model.name )
     
     plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=3)
