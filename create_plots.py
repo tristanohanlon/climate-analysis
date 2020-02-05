@@ -49,11 +49,12 @@ location = constants.home
 #                                     clim_plot.models[ 'CALIPSO'] ], 'cl', cmip5_range = True, cmip6_range = True )
 
 # plot cl_t with temperature - 2 graphs: top = global, bottom = southern ocean
-# clim_plot.cloud_temp_plot_models( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], 
-#                                     clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'], 
-#                                     clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'], 
-#                                     clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6'], 
-#                                     clim_plot.models[ 'CALIPSO'] ], cmip5_range = True, cmip6_range = True )
+# clim_plot.cloud_temp_plot_models( [ clim_plot.cosp_models[ 'CMIP5-AMIP-GFDL-CM3'], 
+#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4'], 
+#                                     clim_plot.cosp_models[ 'CMIP5-AMIP-CESM1-CAM5'], 
+#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6'], 
+#                                     clim_plot.models[ 'CALIPSO'], 
+#                                     clim_plot.models[ 'CCCM'] ], cmip5_range = True, cmip6_range = True )
 
 
 # plot clw_t with temperature - 2 graphs: top = global, bottom = southern ocean
@@ -61,14 +62,22 @@ location = constants.home
 #                                     clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'], 
 #                                     clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'], 
 #                                     clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6'],
+#                                     clim_plot.models[ 'CALIPSO'] ], 'clw_frac', cmip5_range = True, cmip6_range = True )
+
+
+# plot clw_t with temperature - 2 graphs: top = global, bottom = southern ocean
+# clim_plot.ice_temp_plot_models( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], 
+#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4'], 
+#                                     clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'], 
+#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6'],
 #                                     clim_plot.models[ 'CALIPSO'] ], 'cli_frac', cmip5_range = False, cmip6_range = False )
 
 # clw satellite contour plots. Zero lines specify the temperature contour of 0 degrees
 # clim_plot.satellite_contours( [ clim_plot.models[ 'CALIPSO' ] ], [ 5 ] )
 
 # clw model pair contour plots. Zero lines specify the temperature contour of 0 degrees
-clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5' ], clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 5, 5 ] )
-clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'] ], [ 5, 5 ] )
+# clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5' ], clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 5, 5 ] )
+# clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'] ], [ 5, 5 ] )
 # clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-GISS-E2R' ], clim_plot.models[ 'CMIP6-AMIP-GISS-E21G' ] ], [ 5, 5 ] )
 # clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-IPSL-CM5A-LR'], clim_plot.models[ 'CMIP6-AMIP-IPSL-CM6A-LR'] ], [ 5, 5 ] )
 # clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-MIROC5' ], clim_plot.models[ 'CMIP6-AMIP-MIROC6' ] ], [ 5, 5 ] )
@@ -85,11 +94,12 @@ clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], c
 
 # cli model pair contour plots. Zero lines specify the temperature contour of 0 degrees
 # clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5' ], clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 6, 6 ] )
-# clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'], clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'] ], [ 6, 6 ] )
+clim_plot.model_cli_contours( [ clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6'], clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4'] ], [ 6, 6 ] )
 # clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-GISS-E2R' ], clim_plot.models[ 'CMIP6-AMIP-GISS-E21G' ] ], [ 6, 6 ] )
 # clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-IPSL-CM5A-LR'], clim_plot.models[ 'CMIP6-AMIP-IPSL-CM6A-LR'] ], [ 6, 6 ] )
 # clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-MIROC5' ], clim_plot.models[ 'CMIP6-AMIP-MIROC6' ] ], [ 6, 6 ] )
 # clim_plot.model_cli_contours( [ clim_plot.models[ 'CMIP5-AMIP-MRI-CGCM3'], clim_plot.models[ 'CMIP6-AMIP-MRI-ESM2'] ], [ 6, 6 ] )
+clim_plot.model_cli_contours( [ clim_plot.models[ 'CALIPSO'], clim_plot.models[ 'CALIPSO'] ], [ 6, 6 ] )
 
 # plot regional clt, clwvi, clivi, clt_lc, clwvi_lc, albedo_reg, loaddust, loadss, rtmt, rsut, rsdt, rsutcs quantities overlaying the world map
 # clim_plot.region_plot( [ clim_plot.models['CMIP5-AMIP-CESM1-CAM5']], 'clw_frac' )

@@ -93,6 +93,7 @@ def variable_to_filename( variable ):
             return f
 
 
+
 # Function that extracts all data
 def extract_data( type, f ):
     return np.array( f.variables[type][:] )

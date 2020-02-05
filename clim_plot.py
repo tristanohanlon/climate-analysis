@@ -92,8 +92,8 @@ quantity = {
 
 
 #This needs to be at least as long as the number of models you will ever graph at the same time  
-colours = ['--b', '-b', '--r', '-r', '-k', '-c', '--k', '--b', '--r', '--g', '--m', '--c', ':k', ':b', ':r', ':g', ':m', ':c' ]
-colours_cosp = ['--b', '-b', '-k']
+colours = ['--b', '-b', '--r', '-r', '-k', '-g', '--k', '--b', '--r', '--g', '--m', '--c', ':k', ':b', ':r', ':g', ':m', ':c' ]
+colours_cosp = ['-b', '-r', '-k', '-g']
 ############################################################################### global latitude plots
 
 # plot zonal quantities: clt, clwvi or clivi with latitude
@@ -233,10 +233,10 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
 
 def cloud_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = True ):
 
-    cmip5models_g = [ model.data['cl_t_g'] for name, model in models.items() if name.startswith('CMIP5') ]
-    cmip6models_g = [ model.data['cl_t_g'] for name, model in models.items() if name.startswith('CMIP6') ]
-    cmip5models_so = [ model.data['cl_t_so'] for name, model in models.items() if name.startswith('CMIP5') ]
-    cmip6models_so = [ model.data['cl_t_so'] for name, model in models.items() if name.startswith('CMIP6') ]
+    cmip5models_g = [ model.data['cl_t_g'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
+    cmip6models_g = [ model.data['cl_t_g'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
+    cmip5models_so = [ model.data['cl_t_so'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
+    cmip6models_so = [ model.data['cl_t_so'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
  
     cmip5_g_max = np.maximum.reduce( cmip5models_g )
     cmip5_g_min = np.minimum.reduce( cmip5models_g )
@@ -359,15 +359,15 @@ def liq_temp_plot_models( models_to_graph, cmip5_range = True, cmip6_range = Tru
 def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
 
     fig, ( ax1, ax2 ) = plt.subplots(2,1, figsize=(15, 7))
-    for model, col in zip( models_to_graph, colours_cosp ):
+    for model, col in zip( models_to_graph, colours ):
         ax1.plot( constants.ta, model.data[quantity_to_graph + '_t_g'],  col, label=model.name )
         ax2.plot( constants.ta, model.data[quantity_to_graph + '_t_so'], col, label=model.name )
         
 
     # plot the range limits from all models on both axes and fill between them.
     if cmip5_range == True:
-        cmip5models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP5') ]
-        cmip5models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP5') ]
+        cmip5models_g = [ model.data[quantity_to_graph + '_t_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+        cmip5models_so = [ model.data[quantity_to_graph + '_t_so'] for name, model in models.items() if name.startswith('CMIP5') ]
         cmip5_g_max = np.maximum.reduce( cmip5models_g )
         cmip5_g_min = np.minimum.reduce( cmip5models_g )
         cmip5_so_max = np.maximum.reduce( cmip5models_so )
@@ -379,8 +379,8 @@ def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = Tru
                     label='CMIP5 Model Range' )
            
     if cmip6_range == True:   
-        cmip6models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP6') ]
-        cmip6models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP6') ]
+        cmip6models_g = [ model.data[quantity_to_graph + '_t_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+        cmip6models_so = [ model.data[quantity_to_graph + '_t_so'] for name, model in models.items() if name.startswith('CMIP6') ]
         cmip6_g_max = np.maximum.reduce( cmip6models_g )
         cmip6_g_min = np.minimum.reduce( cmip6models_g )
         cmip6_so_max = np.maximum.reduce( cmip6models_so )
@@ -392,8 +392,8 @@ def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = Tru
                     label='CMIP6 Model Range' )
 
 
-    ax1.set_ylabel( 'Mean Cloud Liquid Water Content (g/m^3)' )
-    ax2.set_ylabel( 'Mean Cloud Liquid Water Content (g/m^3)' )
+    ax1.set_ylabel( 'Mean Cloud Liquid Water Fraction' )
+    ax2.set_ylabel( 'Mean Cloud Liquid Water Fraction' )
     ax2.set_xlabel( 'Temperature (K)' )
     ax1.axvline(x=273, label = '273K', color = 'black', linestyle='--')
     ax2.axvline(x=273, label = '273K', color = 'black', linestyle='--')
@@ -410,6 +410,65 @@ def liqc_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = Tru
     plt.savefig( location + '/Images/' + 'liq_temp' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
     plt.show()
 
+#---------------------------------------------------------------------#
+
+
+# plot clwc_t with temperature - 2 graphs: top = global, bottom = southern ocean
+# global = g, southern ocean = so
+
+def ice_temp_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True, cmip6_range = True ):
+
+    fig, ( ax1, ax2 ) = plt.subplots(2,1, figsize=(15, 7))
+    for model, col in zip( models_to_graph, colours_cosp ):
+        ax1.plot( constants.ta, model.data[quantity_to_graph + '_t_g'],  col, label=model.name )
+        ax2.plot( constants.ta, model.data[quantity_to_graph + '_t_so'], col, label=model.name )
+        
+
+    # plot the range limits from all models on both axes and fill between them.
+    if cmip5_range == True:
+        cmip5models_g = [ model.data[quantity_to_graph + '_t_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+        cmip5models_so = [ model.data[quantity_to_graph + '_t_so'] for name, model in models.items() if name.startswith('CMIP5') ]
+        cmip5_g_max = np.maximum.reduce( cmip5models_g )
+        cmip5_g_min = np.minimum.reduce( cmip5models_g )
+        cmip5_so_max = np.maximum.reduce( cmip5models_so )
+        cmip5_so_min = np.minimum.reduce( cmip5models_so )
+
+        ax1.fill_between( constants.ta, cmip5_g_min, cmip5_g_max, facecolor='red', alpha=0.3,
+                    label='CMIP5 Model Range' )
+        ax2.fill_between( constants.ta, cmip5_so_min, cmip5_so_max, facecolor='red', alpha=0.3,
+                    label='CMIP5 Model Range' )
+           
+    if cmip6_range == True:   
+        cmip6models_g = [ model.data[quantity_to_graph + '_t_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+        cmip6models_so = [ model.data[quantity_to_graph + '_t_so'] for name, model in models.items() if name.startswith('CMIP6') ]
+        cmip6_g_max = np.maximum.reduce( cmip6models_g )
+        cmip6_g_min = np.minimum.reduce( cmip6models_g )
+        cmip6_so_max = np.maximum.reduce( cmip6models_so )
+        cmip6_so_min = np.minimum.reduce( cmip6models_so )
+
+        ax1.fill_between( constants.ta, cmip6_g_min, cmip6_g_max, facecolor='blue', alpha=0.3,
+                    label='CMIP6 Model Range' )    
+        ax2.fill_between( constants.ta, cmip6_so_min, cmip6_so_max, facecolor='blue', alpha=0.3,
+                    label='CMIP6 Model Range' )
+
+
+    ax1.set_ylabel( 'Mean Cloud Ice Water Fraction' )
+    ax2.set_ylabel( 'Mean Cloud Ice Water Fraction' )
+    ax2.set_xlabel( 'Temperature (K)' )
+    ax1.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+    ax2.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+
+    ax1.set_title ( 'Global' )
+    ax2.set_title ( 'Southern Ocean' )
+    ax1.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0));
+
+    ax1.grid( True )
+    ax2.grid( True )
+
+    all_model_names = '_'.join( [ model.name for model in models_to_graph ])
+    fig.tight_layout()
+    plt.savefig( location + '/Images/' + 'ice_temp' + '_' +  all_model_names + ".svg", format="svg", bbox_inches='tight' )
+    plt.show()
 
 ############################################################################### contour plots
 
@@ -560,7 +619,7 @@ def model_cli_contours( models_to_graph, zero_lines ):
 
     fig, ax = plt.subplots( nrows=1, ncols=len( models_to_graph ), figsize=(15, 5) )
     for count, (model, zero_line ) in enumerate( zip( models_to_graph, zero_lines ) ):
-        prime = ax[ count ].contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, model.data['cli_alt_lat'][:,constants.lat_confine_1:constants.lat_confine_2]*1000, vmin=0, vmax=0.04, cmap='coolwarm' )
+        prime = ax[ count ].contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, model.data['cli_frac_alt_lat'][:,constants.lat_confine_1:constants.lat_confine_2], vmin=0, vmax=0.25, cmap='coolwarm' )
         temp = ax[ count ].contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, ( model.data[ 'full_ta_alt_lat' ][:,constants.lat_confine_1:constants.lat_confine_2] - 273.15 ), colors='white' )
         temp.collections[ zero_line ].set_linewidth( 3 )
         temp.collections[ zero_line ].set_color( 'white' )
@@ -572,8 +631,8 @@ def model_cli_contours( models_to_graph, zero_lines ):
 
     # the common color bar is based off the model labeled 'prime'
     cbar = fig.colorbar(prime, ax=ax.ravel().tolist(), orientation='horizontal', fraction = 0.05 )
-    cbar.set_label('Mean Cloud Ice Water Mass Fraction in Air (g/kg)')    
-    cbar.set_clim(0, 0.04)
+    cbar.set_label('Mean Cloud Ice Water Fraction')    
+    cbar.set_clim(0, 0.25)
 
     all_model_names = '_'.join( [ model.name for model in models_to_graph ])
 

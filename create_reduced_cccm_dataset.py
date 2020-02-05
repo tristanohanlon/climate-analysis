@@ -214,7 +214,11 @@ cl_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(),
 cl_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), cl_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
 
 clw_frac_t_g = ( clw_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
-clw_frac_t_so = ( cli_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
+clw_frac_t_so = ( clw_t_so / ( clw_t_so + clw_t_so ) ) * cl_t_so
+
+cli_frac_t_g = ( cli_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
+cli_frac_t_so = ( cli_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
+
 
 # fig, ax = plt.subplots()
 # ax.plot( constants.ta, clw_t_g )
@@ -269,6 +273,9 @@ with h5py.File(save_filename, 'w') as p:
 
     p.create_dataset('clw_frac_t_g', data=clw_frac_t_g) # global layer cloud liquid water fraction corresponding to ta
     p.create_dataset('clw_frac_t_so', data=clw_frac_t_so) # global layer cloud liquid water fraction corresponding to ta
+
+    p.create_dataset('cli_frac_t_g', data=cli_frac_t_g) # global layer cloud ice water fraction corresponding to ta
+    p.create_dataset('cli_frac_t_so', data=cli_frac_t_so) # global layer cloud ice water fraction corresponding to ta
 
     p.create_dataset('full_clwc_alt_lat', data= np.transpose( full_clwc_alt_lat ) ) # cloud liquid water content ( g/m^3 ) corresponding to alt and lat
     p.create_dataset('clic_alt_lat', data= np.transpose( clic_alt_lat ) ) # cloud ice water content ( g/m^3 ) corresponding to alt and lat

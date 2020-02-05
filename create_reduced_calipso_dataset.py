@@ -313,12 +313,14 @@ cl_t_g = interpolated(constants.ta)
 
 interpolated = interpolate.interp1d(raw_ta, cl_t_so, kind = 'cubic', fill_value = np.nan)
 cl_t_so = interpolated(constants.ta)
+cl_t_so[19:] = np.nan
 
 interpolated = interpolate.interp1d(raw_ta, clw_frac_t_g, kind = 'cubic', fill_value = np.nan)
 clw_frac_t_g = interpolated(constants.ta)
 
 interpolated = interpolate.interp1d(raw_ta, clw_frac_t_so, kind = 'cubic', fill_value = np.nan)
 clw_frac_t_so = interpolated(constants.ta)
+clw_frac_t_so[19:] = np.nan
 
 interpolated = interpolate.interp1d(raw_ta, cli_frac_t_g, kind = 'cubic', fill_value = np.nan)
 cli_frac_t_g = interpolated(constants.ta)
