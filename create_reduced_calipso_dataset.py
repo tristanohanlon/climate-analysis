@@ -372,13 +372,13 @@ plt.show()
 # plt.show()
 
 
-# fig, ax = plt.subplots()
-# cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.liq_alt, clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
-# ax.set_xlabel('Latitude')
-# ax.set_ylabel('Altitude (km)')
-# cbar = fig.colorbar(cont, orientation='horizontal')
-# cbar.set_label('Mean Cloud Liquid Water Fraction')
-# plt.show()
+fig, ax = plt.subplots()
+cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.liq_alt, clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
+ax.set_xlabel('Latitude')
+ax.set_ylabel('Altitude (km)')
+cbar = fig.colorbar(cont, orientation='horizontal')
+cbar.set_label('Mean Cloud Liquid Water Fraction')
+plt.show()
 
 
 

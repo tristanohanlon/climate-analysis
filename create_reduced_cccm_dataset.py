@@ -77,6 +77,7 @@ for filename in os.listdir():
     altitudes[2] /= 1000
     
 
+
     for data_set in data_sets:
         sel = f.select( data_set.type_name )
         data = sel.get()
@@ -85,11 +86,12 @@ for filename in os.listdir():
         for l_index, l in enumerate( raw_lat ):
             if l <= constants.min_lat or l >= constants.max_lat:
                 continue
-            lat_bin = int( ( l - constants.min_lat ) / constants.lat_division)
+            lat_bin = int( ( l - constants.min_lat ) / constants.lat_division )
             for a_index, a in enumerate( altitudes[data_set.altitude_type] ):
-                if a <= constants.min_alt or a >= constants.max_alt:
+                if a <= np.amin(constants.alt) or a >= np.amax(constants.alt):
                     continue
-                alt_bin = int( ( a - constants.min_alt ) / constants.alt_division )
+                alt_bin = (np.abs(constants.alt - a)).argmin()
+                # alt_bin = int( ( a - constants.alt.min ) / constants.alt_division ) # select nearest alt_bin
                 #print( lat_bin, alt_bin )
                 val = data[l_index, a_index]
                 if val == fill_value:
@@ -214,25 +216,47 @@ cl_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(),
 cl_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), cl_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
 
 clw_frac_t_g = ( clw_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
-clw_frac_t_so = ( clw_t_so / ( clw_t_so + clw_t_so ) ) * cl_t_so
+clw_frac_t_so = ( clw_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
 
 cli_frac_t_g = ( cli_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
 cli_frac_t_so = ( cli_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
 
 
 # fig, ax = plt.subplots()
-# ax.plot( constants.ta, clw_t_g )
-# ax.plot( constants.ta, clw_t_so )
+# ax.plot( clw_frac_so, constants.liq_alt )
+# ax.plot( clw_frac_g, constants.liq_alt )
+# ax.set_ylabel('Altitude (km)')
+# ax.set_xlabel('Mean Cloud  Fraction ')
+# ax.set_title ('Cloud Fraction vs Altitude')
+# plt.grid(True)
+# plt.show()
+
+# fig, ax = plt.subplots()
+# ax.plot( constants.ta, clw_frac_t_g )
+# ax.plot( constants.ta, clw_frac_t_so )
 # ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
 # plt.grid(True)
 # plt.show()
+
+# fig, ax = plt.subplots()
+# cont = ax.contourf( constants.lat, constants.liq_alt, np.transpose(clw_frac_alt_lat) )
+# # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
+# # temp.collections[5].set_linewidth(3)
+# # temp.collections[5].set_color('white')
+# # ax.clabel(temp, inline=1, fontsize=10)
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Altitude (km)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
+# plt.show()
+
 ######################
 
 #----------------------------#
 
 os.chdir( location + '/climate-analysis/reduced_data' )
-
-save_filename = 'Jan_2007_Dec_2010_CCCM.h5'
+save_filename = 'CCCM_test.h5'
+# save_filename = 'Jan_2007_Dec_2010_CCCM.h5'
 
 with h5py.File(save_filename, 'w') as p:
 

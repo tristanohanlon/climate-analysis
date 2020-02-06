@@ -451,7 +451,7 @@ def reduce_dataset( directory, save_location, start, end, location ):
     cli_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), cli_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
 
     clw_frac_t_g = ( clw_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
-    clw_frac_t_so = ( clw_t_so / ( clw_t_so + clw_t_so ) ) * cl_t_so
+    clw_frac_t_so = ( clw_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
 
     cli_frac_t_g = ( cli_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
     cli_frac_t_so = ( cli_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so

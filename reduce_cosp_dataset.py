@@ -260,24 +260,24 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
         #----Test Plots----#
 
-        # fig, ax = plt.subplots()
-        # ax.plot( constants.ta, cl_t_g )
-        # ax.plot( constants.ta, cl_t_so )
-        # ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
-        # plt.grid(True)
-        # plt.show()
+        fig, ax = plt.subplots()
+        ax.plot( constants.ta, cl_t_g )
+        ax.plot( constants.ta, cl_t_so )
+        ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+        plt.grid(True)
+        plt.show()
 
-        # fig, ax = plt.subplots()
-        # cont = ax.contourf( constants.lat, constants.liq_alt, clw_frac_alt_lat )
-        # # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
-        # # temp.collections[5].set_linewidth(3)
-        # # temp.collections[5].set_color('white')
-        # # ax.clabel(temp, inline=1, fontsize=10)
-        # ax.set_xlabel('Latitude')
-        # ax.set_ylabel('Altitude (km)')
-        # cbar = fig.colorbar(cont, orientation='horizontal')
-        # cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
-        # plt.show()
+        fig, ax = plt.subplots()
+        cont = ax.contourf( constants.lat, constants.liq_alt, clw_frac_alt_lat )
+        # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
+        # temp.collections[5].set_linewidth(3)
+        # temp.collections[5].set_color('white')
+        # ax.clabel(temp, inline=1, fontsize=10)
+        ax.set_xlabel('Latitude')
+        ax.set_ylabel('Altitude (km)')
+        cbar = fig.colorbar(cont, orientation='horizontal')
+        cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
+        plt.show()
 
     ######################
 
