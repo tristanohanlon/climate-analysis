@@ -255,8 +255,7 @@ cli_frac_t_so = ( cli_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
 #----------------------------#
 
 os.chdir( location + '/climate-analysis/reduced_data' )
-save_filename = 'CCCM_test.h5'
-# save_filename = 'Jan_2007_Dec_2010_CCCM.h5'
+save_filename = 'Jan_2007_Dec_2010_CCCM.h5'
 
 with h5py.File(save_filename, 'w') as p:
 
