@@ -83,7 +83,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         clt_h = interpolated(constants.lat)
         interpolated = interpolate.interp1d(raw_lat, clt_m, kind = 'cubic', fill_value="extrapolate")
         clt_m = interpolated(constants.lat)
-        if 'CAM' in directory:
+        if 'CAM' in directory or 'GISS-E2R' in directory:
             interpolated = interpolate.interp1d(raw_lat[1:], clt_l, kind = 'cubic', fill_value="extrapolate")
             clt_l = interpolated(constants.lat)
         else:
@@ -99,7 +99,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
     interpolated = interpolate.interp2d(raw_lon, raw_lat, raw_clt_m_lat_lon, kind = 'cubic')
     clt_m_lat_lon = interpolated(constants.lon, constants.lat)
         
-    if 'CAM' in directory:
+    if 'CAM' in directory or 'GISS-E2R' in directory:
         interpolated = interpolate.interp2d(raw_lon, raw_lat[1:], raw_clt_l_lat_lon, kind = 'linear')
         clt_l_lat_lon = interpolated(constants.lon, constants.lat)
     else:
@@ -146,7 +146,11 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         cl = constants.extract_data_over_time( 'clcalipso', f, start, end )
         cl = np.mean( cl, axis = 0 )  / 100 # average over time
         cl[ cl > 1 ] = np.nan
-        raw_alt = constants.extract_data( 'alt40', f ) / 1000 # in km
+
+        if 'CM6A' in directory:
+            raw_alt = constants.extract_data( 'height', f ) / 1000 # in km
+        else:
+            raw_alt = constants.extract_data( 'alt40', f ) / 1000 # in km
 
 
     cl_alt_lat = np.nanmean( cl, axis = -1 ) 
@@ -184,7 +188,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
     #-------------create liquid and ice cloud fraction datasets---------------#
 
-    if 'CAM6' in directory or 'CM4' in directory:
+    if 'CAM6' in directory or 'CM4' in directory or 'CM6A' in directory:
         with Dataset( constants.variable_to_filename( 'clcalipsoliq' ), 'r') as f:
             clw = np.nanmean( constants.extract_data_over_time( 'clcalipsoliq', f, start, end ), axis = 0 ) / 100 # average over time
         clw[ clw > 1 ] = np.nan
@@ -201,11 +205,18 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         if raw_lat.shape[0] == constants.lat.shape[0]:
             pass
         else:
-            interpolated = interpolate.interp2d( raw_lat, raw_alt, clw_alt_lat, kind = 'cubic')
-            clw_alt_lat = interpolated( constants.lat, raw_alt )
+            if 'CM6A' in directory:
+                interpolated = interpolate.interp2d( raw_lat[5:], raw_alt, clw_alt_lat[:,5:], kind = 'cubic')
+                clw_alt_lat = interpolated( constants.lat, raw_alt )
 
-            interpolated = interpolate.interp2d( raw_lat, raw_alt, cli_alt_lat, kind = 'cubic')
-            cli_alt_lat = interpolated( constants.lat, raw_alt )
+                interpolated = interpolate.interp2d( raw_lat[5:], raw_alt, cli_alt_lat[:,5:], kind = 'cubic')
+                cli_alt_lat = interpolated( constants.lat, raw_alt )
+            else:
+                interpolated = interpolate.interp2d( raw_lat, raw_alt, clw_alt_lat, kind = 'cubic')
+                clw_alt_lat = interpolated( constants.lat, raw_alt )
+
+                interpolated = interpolate.interp2d( raw_lat, raw_alt, cli_alt_lat, kind = 'cubic')
+                cli_alt_lat = interpolated( constants.lat, raw_alt )
 
         imp = SimpleImputer(missing_values=np.nan, strategy='mean')
         imp.fit(np.transpose(clw_alt_lat))  
@@ -217,6 +228,8 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         a = imp.transform(np.transpose(cli_alt_lat))
         cli_alt_lat = np.transpose(a)    
 
+        clw[ clw < 1 ] = np.nan
+        cli[ cli < 1 ] = np.nan
 
         ######## Binned Temperature Data ########
         # values to bin: clw_frac_alt_lat and ta_alt_lat
@@ -242,14 +255,14 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
         #----Test Plot----#
 
-        # fig, ax = plt.subplots()
-        # ax.plot( clw_frac_so, constants.liq_alt )
-        # ax.plot( clw_frac_g, constants.liq_alt )
-        # ax.set_ylabel('Altitude (km)')
-        # ax.set_xlabel('Mean Cloud  Fraction ')
-        # ax.set_title ('Cloud Fraction vs Altitude')
-        # plt.grid(True)
-        # plt.show()
+        fig, ax = plt.subplots()
+        ax.plot( clw_frac_so, constants.liq_alt )
+        ax.plot( clw_frac_g, constants.liq_alt )
+        ax.set_ylabel('Altitude (km)')
+        ax.set_xlabel('Mean Cloud  Fraction ')
+        ax.set_title ('Cloud Fraction vs Altitude')
+        plt.grid(True)
+        plt.show()
 
 
 
@@ -259,14 +272,6 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
 
         #----Test Plots----#
-
-        fig, ax = plt.subplots()
-        ax.plot( constants.ta, cl_t_g )
-        ax.plot( constants.ta, cl_t_so )
-        ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
-        plt.grid(True)
-        plt.show()
-
         fig, ax = plt.subplots()
         cont = ax.contourf( constants.lat, constants.liq_alt, clw_frac_alt_lat )
         # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
@@ -278,6 +283,14 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         cbar = fig.colorbar(cont, orientation='horizontal')
         cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
         plt.show()
+
+
+    fig, ax = plt.subplots()
+    ax.plot( constants.ta, cl_t_g )
+    ax.plot( constants.ta, cl_t_so )
+    ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+    plt.grid(True)
+    plt.show()
 
     ######################
 

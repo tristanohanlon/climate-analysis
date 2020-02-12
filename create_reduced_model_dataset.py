@@ -40,9 +40,9 @@ from pprint import pprint
 
 #--- Set Location and model ---#
 
-model = 'all_models' # see intro comments above for available models. 'all_models' runs through all
-location = constants.home # home, uni, hdd or laptop
-cosp_status = False # see intro comments
+model = 'CMIP5-AMIP-GISS-E2R' # see intro comments above for available models. 'all_models' runs through all
+location = constants.hdd # home, uni, hdd or laptop
+cosp_status = True # see intro comments
 os.chdir( location + 'Data' ) # location of the model data folders
 
 # set date parameters for CMIP5 and CMIP6 data

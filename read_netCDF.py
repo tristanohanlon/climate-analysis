@@ -35,7 +35,7 @@ import numpy as np
 import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'CMIP6-AMIP-GFDL-CM4'
+data = 'CMIP6-AMIP-IPSL-CM6A-LR'
 location = constants.hdd + 'Data/'
 data_type = 'o3'
 
