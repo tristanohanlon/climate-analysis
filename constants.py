@@ -32,11 +32,14 @@ all_amip_models = [ 'CMIP5-AMIP-CESM1-CAM5',
 
 all_cosp_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
                 'CMIP5-AMIP-GFDL-CM3',
+                'CMIP5-AMIP-GISS-E2R', 
+                'CMIP5-AMIP-IPSL-CM5A-LR', 
                 'CMIP5-AMIP-MIROC5', 
                 'CMIP5-AMIP-MRI-CGCM3',
 
                 'CMIP6-AMIP-CESM2-CAM6', 
                 'CMIP6-AMIP-GFDL-CM4',
+                'CMIP6-AMIP-IPSL-CM6A-LR', 
                 'CMIP6-AMIP-MIROC6', 
                 'CMIP6-AMIP-MRI-ESM2' ]
 
@@ -59,8 +62,8 @@ lat_confine_1 = np.abs(lat - (-75)).argmin()
 lat_confine_2 = np.abs(lat - (75)).argmin()
 
 # if reducing CALIPSO data, these need to be changed to min = -180, max = 180
-min_lon = 0
-max_lon = 360
+min_lon = -180
+max_lon = 180
 lon_division = 1
 lon = np.arange(min_lon, max_lon, lon_division)
 
@@ -440,12 +443,11 @@ def nan_helper(y):
 
 
 all_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
-                'CMIP5-AMIP-GFDL-HIRAM-C360', 
+                'CMIP5-AMIP-GFDL-CM3',
                 'CMIP5-AMIP-GISS-E2R', 
                 'CMIP5-AMIP-IPSL-CM5A-LR', 
                 'CMIP5-AMIP-MIROC5', 
                 'CMIP5-AMIP-MRI-CGCM3',
-                'CMIP5-AMIP-GFDL-CM3',
 
                 # 'CMIP5-AMIP_4xCO2-GFDL-CM3',
                 'CMIP5-AMIP_4xCO2-IPSL-CM5A-LR',
@@ -460,15 +462,14 @@ all_models = [ 'CMIP5-AMIP-CESM1-CAM5',
                 'CMIP5-RCP45-MRI-CGCM3',
 
                 'CMIP6-AMIP-CESM2-CAM6', 
-                'CMIP6-AMIP-GFDL-AM4', 
+                'CMIP6-AMIP-GFDL-CM4',
                 'CMIP6-AMIP-GISS-E21G', 
                 'CMIP6-AMIP-IPSL-CM6A-LR', 
                 'CMIP6-AMIP-MIROC6', 
                 'CMIP6-AMIP-MRI-ESM2',
-                'CMIP6-AMIP-GFDL-CM4',
                 
                 'CMIP6-AMIP_4xCO2-CESM2-CAM6',
-                'CMIP6-AMIP_4xCO2-GFDL-CM4',
+                # 'CMIP6-AMIP_4xCO2-GFDL-CM4',
                 'CMIP6-AMIP_4xCO2-IPSL-CM6A-LR',
                 'CMIP6-AMIP_4xCO2-MIROC6',
                 'CMIP6-AMIP_4xCO2-MRI-ESM2',
@@ -517,12 +518,11 @@ model_dict_amip = {
 
 model_dict_all = {
     "CMIP5-AMIP-CESM1-CAM5" : "_Amon_CESM1-CAM5_amip_r1i1p1_197901-200512.nc",
-    "CMIP5-AMIP-GFDL-HIRAM-C360" : "_Amon_GFDL-HIRAM-C360_amip_r1i1p1_199901-200812.nc",
+    "CMIP5-AMIP-GFDL-CM3" : "_Amon_GFDL-CM3_amip_r1i1p1_199901-200812.nc",
     "CMIP5-AMIP-GISS-E2R" : "_Amon_GISS-E2-R_amip_r1i1p1_195101-201012.nc",
     "CMIP5-AMIP-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip_r1i1p1_197901-200912.nc",
     "CMIP5-AMIP-MIROC5" : "_Amon_MIROC5_amip_r1i1p1_199901-200812.nc",
     "CMIP5-AMIP-MRI-CGCM3" : "_Amon_MRI-CGCM3_amip_r1i1p1_199901-201002.nc",
-    "CMIP5-AMIP-GFDL-CM3" : "_Amon_GFDL-CM3_amip_r1i1p1_199901-200812.nc",
 
     "CMIP5-AMIP_4xCO2-GFDL-CM3" : "_Amon_GFDL-CM3_amip4xCO2_r1i1p1_199901-200812.nc",
     "CMIP5-AMIP_4xCO2-IPSL-CM5A-LR" : "_Amon_IPSL-CM5A-LR_amip4xCO2_r1i1p1_197901-200912.nc",
@@ -539,12 +539,11 @@ model_dict_all = {
     "CMIP5-RCP45-MRI-CGCM3" : "_Amon_MRI-CGCM3_rcp45_r1i1p1_209601-210012.nc",
 
     "CMIP6-AMIP-CESM2-CAM6" : "_Amon_CESM2_amip_r1i1p1f1_gn_195001-201412.nc",
-    "CMIP6-AMIP-GFDL-AM4" : "_Amon_GFDL-AM4_amip_r1i1p1f1_gr1_198001-201412.nc",
+    "CMIP6-AMIP-GFDL-CM4" : "_Amon_GFDL-CM4_amip_r1i1p1f1_gr1_200301-201412.nc",
     "CMIP6-AMIP-GISS-E21G" : "_Amon_GISS-E2-1-G_amip_r1i1p1f1_gn_200101-201412.nc",
     "CMIP6-AMIP-IPSL-CM6A-LR" : "_Amon_IPSL-CM6A-LR_amip_r1i1p1f1_gr_197901-201412.nc",
     "CMIP6-AMIP-MIROC6" : "_Amon_MIROC6_amip_r1i1p1f1_gn_199901-201412.nc",
     "CMIP6-AMIP-MRI-ESM2" : "_Amon_MRI-ESM2-0_amip_r1i1p1f1_gn_199901-201412.nc",
-    "CMIP6-AMIP-GFDL-CM4" : "_Amon_GFDL-CM4_amip_r1i1p1f1_gr1_200301-201412.nc",
 
     "CMIP6-AMIP_4xCO2-CESM2-CAM6" : "_Amon_CESM2_amip-4xCO2_r1i1p1f1_gn_197901-201412.nc",
     "CMIP6-AMIP_4xCO2-GFDL-CM4" : "_Amon_GFDL-CM4_amip-4xCO2_r1i1p1f1_gr1_197901-201412.nc",
@@ -564,10 +563,7 @@ model_dict_all = {
     "CMIP6-SSP245-MIROC6" : "_Amon_MIROC6_ssp245_r1i1p1f1_gn_209501-210012.nc",
     "CMIP6-SSP245-MRI-ESM2" : "_Amon_MRI-ESM2-0_ssp245_r1i1p1f1_gn_209501-210012.nc",
     
-    "ECMWF" : "pressure_levels/2008_ECMWF_amon_plevels_T_cc_clw_ciw.nc",
-    "CALIPSO-GOCCP" : "_200606-201803_avg_CFMIP2_sat_3.1.2.nc"
-   
-        }
+           }
 
 satellite_dict = {
     "CCCM" : "CCCM/CER-NEWS_CCCM_Aqua-FM3-MODIS-CAL-CS_RelB1_905905.20060731.hdf",

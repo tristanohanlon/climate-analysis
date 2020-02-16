@@ -62,7 +62,6 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         raw_clt_l_lat_lon = np.mean( constants.extract_data_over_time('cllcalipso', f, start, end ), axis = 0 ) / 100 # average over time
         raw_clt_l_lat_lon[ raw_clt_l_lat_lon > 1 ] = np.nan
 
-
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')
     imp.fit(np.transpose(raw_clt_l_lat_lon))  
     a = imp.transform(np.transpose(raw_clt_l_lat_lon))
@@ -107,7 +106,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         clt_l_lat_lon = interpolated(constants.lon, constants.lat)
 
 
-    #----Test Plots----#
+    # #----Test Plots----#
 
 
     # fig, ax = plt.subplots()
@@ -123,7 +122,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
     # ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
     # ax.coastlines()
-    # p = ax.contourf(constants.lon, constants.lat, clt_l_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
+    # p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
     # cbar = plt.colorbar(p, orientation='horizontal')
     # cbar.set_label('Cloud Fraction')
     # ax.set_title('Total Cloud Fraction')
@@ -168,7 +167,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
     cl_so = constants.globalalt_latMean(cl_alt_lat[:,start_idx:end_idx], constants.lat[start_idx:end_idx])
 
 
-    #----Test Plot----#
+    # #----Test Plot----#
 
     # fig, ax = plt.subplots()
     # ax.plot( cl_so, raw_alt )
@@ -192,6 +191,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         with Dataset( constants.variable_to_filename( 'clcalipsoliq' ), 'r') as f:
             clw = np.nanmean( constants.extract_data_over_time( 'clcalipsoliq', f, start, end ), axis = 0 ) / 100 # average over time
         clw[ clw > 1 ] = np.nan
+
         # clw = clw[5:]
         clw_alt_lat = np.nanmean( clw, axis = -1 ) 
 
@@ -255,14 +255,14 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
         #----Test Plot----#
 
-        fig, ax = plt.subplots()
-        ax.plot( clw_frac_so, constants.liq_alt )
-        ax.plot( clw_frac_g, constants.liq_alt )
-        ax.set_ylabel('Altitude (km)')
-        ax.set_xlabel('Mean Cloud  Fraction ')
-        ax.set_title ('Cloud Fraction vs Altitude')
-        plt.grid(True)
-        plt.show()
+        # fig, ax = plt.subplots()
+        # ax.plot( clw_frac_so, constants.liq_alt )
+        # ax.plot( clw_frac_g, constants.liq_alt )
+        # ax.set_ylabel('Altitude (km)')
+        # ax.set_xlabel('Mean Cloud  Fraction ')
+        # ax.set_title ('Cloud Fraction vs Altitude')
+        # plt.grid(True)
+        # plt.show()
 
 
 
@@ -272,25 +272,34 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
 
 
         #----Test Plots----#
-        fig, ax = plt.subplots()
-        cont = ax.contourf( constants.lat, constants.liq_alt, clw_frac_alt_lat )
-        # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
-        # temp.collections[5].set_linewidth(3)
-        # temp.collections[5].set_color('white')
-        # ax.clabel(temp, inline=1, fontsize=10)
-        ax.set_xlabel('Latitude')
-        ax.set_ylabel('Altitude (km)')
-        cbar = fig.colorbar(cont, orientation='horizontal')
-        cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
-        plt.show()
+        # fig, ax = plt.subplots()
+        # cont = ax.contourf( constants.lat, constants.liq_alt, clw_frac_alt_lat )
+        # # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
+        # # temp.collections[5].set_linewidth(3)
+        # # temp.collections[5].set_color('white')
+        # # ax.clabel(temp, inline=1, fontsize=10)
+        # ax.set_xlabel('Latitude')
+        # ax.set_ylabel('Altitude (km)')
+        # cbar = fig.colorbar(cont, orientation='horizontal')
+        # cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
+        # plt.show()
 
 
-    fig, ax = plt.subplots()
-    ax.plot( constants.ta, cl_t_g )
-    ax.plot( constants.ta, cl_t_so )
-    ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
-    plt.grid(True)
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot( constants.ta, cl_t_g )
+    # ax.plot( constants.ta, cl_t_so )
+    # ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+    # plt.grid(True)
+    # plt.show()
+
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+    ax.coastlines()
+    p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
+    cbar = plt.colorbar(p, orientation='horizontal')
+    cbar.set_label('Cloud Fraction')
+    ax.set_title('Total Cloud Fraction')
+    plt.show()  
+
 
     ######################
 
@@ -318,7 +327,7 @@ def reduce_cosp_dataset( directory, save_location, start, end, location ):
         p.create_dataset('full_ta_alt_lat', data=full_ta_alt_lat) # temperature (K) corresponding to alt and lat
         p.create_dataset('cl_alt_lat', data=cl_alt_lat) # cloud fraction (%) corresponding to alt and lat
 
-        if 'CAM6' in directory or 'CM4' in directory:
+        if 'CAM6' in directory or 'CM4' in directory or 'CM6A' in directory:
 
             p.create_dataset('clw_frac_g', data=clw_frac_g) # global layer cloud liquid water fraction(kg/kg) corresponding to liq_alt
             p.create_dataset('cli_frac_g', data=cli_frac_g) # global layer cloud ice water fraction(kg/kg) corresponding to alt

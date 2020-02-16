@@ -27,7 +27,7 @@ end_cmip6_ssp = datetime.datetime( 2099, 12, 1 )
 
 #--- Set Location and model ---#
 
-model = 'all_models' # see comments above for available models
+model = 'CMIP6-AMIP_4xCO2-GFDL-CM4' # see comments above for available models
 location = constants.home # home, uni, hdd or laptop
 os.chdir( location + 'Data' )
 
@@ -37,21 +37,21 @@ if model == 'all_models':
         os.chdir( location + 'Data' )
         print('Currently reducing: ' + model)
         if 'CMIP5-AMIP' in model: 
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5, end_cmip5, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5, end_cmip5, rownum )
         elif 'CMIP5-RCP45' in model:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5_rcp, end_cmip5_rcp, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5_rcp, end_cmip5_rcp, rownum )
         elif 'CMIP6-SSP245' in model:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6_ssp, end_cmip6_ssp, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6_ssp, end_cmip6_ssp, rownum )
         else:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum )
         rownum += 1
 else:
         if 'CMIP5-AMIP' in model: 
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5, end_cmip5, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5, end_cmip5, rownum )
         elif 'CMIP5-RCP45' in model:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5_rcp, end_cmip5_rcp, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip5_rcp, end_cmip5_rcp, rownum )
         elif 'CMIP6-SSP245' in model:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6_ssp, end_cmip6_ssp, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6_ssp, end_cmip6_ssp, rownum )
         else:
-            reduce_dataset.reduce_dataset( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum )
+            reduce_datatable.reduce_datatable( model, constants.model_dict_all[ model ], location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum )
 

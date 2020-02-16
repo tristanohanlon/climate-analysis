@@ -73,6 +73,10 @@ clt_l_lat_lon = constants.fill(clt_l_lat_lon)
 clt_l = np.nanmean(clt_l_lat_lon, axis = -1) #average over longitude (lat)
 
 
+print(constants.global2DMean(clt_lat_lon, raw_lat))
+print(constants.global2DMean(clt_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx]))
+print(constants.global2DMean(clt_l_lat_lon, raw_lat))
+print(constants.global2DMean(clt_l_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx]))
 
 
 ###########################---get lat-lon - phase fraction---###########################
@@ -173,6 +177,10 @@ clw_frac_so = constants.global3DMean(clw[:,start_idx:end_idx], raw_lat[start_idx
 cli_frac_g = constants.global3DMean(cli, raw_lat)
 cli_frac_so = constants.global3DMean(cli[:,start_idx:end_idx], raw_lat[start_idx:end_idx])
 
+print(constants.globalalt_latMeanVal(clw_frac_alt_lat, raw_lat))
+print(constants.globalalt_latMeanVal(clw_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx]))
+print(constants.globalalt_latMeanVal(cli_frac_alt_lat, raw_lat))
+print(constants.globalalt_latMeanVal(cli_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx]))
 
 #----Test Plot----#
 
@@ -330,13 +338,13 @@ cli_frac_t_so = interpolated(constants.ta)
 
 #---Test plots---#
 
-ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
-ax.coastlines()
-p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
-cbar = plt.colorbar(p, orientation='horizontal')
-cbar.set_label('Cloud Fraction')
-ax.set_title('Total Cloud Fraction')
-plt.show()  
+# ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+# ax.coastlines()
+# p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
+# cbar = plt.colorbar(p, orientation='horizontal')
+# cbar.set_label('Cloud Fraction')
+# ax.set_title('Total Cloud Fraction')
+# plt.show()  
 
 
 
@@ -372,13 +380,15 @@ plt.show()
 # plt.show()
 
 
-fig, ax = plt.subplots()
-cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.liq_alt, clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
-ax.set_xlabel('Latitude')
-ax.set_ylabel('Altitude (km)')
-cbar = fig.colorbar(cont, orientation='horizontal')
-cbar.set_label('Mean Cloud Liquid Water Fraction')
-plt.show()
+# fig, ax = plt.subplots()
+# cont = ax.contourf( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.liq_alt, clw_frac_alt_lat[:,constants.lat_confine_1:constants.lat_confine_2] )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Altitude (km)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('Mean Cloud Liquid Water Fraction')
+# plt.show()
+
+
 
 
 

@@ -36,7 +36,7 @@ import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
 data = 'CMIP6-AMIP-IPSL-CM6A-LR'
-location = constants.hdd + 'Data/'
+location = constants.network + 'Data/'
 data_type = 'o3'
 
 if data == 'ECMWF':
