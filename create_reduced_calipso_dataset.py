@@ -73,10 +73,6 @@ clt_l_lat_lon = constants.fill(clt_l_lat_lon)
 clt_l = np.nanmean(clt_l_lat_lon, axis = -1) #average over longitude (lat)
 
 
-print(constants.global2DMean(clt_lat_lon, raw_lat))
-print(constants.global2DMean(clt_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx]))
-print(constants.global2DMean(clt_l_lat_lon, raw_lat))
-print(constants.global2DMean(clt_l_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx]))
 
 
 ###########################---get lat-lon - phase fraction---###########################
@@ -130,6 +126,8 @@ cli_frac_l = np.nanmean(cli_frac_l_lat_lon, axis = -1) #average over longitude
 f = Dataset('3D_CloudFraction330m_200606-201803_avg_CFMIP2_sat_3.1.2.nc', 'r')
 raw_alt = np.array(f.variables['alt_mid'][:]) # km
 
+low_alt_confine = np.abs(raw_alt - (3)).argmin()
+
 cl = np.array(f.variables['clcalipso'][:48]) # 7.2006 to 12.2020 - 54 months
 cl[cl < 0] = None #set fill values to nan
 cl = constants.fill(np.nanmean(cl, axis = 0)[:,4:85]) #average over time
@@ -177,10 +175,23 @@ clw_frac_so = constants.global3DMean(clw[:,start_idx:end_idx], raw_lat[start_idx
 cli_frac_g = constants.global3DMean(cli, raw_lat)
 cli_frac_so = constants.global3DMean(cli[:,start_idx:end_idx], raw_lat[start_idx:end_idx])
 
-print(constants.globalalt_latMeanVal(clw_frac_alt_lat, raw_lat))
-print(constants.globalalt_latMeanVal(clw_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx]))
-print(constants.globalalt_latMeanVal(cli_frac_alt_lat, raw_lat))
-print(constants.globalalt_latMeanVal(cli_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx]))
+print('Global Cloud Fraction = ' + str(constants.global2DMean(clt_lat_lon, raw_lat)))
+print('SO Cloud Fraction = ' + str(constants.global2DMean(clt_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx])))
+print('Global Low Cloud Fraction = ' + str(constants.global2DMean(clt_l_lat_lon, raw_lat)))
+print('SO Low Cloud Fraction = ' + str(constants.global2DMean(clt_l_lat_lon[start_idx:end_idx], raw_lat[start_idx:end_idx])))
+
+
+print('Global Cloud Layer Fraction = ' + str(constants.globalalt_latMeanVal(cl_alt_lat, raw_lat)))
+print('SO Cloud Layer Fraction = ' + str(constants.globalalt_latMeanVal(cl_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx])))
+print('Global Low Cloud Layer Fraction = ' + str(constants.globalalt_latMeanVal(cl_alt_lat[:low_alt_confine], raw_lat)))
+print('SO Low Cloud Layer Fraction = ' + str(constants.globalalt_latMeanVal(cl_alt_lat[:low_alt_confine,start_idx:end_idx], raw_lat[start_idx:end_idx])))
+
+print('Global Cloud Liquid Fraction = ' + str(constants.globalalt_latMeanVal(clw_frac_alt_lat, raw_lat)))
+print('SO Cloud Liquid Fraction = ' + str(constants.globalalt_latMeanVal(clw_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx])))
+print('Global Low Cloud Liquid Fraction = ' + str(constants.globalalt_latMeanVal(clw_frac_alt_lat[:low_alt_confine], raw_lat)))
+print('SO Low Cloud Liquid Fraction = ' + str(constants.globalalt_latMeanVal(clw_frac_alt_lat[:low_alt_confine,start_idx:end_idx], raw_lat[start_idx:end_idx])))
+print('Global Cloud Ice Fraction = ' + str(constants.globalalt_latMeanVal(cli_frac_alt_lat, raw_lat)))
+print('SO Cloud Liquid Fraction = ' + str(constants.globalalt_latMeanVal(cli_frac_alt_lat[:,start_idx:end_idx], raw_lat[start_idx:end_idx])))
 
 #----Test Plot----#
 
@@ -394,49 +405,49 @@ cli_frac_t_so = interpolated(constants.ta)
 
     #----------------------------#
 
-os.chdir(location + 'climate-analysis/reduced_data')
+# os.chdir(location + 'climate-analysis/reduced_data')
 
-with h5py.File( 'Jan_2007_Dec_2010_CALIPSO.h5', 'w' ) as p:
+# with h5py.File( 'Jan_2007_Dec_2010_CALIPSO.h5', 'w' ) as p:
     
-    p.create_dataset( 'clt', data = clt ) # total cloud fraction corresponding to lat
-    p.create_dataset( 'clt_lat_lon', data = clt_lat_lon ) # total cloud fraction corresponding to lat, lon
+#     p.create_dataset( 'clt', data = clt ) # total cloud fraction corresponding to lat
+#     p.create_dataset( 'clt_lat_lon', data = clt_lat_lon ) # total cloud fraction corresponding to lat, lon
   
-    p.create_dataset( 'clt_l', data = clt_l ) # total cloud fraction corresponding to lat
-    p.create_dataset( 'clt_l_lat_lon', data= clt_l_lat_lon ) # total cloud fraction corresponding to lat, lon    
+#     p.create_dataset( 'clt_l', data = clt_l ) # total cloud fraction corresponding to lat
+#     p.create_dataset( 'clt_l_lat_lon', data= clt_l_lat_lon ) # total cloud fraction corresponding to lat, lon    
     
-    p.create_dataset( 'clw_frac', data = clw_frac ) # total cloud liquid water fraction corresponding to lat
-    p.create_dataset( 'clw_frac_lat_lon', data = clw_frac_lat_lon ) # total cloud fraction corresponding to lat, lon
+#     p.create_dataset( 'clw_frac', data = clw_frac ) # total cloud liquid water fraction corresponding to lat
+#     p.create_dataset( 'clw_frac_lat_lon', data = clw_frac_lat_lon ) # total cloud fraction corresponding to lat, lon
 
-    p.create_dataset( 'clw_frac_l', data = clw_frac_l ) # total cloud fraction corresponding to lat
-    p.create_dataset( 'clw_frac_l_lat_lon', data = clw_frac_l_lat_lon ) # total cloud fraction corresponding to lat, lon    
+#     p.create_dataset( 'clw_frac_l', data = clw_frac_l ) # total cloud fraction corresponding to lat
+#     p.create_dataset( 'clw_frac_l_lat_lon', data = clw_frac_l_lat_lon ) # total cloud fraction corresponding to lat, lon    
 
-    p.create_dataset( 'cli_frac', data = cli_frac ) # total cloud ice fraction corresponding to lat
-    p.create_dataset( 'cli_frac_lat_lon', data = cli_frac_lat_lon ) # total cloud fraction corresponding to lat, lon
+#     p.create_dataset( 'cli_frac', data = cli_frac ) # total cloud ice fraction corresponding to lat
+#     p.create_dataset( 'cli_frac_lat_lon', data = cli_frac_lat_lon ) # total cloud fraction corresponding to lat, lon
     
-    p.create_dataset( 'cl_g', data = cl_g ) # global layer total cloud fraction corresponding to alt
-    p.create_dataset( 'clw_frac_g', data = clw_frac_g ) # global layer cloud liquid water fraction corresponding to liq_alt
-    p.create_dataset( 'cli_frac_g', data = cli_frac_g ) # global layer cloud ice water fraction corresponding to alt
+#     p.create_dataset( 'cl_g', data = cl_g ) # global layer total cloud fraction corresponding to alt
+#     p.create_dataset( 'clw_frac_g', data = clw_frac_g ) # global layer cloud liquid water fraction corresponding to liq_alt
+#     p.create_dataset( 'cli_frac_g', data = cli_frac_g ) # global layer cloud ice water fraction corresponding to alt
     
-    p.create_dataset( 'cl_so', data = cl_so ) # southern ocean layer total cloud fraction corresponding to alt
-    p.create_dataset( 'clw_frac_so', data = clw_frac_so ) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
-    p.create_dataset( 'cli_frac_so', data = cli_frac_so ) # southern ocean layer cloud ice water fraction corresponding to alt
+#     p.create_dataset( 'cl_so', data = cl_so ) # southern ocean layer total cloud fraction corresponding to alt
+#     p.create_dataset( 'clw_frac_so', data = clw_frac_so ) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
+#     p.create_dataset( 'cli_frac_so', data = cli_frac_so ) # southern ocean layer cloud ice water fraction corresponding to alt
 
-    p.create_dataset( 'cl_t_g', data = cl_t_g ) # global layer cloud liquid water fraction corresponding to ta_g
-    p.create_dataset( 'cl_t_so', data = cl_t_so ) # global layer cloud liquid water fraction corresponding to ta_so
+#     p.create_dataset( 'cl_t_g', data = cl_t_g ) # global layer cloud liquid water fraction corresponding to ta_g
+#     p.create_dataset( 'cl_t_so', data = cl_t_so ) # global layer cloud liquid water fraction corresponding to ta_so
 
-    p.create_dataset( 'clw_frac_t_g', data = clw_frac_t_g ) # global layer cloud liquid water fraction corresponding to ta_g
-    p.create_dataset( 'clw_frac_t_so', data = clw_frac_t_so ) # global layer cloud liquid water fraction corresponding to ta_so
+#     p.create_dataset( 'clw_frac_t_g', data = clw_frac_t_g ) # global layer cloud liquid water fraction corresponding to ta_g
+#     p.create_dataset( 'clw_frac_t_so', data = clw_frac_t_so ) # global layer cloud liquid water fraction corresponding to ta_so
 
-    p.create_dataset( 'cli_frac_t_g', data = cli_frac_t_g ) # global layer cloud ice water fraction corresponding to ta_g
-    p.create_dataset( 'cli_frac_t_so', data = cli_frac_t_so ) # global layer cloud ice water fraction corresponding to ta_so
+#     p.create_dataset( 'cli_frac_t_g', data = cli_frac_t_g ) # global layer cloud ice water fraction corresponding to ta_g
+#     p.create_dataset( 'cli_frac_t_so', data = cli_frac_t_so ) # global layer cloud ice water fraction corresponding to ta_so
 
-    p.create_dataset( 'cl_alt_lat', data = cl_alt_lat ) # total cloud fraction corresponding to alt and lat
-    p.create_dataset( 'cli_frac_alt_lat', data = cli_frac_alt_lat ) # cloud ice water fraction corresponding to alt and lat
-    p.create_dataset( 'clw_frac_alt_lat', data = clw_frac_alt_lat )  # cloud liquid water fraction corresponding to liq_alt and lat
-    p.create_dataset( 'full_clw_frac_alt_lat', data = full_clw_frac_alt_lat )  # cloud liquid water fraction corresponding to liq_alt and lat
+#     p.create_dataset( 'cl_alt_lat', data = cl_alt_lat ) # total cloud fraction corresponding to alt and lat
+#     p.create_dataset( 'cli_frac_alt_lat', data = cli_frac_alt_lat ) # cloud ice water fraction corresponding to alt and lat
+#     p.create_dataset( 'clw_frac_alt_lat', data = clw_frac_alt_lat )  # cloud liquid water fraction corresponding to liq_alt and lat
+#     p.create_dataset( 'full_clw_frac_alt_lat', data = full_clw_frac_alt_lat )  # cloud liquid water fraction corresponding to liq_alt and lat
 
-    p.create_dataset( 'full_ta_alt_lat', data = full_ta_alt_lat )  # ECMWF temp (alt, lat)
-    p.create_dataset( 'ta_alt_lat', data = ta_alt_lat )  # ECMWF temp (liq_altalt, lat)
+#     p.create_dataset( 'full_ta_alt_lat', data = full_ta_alt_lat )  # ECMWF temp (alt, lat)
+#     p.create_dataset( 'ta_alt_lat', data = ta_alt_lat )  # ECMWF temp (liq_altalt, lat)
 
-    p.close()
+#     p.close()
 

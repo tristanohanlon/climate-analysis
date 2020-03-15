@@ -35,7 +35,7 @@ import cartopy.crs as ccrs
 #--- Set Location, date period and model ---#
 
 # specify model from the list above
-model = 'CMIP6-AMIP-GFDL-CM4' 
+model = 'CMIP5-AMIP-CESM1-CAM5' 
 
 # specify location: home, uni, hdd, laptop
 location = constants.home + 'climate-analysis/reduced_data'
@@ -155,7 +155,7 @@ elif model == 'CALIPSO':
     clw_frac_l_lat_lon = h5f['clw_frac_l_lat_lon'][:]
 
     
-elif model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model == 'CMIP5-GISS-E2R' or model == 'CMIP5-IPSL-CM5A-LR' or model == 'CMIP5-MIROC5' or model == 'CMIP5-MRI-CGCM3': 
+elif model == 'CMIP5-AMIP-CESM1-CAM5' or model == 'CMIP5-AMIP-GFDL-CM3' or model == 'CMIP5-AMIP-GISS-E2R' or model == 'CMIP5-AMIP-IPSL-CM5A-LR' or model == 'CMIP5-AMIP-MIROC5' or model == 'CMIP5-AMIP-MRI-CGCM3': 
     h5f = h5py.File( constants.date_cmip5 + '_' + model + '.h5', 'r')
     cl_alt_lat = h5f['cl_alt_lat'][:]
     cl_g = h5f['cl_g'][:]
@@ -186,9 +186,6 @@ elif model == 'CMIP5-CESM1-CAM5' or model == 'CMIP5-GFDL-HIRAM-C360' or model ==
     full_air_density_alt_lat = h5f['full_air_density_alt_lat'][:]
     liq_air_density_alt_lat = h5f['liq_air_density_alt_lat'][:]
 
-    clt_lc = h5f['clt_lc'][:]
-    clt_lc_lat_lon = h5f['clt_lc_lat_lon'][:]
-    clwvi_lc_lat_lon = h5f['clwvi_lc_lat_lon'][:]
 
     rtmt_lat_lon = h5f['rtmt_lat_lon'][:]
     albedo_reg = h5f['albedo_reg'][:]

@@ -77,12 +77,29 @@ def reduce_cosp_datatable( directory, save_location, start, end, rownum, locatio
     ######################---get profile data (time, alt40, lat, lon)---###################
 
     with Dataset( constants.variable_to_filename( 'clcalipso' ), 'r') as f:
+        cl = np.nanmean( constants.extract_data_over_time( 'clcalipso', f, start, end ), axis = 0 ) / 100 # average over time
+        cl[ cl > 1 ] = np.nan
 
         if 'CM6A' in directory:
             raw_alt = constants.extract_data( 'height', f ) / 1000 # in km
         else:
             raw_alt = constants.extract_data( 'alt40', f ) / 1000 # in km
 
+    low_alt_confine = np.abs(raw_alt - (3)).argmin()
+
+    cl_alt_lat = np.nanmean( cl, axis = -1 ) 
+
+    if raw_lat.shape[0] == constants.lat.shape[0]:
+        pass
+    else:
+        interpolated = interpolate.interp2d( raw_lat[5:], raw_alt, cl_alt_lat[:,5:], kind = 'cubic')
+        cl_alt_lat = interpolated( constants.lat, raw_alt )
+
+
+    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+    imp.fit(np.transpose(cl_alt_lat))  
+    a = imp.transform(np.transpose(cl_alt_lat))
+    cl_alt_lat = np.transpose(a)    
 
 
     #-------------create liquid and ice cloud fraction datasets---------------#
@@ -141,16 +158,28 @@ def reduce_cosp_datatable( directory, save_location, start, end, rownum, locatio
     sheet.cell(row=rownum, column=4).value = constants.global2DMean(clt_l_lat_lon, constants.lat)
     # store clt_l SO
     sheet.cell(row=rownum, column=5).value = constants.global2DMean(clt_l_lat_lon[constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
+    # store cl
+    sheet.cell(row=rownum, column=6).value = constants.globalalt_latMeanVal(cl_alt_lat, constants.lat)
+    # store cl SO
+    sheet.cell(row=rownum, column=7).value = constants.globalalt_latMeanVal(cl_alt_lat[:,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
+    # store cl_l
+    sheet.cell(row=rownum, column=8).value = constants.globalalt_latMeanVal(cl_alt_lat[:low_alt_confine,:], constants.lat)
+    # store cl_l SO
+    sheet.cell(row=rownum, column=9).value = constants.globalalt_latMeanVal(cl_alt_lat[:low_alt_confine,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
 
     if 'CAM6' in directory or 'CM4' in directory or 'CM6A' in directory:
         # store clw_frac
-        sheet.cell(row=rownum, column=6).value = constants.globalalt_latMeanVal(clw_alt_lat, constants.lat)
+        sheet.cell(row=rownum, column=10).value = constants.globalalt_latMeanVal(clw_alt_lat, constants.lat)
         # store clw_frac SO
-        sheet.cell(row=rownum, column=7).value = constants.globalalt_latMeanVal(clw_alt_lat[:,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
+        sheet.cell(row=rownum, column=11).value = constants.globalalt_latMeanVal(clw_alt_lat[:,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
+        # store clw_l_frac
+        sheet.cell(row=rownum, column=12).value = constants.globalalt_latMeanVal(clw_alt_lat[:low_alt_confine,:], constants.lat)
+        # store clw_l_frac SO
+        sheet.cell(row=rownum, column=13).value = constants.globalalt_latMeanVal(clw_alt_lat[:low_alt_confine,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
         # store cli_frac
-        sheet.cell(row=rownum, column=8).value = constants.globalalt_latMeanVal(cli_alt_lat, constants.lat)
+        sheet.cell(row=rownum, column=14).value = constants.globalalt_latMeanVal(cli_alt_lat, constants.lat)
         # store cli_frac SO
-        sheet.cell(row=rownum, column=9).value = constants.globalalt_latMeanVal(cli_alt_lat[:,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
+        sheet.cell(row=rownum, column=15).value = constants.globalalt_latMeanVal(cli_alt_lat[:,constants.so_idx_1:constants.so_idx_2], constants.lat[constants.so_idx_1:constants.so_idx_2])
     
     book.save('E:/University/University/MSc/Models/climate-analysis/reduced_data/cloud_data.xlsx')
 

@@ -49,3 +49,11 @@ if model == 'all_models':
             reduce_cosp_datatable.reduce_cosp_datatable( model, location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum, location )
         rownum += 1
 
+else:
+    os.chdir( location + 'Data' )
+    print('Currently reducing: ' + model)
+    if 'CMIP5' in model: 
+        reduce_cosp_datatable.reduce_cosp_datatable( model, location + 'climate-analysis/reduced_data', start_cmip5, end_cmip5, rownum, location )
+    else:
+        reduce_cosp_datatable.reduce_cosp_datatable( model, location + 'climate-analysis/reduced_data', start_cmip6, end_cmip6, rownum, location )
+    rownum += 1

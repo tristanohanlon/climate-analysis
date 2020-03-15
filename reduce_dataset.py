@@ -357,6 +357,9 @@ def reduce_dataset( directory, save_location, start, end, location ):
     if 'IPSL' in directory or 'MRI-ESM2' in directory:
         cl_g[:2] = np.nan
  
+    interpolated = interpolate.interp1d(raw_alt, clw_g, kind = 'cubic', fill_value="extrapolate")
+    clw_full_g = interpolated(constants.alt)
+    clw_full_g[clw_full_g < 0] = np.nan
 
     interpolated = interpolate.interp1d(raw_alt, clw_g, kind = 'cubic', fill_value="extrapolate")
     clw_g = interpolated(constants.liq_alt)
@@ -371,6 +374,10 @@ def reduce_dataset( directory, save_location, start, end, location ):
     cl_so = interpolated(constants.alt)
     if 'IPSL' in directory:
         cl_so[:2] = np.nan
+
+    interpolated = interpolate.interp1d(raw_alt, clw_so, kind = 'cubic', fill_value="extrapolate")
+    clw_full_so = interpolated(constants.alt)
+    clw_full_so[clw_full_so < 0] = np.nan
 
     interpolated = interpolate.interp1d(raw_alt, clw_so, kind = 'cubic', fill_value="extrapolate")
     clw_so = interpolated(constants.liq_alt)
@@ -471,6 +478,14 @@ def reduce_dataset( directory, save_location, start, end, location ):
     cli_frac_alt_lat = ( cli_alt_lat / ( full_clw_alt_lat + cli_alt_lat ) ) * cl_alt_lat
     clw_frac_alt_lat = full_clw_frac_alt_lat[:,:constants.liq_alt_confine]
 
+    clw_frac_g = ( clw_full_g / ( clw_full_g + cli_g ) ) * cl_g
+    clw_frac_so = ( clw_full_so / ( clw_full_so + cli_so ) ) * cl_so
+    clw_frac_g = clw_frac_g[:constants.liq_alt_confine] 
+    clw_frac_so = clw_frac_so[:constants.liq_alt_confine] 
+
+    cli_frac_g = ( cli_g / ( clw_full_g + cli_g ) ) * cl_g
+    cli_frac_so = ( cli_so / ( clw_full_so + cli_so ) ) * cl_so
+   
 
     os.chdir(save_location)
 
@@ -497,11 +512,15 @@ def reduce_dataset( directory, save_location, start, end, location ):
         p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water fraction(kg/kg) corresponding to liq_alt
         p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water fraction(kg/kg) corresponding to alt
         p.create_dataset('clwc_g', data=clwc_g) # global layer cloud liquid water content (g/m3) corresponding to liq_alt
+        p.create_dataset('clw_frac_g', data=clw_frac_g) # global layer cloud liquid water fraction corresponding to liq_alt
+        p.create_dataset('cli_frac_g', data=cli_frac_g) # global layer cloud ice water fraction corresponding to alt
     
         p.create_dataset('cl_so', data=cl_so) # southern ocean layer total cloud fraction corresponding to alt
         p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water fraction(kg/kg) corresponding to liq_alt
         p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water fraction(kg/kg) corresponding to alt
         p.create_dataset('clwc_so', data=clwc_so) # southern ocean layer cloud liquid water content (g/m3) corresponding to liq_alt
+        p.create_dataset('clw_frac_so', data=clw_frac_so) # global layer cloud liquid water fraction corresponding to liq_alt
+        p.create_dataset('cli_frac_so', data=cli_frac_so) # global layer cloud ice water fraction corresponding to alt
  
         p.create_dataset('cl_t_g', data=cl_t_g) # global layer cloud fraction corresponding to ta
         p.create_dataset('cl_t_so', data=cl_t_so) # global layer cloud fraction corresponding to ta

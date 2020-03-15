@@ -23,7 +23,7 @@ location = constants.home
 model = 'CMIP6-AMIP-GFDL-CM4'
 os.chdir( location + 'Data/' + model )
 
-#---------- Aerosols ----------#
+#----------------------------- Aerosols ---------------------------#
 
 o2=0.
 ccl4=0.
@@ -101,7 +101,7 @@ else:
         co2mass = np.nanmean( co2mass, axis = 0 ) # Average over time
 
 
-#-----------------------------Cloud variables-----------------------------#
+#----------------------------- Cloud variables -----------------------------#
 
 # Get layer cloud fraction and pressure level variables - (time, level, lat, lon)
 with Dataset( constants.variable_to_filename( 'cl' ), 'r') as f:
@@ -155,7 +155,7 @@ with Dataset( constants.variable_to_filename( 'ta' ), 'r' ) as f:
 
 
 
-#---------get top of atmosphere radiative flux data---------#
+#-------------------------- Get top of atmosphere radiative flux data ------------------------#
 
 # Incoming SW at TOA
 with Dataset( constants.variable_to_filename( 'rsdt' ), 'r') as f:
@@ -182,7 +182,7 @@ with Dataset( constants.variable_to_filename( 'rtmt' ), 'r') as f:
     rtmt = constants.extract_data('rtmt', f )
 
 
-#---------surface radiative flux data---------#
+#-------------------------- Surface radiative flux data --------------------------#
 
 # Incoming SW at surface
 with Dataset( constants.variable_to_filename( 'rsds' ), 'r') as f:
@@ -219,7 +219,7 @@ albedo_surface = rsus / rsds
 albedo_surface_cs = rsuscs / rsdscs
 
 
-#----------State droplet and ice crystal sizes-----------#
+#-------------------------- State droplet and ice crystal sizes --------------------------#
 
 r_liq = np.zeros((p.shape[0], lat.shape[0]))
 r_ice = np.zeros((p.shape[0], lat.shape[0]))
@@ -228,8 +228,8 @@ r_liq[:] = 60
 r_ice[:] = 60
 
 
+#-------------------------- Average variables over time --------------------------#
 
-#----------Average variables over time----------#
 cl = np.nanmean( cl, axis = 0 )
 clw = np.nanmean( clw, axis = 0 )
 cli = np.nanmean( cli, axis = 0 )
@@ -256,10 +256,10 @@ albedo_toa = np.nanmean( albedo_toa, axis = 0 )
 albedo_toa_cs = np.nanmean( albedo_toa_cs, axis = 0 )
 albedo_surface = np.nanmean( albedo_surface, axis = 0 )
 albedo_surface_cs = np.nanmean( albedo_surface_cs, axis = 0 )
-
 o3 = np.nanmean( o3, axis = 0 )
 
-#----------Average variables over longitude----------#
+#-------------------------- Average variables over longitude --------------------------#
+
 cl = np.nanmean( cl, axis = -1 )
 clw = np.nanmean( clw, axis = -1 )
 cli = np.nanmean( cli, axis = -1 )
@@ -292,7 +292,7 @@ o3 = np.nanmean( o3, axis = -1 )
 # Get layer pressure levels (Pa)
 p = constants.global3DMean(p, lat)
 
-#-----------Interpolate variables------------#
+#-------------------------- Interpolate variables --------------------------#
 
 imp = SimpleImputer(missing_values=np.nan, strategy='mean')
 imp.fit(np.transpose(ta))  
@@ -319,6 +319,9 @@ if plev_o3.shape[0] > o3.shape[0]:
 interpolated = interpolate.interp2d( lat, plev_o3, o3, kind = 'linear')
 o3 = np.flip( interpolated( lat,p ), axis = 0 )
 
+
+
+#-------------------------- Input variables into radiative transfer code --------------------------#
 
 sfc, atm = climlab.domain.zonal_mean_column(lat=lat, lev=p)
 
@@ -350,29 +353,31 @@ h2o = climlab.radiation.ManabeWaterVapor(state=state)
 rad = climlab.radiation.RRTMG(name='Radiation', 
                                 state=state, 
                                 specific_humidity=h2o.q, 
-                                # absorber_vmr=absorber, 
+                                absorber_vmr=absorber, 
                                 albedo=albedo_surface, 
                                 insolation = insolation, 
                                 cldfrac=cldfrac, 
-                                # r_liq=r_liq, 
-                                # r_ice=r_ice, 
-                                # clwp=clwp, 
-                                # ciwp=ciwp
+                                r_liq=r_liq, 
+                                r_ice=r_ice, 
+                                clwp=clwp, 
+                                ciwp=ciwp
                                 )
 
-rcm = climlab.TimeDependentProcess(state=state)
-rcm.add_subprocess('Radiation', rad)
-#  Run the model
-rcm.integrate_years(1)
-print(rcm.ASR - rcm.OLR)
+rad.compute()
 
+sw_down = rad.SW_flux_down
+sw_down_clr = rad.SW_flux_down_clr
+sw_up = rad.SW_flux_up
+sw_up_clr = rad.SW_flux_up_clr
 
+lw_down = rad.LW_flux_down
+lw_up_clr = rad.LW_flux_up_clr
+lw_down_clr = rad.LW_flux_down_clr
 
-rad.compute_diagnostics()
+net_ASR = rad.ASR
+net_OLR = rad.OLR
 
-sw_down = np.zeros((lat.shape, p.shape))
-sw_down = sw_down + rad.SW_flux_down
-print(sw_down)
+print(rad.SW_flux_down)
 
 # rad_lw_dn[k,:,:]=rad_lw_dn[k,:,:]+rad.LW_flux_down.T/nt
 # rad_lw_up_clr[k,:,:]=rad_lw_up_clr[k,:,:]+rad.LW_flux_up_clr.T/nt

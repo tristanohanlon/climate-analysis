@@ -44,7 +44,7 @@ models = {
     'CALIPSO' : Model( location + 'climate-analysis/reduced_data/' + constants.date_ceres + '_CALIPSO.h5', 'CALIPSO-GOCCP' ),
 
     'CCCM' : Model( location + 'climate-analysis/reduced_data/' + constants.date_cccm + '_CCCM.h5', 'CCCM' ),
-    'CERES' : Model( location + 'climate-analysis/reduced_data/' + constants.date_ceres + '_CERES.h5', 'CERES' ),
+    'CERES' : Model( location + 'climate-analysis/reduced_data/' + constants.date_ceres + '_CERES.h5', 'MODIS' ),
 }
 
 cosp_models = {
@@ -130,7 +130,7 @@ def latitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
     ax.legend(loc='upper center', bbox_to_anchor=(1.3, 1.0));
     ax.set_ylabel( quantity[quantity_to_graph] )
     ax.set_xlabel( 'Latitude' )
-    ax.set_title ( 'COSP Simulated Model ' + quantity[quantity_to_graph] + ' vs Latitude' )
+    ax.set_title ( quantity[quantity_to_graph] + ' vs Latitude' )
 
     all_model_names = '_'.join( [ model.name for model in models_to_graph ])
 
@@ -150,7 +150,7 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
  
     
     fig, ( ax1, ax2 ) = plt.subplots(1, 2)
-    for model, col in zip( models_to_graph, colours_cosp ):
+    for model, col in zip( models_to_graph, colours ):
         if quantity_to_graph == 'clw'  or quantity_to_graph == 'clwc':
             ax1.plot( model.data[quantity_to_graph + '_g']*1000, constants.liq_alt, col, label=model.name )
         elif quantity_to_graph == 'clw_frac':
@@ -158,7 +158,7 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
         else:
             ax1.plot( model.data[quantity_to_graph + '_g'], constants.alt, col, label=model.name )
  
-    for model, col in zip( models_to_graph, colours_cosp ):
+    for model, col in zip( models_to_graph, colours ):
         if quantity_to_graph == 'clw' or quantity_to_graph == 'clwc':
             ax2.plot( model.data[quantity_to_graph + '_so']*1000, constants.liq_alt, col, label=model.name )
         elif quantity_to_graph == 'clw_frac':
@@ -169,8 +169,8 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
 
     # plot the range limits from all models on both axes and fill between them.
     if cmip5_range == True:
-        cmip5models_g = [ model.data[quantity_to_graph + '_g'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
-        cmip5models_so = [ model.data[quantity_to_graph + '_so'] for name, model in cosp_models.items() if name.startswith('CMIP5') ]
+        cmip5models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP5') ]
+        cmip5models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP5') ]
         cmip5_g_max = np.maximum.reduce( cmip5models_g )
         cmip5_g_min = np.minimum.reduce( cmip5models_g )
         cmip5_so_max = np.maximum.reduce( cmip5models_so )
@@ -181,6 +181,11 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
                         label='CMIP5 Model Range' )
             ax2.fill_betweenx( constants.liq_alt, cmip5_so_min*1000, cmip5_so_max*1000, facecolor='red', alpha=0.3,
                         label='CMIP5 Model Range' )
+        elif quantity_to_graph == 'clw_frac':
+            ax1.fill_betweenx( constants.liq_alt, cmip5_g_min, cmip5_g_max, facecolor='red', alpha=0.3,
+                        label='CMIP5 Model Range' )
+            ax2.fill_betweenx( constants.liq_alt, cmip5_so_min, cmip5_so_max, facecolor='red', alpha=0.3,
+                        label='CMIP5 Model Range' )
         else:
             ax1.fill_betweenx( constants.alt, cmip5_g_min, cmip5_g_max, facecolor='red', alpha=0.3,
                         label='CMIP5 Model Range' )
@@ -188,8 +193,8 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
                         label='CMIP5 Model Range' )
            
     if cmip6_range == True:
-        cmip6models_g = [ model.data[quantity_to_graph + '_g'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
-        cmip6models_so = [ model.data[quantity_to_graph + '_so'] for name, model in cosp_models.items() if name.startswith('CMIP6') ]
+        cmip6models_g = [ model.data[quantity_to_graph + '_g'] for name, model in models.items() if name.startswith('CMIP6') ]
+        cmip6models_so = [ model.data[quantity_to_graph + '_so'] for name, model in models.items() if name.startswith('CMIP6') ]
         cmip6_g_max = np.maximum.reduce( cmip6models_g )
         cmip6_g_min = np.minimum.reduce( cmip6models_g )
         cmip6_so_max = np.maximum.reduce( cmip6models_so )
@@ -199,6 +204,11 @@ def altitude_plot_models( models_to_graph, quantity_to_graph, cmip5_range = True
             ax1.fill_betweenx( constants.liq_alt, cmip6_g_min*1000, cmip6_g_max*1000, facecolor='blue', alpha=0.3,
                         label='CMIP6 Model Range' )    
             ax2.fill_betweenx( constants.liq_alt, cmip6_so_min*1000, cmip6_so_max*1000, facecolor='blue', alpha=0.3,
+                        label='CMIP6 Model Range' )
+        elif quantity_to_graph == 'clw_frac':
+            ax1.fill_betweenx( constants.liq_alt, cmip6_g_min, cmip6_g_max, facecolor='blue', alpha=0.3,
+                        label='CMIP6 Model Range' )
+            ax2.fill_betweenx( constants.liq_alt, cmip6_so_min, cmip6_so_max, facecolor='blue', alpha=0.3,
                         label='CMIP6 Model Range' )
         else:
             ax1.fill_betweenx( constants.alt, cmip6_g_min, cmip6_g_max, facecolor='blue', alpha=0.3,
@@ -707,7 +717,7 @@ def model_cli_contours( models_to_graph, zero_lines ):
 def region_plot( models_to_graph, quantity_to_graph ):
     ax = plt.axes( projection=ccrs.PlateCarree(  central_longitude=180 ) )
     ax.coastlines()
-    for model in  models_to_graph:
+    for model in models_to_graph:
         # if model == 'CALIPSO':
         # change to np.roll(model.data[ quantity_to_graph + '_lat_lon' ], 179)
 
@@ -717,7 +727,11 @@ def region_plot( models_to_graph, quantity_to_graph ):
             prime = ax.contourf( constants.lon, constants.lat, (models['CERES'].data[ 'albedo_reg' ] - model.data[ 'albedo_reg' ]), transform=ccrs.PlateCarree(), cmap='coolwarm' )
         else:
             prime = ax.contourf( constants.lon, constants.lat, model.data[ quantity_to_graph + '_lat_lon' ], transform=ccrs.PlateCarree(), cmap='coolwarm' )
-        ax.set_title( model.name )
+
+        if 'CERES' in model.name and quantity_to_graph == 'clt':
+            ax.set_title( 'MODIS' )
+        else:
+            ax.set_title( model.name )
 
         cbar = plt.colorbar(prime, orientation='horizontal')
 

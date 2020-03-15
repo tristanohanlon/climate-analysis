@@ -27,7 +27,7 @@ end_cmip6_ssp = datetime.datetime( 2099, 12, 1 )
 
 #--- Set Location and model ---#
 
-model = 'CMIP6-AMIP_4xCO2-GFDL-CM4' # see comments above for available models
+model = 'CMIP5-AMIP-GFDL-CM3' # see comments above for available models
 location = constants.home # home, uni, hdd or laptop
 os.chdir( location + 'Data' )
 

@@ -31,11 +31,11 @@ import clim_plot
 location = constants.home
 
 # plot zonal quantities: clt, clt_l, clwvi or clivi with latitude
-# clim_plot.latitude_plot_models( [   clim_plot.cosp_models[ 'CMIP5-AMIP-GFDL-CM3'],
-#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4'],
-#                                     clim_plot.cosp_models[ 'CMIP5-AMIP-CESM1-CAM5'],
-#                                     clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6'],
-#                                     clim_plot.models[ 'CALIPSO' ]], 'clt_l', cmip5_range = True, cmip6_range = True )
+# clim_plot.latitude_plot_models( [   clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'],
+#                                     clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'],
+#                                     clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'],
+#                                     clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6'],
+#                                     clim_plot.models[ 'CCCM' ]], 'clt', cmip5_range = True, cmip6_range = True )
 
 # plot layer quantities cl, clw or cli with altitude - 2 graphs: left = global, right = southern ocean
 # clim_plot.altitude_plot_models( [ clim_plot.cosp_models[ 'CMIP5-AMIP-GFDL-CM3'], 
@@ -53,10 +53,12 @@ location = constants.home
 
 
 # plot clw_frac_t with temperature - 2 graphs: top = global, bottom = southern ocean
-# clim_plot.clw_frac_temp_plot_models( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'],
-#                                     clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'], 
-#                                     clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'],
-#                                     clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6'] ], 'clw_frac', cmip5_range = True, cmip6_range = True )
+clim_plot.cli_frac_temp_plot_models( [ clim_plot.models[ 'CMIP5-AMIP-GFDL-CM3'],
+                                    clim_plot.models[ 'CMIP6-AMIP-GFDL-CM4'], 
+                                    clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5'],
+                                    clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6'],
+                                    clim_plot.models[ 'CCCM'],
+                                    ], 'cli_frac', cmip5_range = True, cmip6_range = True )
 
 
 # plot cli_frac_t with temperature - 2 graphs: top = global, bottom = southern ocean
@@ -87,10 +89,10 @@ location = constants.home
 # clim_plot.clw_frac_contour( [ clim_plot.models[ 'CALIPSO' ] ], [ 5 ] )
 
 # single cli_frac_contour plot. Zero lines specify the temperature contour of 0 degrees
-# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 5 ] )
-# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4' ] ], [ 5 ] )
-# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-IPSL-CM6A-LR' ] ], [ 5 ] )
-# clim_plot.cli_frac_contour( [ clim_plot.models[ 'CALIPSO' ] ], [ 5 ] )
+# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 6 ] )
+# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-GFDL-CM4' ] ], [ 6 ] )
+# clim_plot.cli_frac_contour( [ clim_plot.cosp_models[ 'CMIP6-AMIP-IPSL-CM6A-LR' ] ], [ 6 ] )
+# clim_plot.cli_frac_contour( [ clim_plot.models[ 'CALIPSO' ] ], [ 6 ] )
 
 # clw model pair contour plots. Zero lines specify the temperature contour of 0 degrees
 # clim_plot.model_clw_frac_contours( [ clim_plot.models[ 'CMIP5-AMIP-CESM1-CAM5' ], clim_plot.models[ 'CMIP6-AMIP-CESM2-CAM6' ] ], [ 5, 5 ] )
@@ -131,7 +133,7 @@ location = constants.home
 # clim_plot.region_plot( [ clim_plot.models[ 'CMIP6-AMIP-IPSL-CM6A-LR']], 'clt' ) 
 # clim_plot.region_plot( [ clim_plot.models[ 'CMIP6-AMIP-MIROC6']], 'clt' )
 # clim_plot.region_plot( [ clim_plot.models[ 'CMIP6-AMIP-MRI-ESM2']], 'clt' ) 
-# clim_plot.region_plot( [ clim_plot.models[ 'CALIPSO']], 'clt' ) 
+# clim_plot.region_plot( [ clim_plot.models[ 'CERES']], 'clt' ) 
                             
 # plot regional clt, clw_frac, cli_frac bias quantities overlaying the world map
 # clim_plot.calipso_region_bias_plot( [ clim_plot.cosp_models[ 'CMIP5-AMIP-CESM1-CAM5']], 'clt_l' )

@@ -62,8 +62,8 @@ lat_confine_1 = np.abs(lat - (-75)).argmin()
 lat_confine_2 = np.abs(lat - (75)).argmin()
 
 # if reducing CALIPSO data, these need to be changed to min = -180, max = 180
-min_lon = -180
-max_lon = 180
+min_lon = 0
+max_lon = 360
 lon_division = 1
 lon = np.arange(min_lon, max_lon, lon_division)
 

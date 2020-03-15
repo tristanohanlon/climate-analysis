@@ -91,7 +91,7 @@ glob_radiation_data_sets = [
 ]        
 
 # The directory where your HDF files are stored
-os.chdir(location + 'Data/CERES/All' )
+os.chdir(location + 'Data/CERES/Run' )
 
 # Load every file in the directory
 
@@ -322,6 +322,9 @@ cre_lw_reg_so = constants.create_southern_ocean_data( raw_lat, cre_lw_reg )
 albedo_so_reg = constants.create_southern_ocean_data( raw_lat, all_toa_alb_reg )
 rtmt_so_reg = constants.create_southern_ocean_data( raw_lat, all_toa_net_reg )
 
+print( 'Incoming Solar Energy SO = ' + str( constants.global2DMean(all_toa_sw_insol_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
+print( 'Outgoing SW Energy SO = ' + str( constants.global2DMean(all_toa_sw_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
+print( 'Outgoing LW Energy SO = ' + str( constants.global2DMean(all_toa_lw_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
 
 print( 'Incoming Solar Energy = ' + str( all_toa_sw_insol_glob ) )
 print( 'Outgoing SW Energy = ' + str( all_toa_sw_glob ) )
