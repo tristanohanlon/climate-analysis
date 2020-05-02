@@ -107,7 +107,7 @@ else:
 with Dataset( constants.variable_to_filename( 'cl' ), 'r') as f:
     lat = constants.extract_data( 'lat', f )
     lon = constants.extract_data( 'lon', f )
-    cl = constants.extract_data_over_time( 'cl', f, start, end ) / 100
+    cl = constants.extract_data_over_time( 'cl', f, start, end )
     if 'CM4' in model or 'IPSL' in model:
         a = constants.extract_data( 'ap', f )
         b = constants.extract_data( 'b', f )
@@ -219,15 +219,6 @@ albedo_surface = rsus / rsds
 albedo_surface_cs = rsuscs / rsdscs
 
 
-#-------------------------- State droplet and ice crystal sizes --------------------------#
-
-r_liq = np.zeros((p.shape[0], lat.shape[0]))
-r_ice = np.zeros((p.shape[0], lat.shape[0]))
-
-r_liq[:] = 60
-r_ice[:] = 60
-
-
 #-------------------------- Average variables over time --------------------------#
 
 cl = np.nanmean( cl, axis = 0 )
@@ -300,6 +291,8 @@ ta = imp.transform(np.transpose(ta))
 ta = np.transpose(ta)   
 if plev_t.shape[0] > ta.shape[0]:
     plev = plev_t[plev_t.shape[0] - ta.shape[0]:] # reshape alt_temp if not equal
+else:
+    plev = plev_t
 interpolated = interpolate.interp2d( lat, plev, ta, kind = 'linear')
 ta = np.flip( interpolated( lat, p ), axis = 0 )
 
@@ -319,40 +312,80 @@ if plev_o3.shape[0] > o3.shape[0]:
 interpolated = interpolate.interp2d( lat, plev_o3, o3, kind = 'linear')
 o3 = np.flip( interpolated( lat,p ), axis = 0 )
 
+# fig, ax = plt.subplots()
+# cont = ax.contourf( lat, p, ta )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Pressure (Pa)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('ta')
+# plt.show()
 
+# fig, ax = plt.subplots()
+# cont = ax.contourf( lat, p, hus )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Pressure (Pa)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('hus')
+# plt.show()
+
+# fig, ax = plt.subplots()
+# cont = ax.contourf( lat, p, o3 )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Pressure (Pa)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('o3')
+# plt.show()
+
+# fig, ax = plt.subplots()
+# cont = ax.contourf( lat, p, cl )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Pressure (Pa)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('cl')
+# plt.show()
+#-------------------------- State droplet and ice crystal sizes --------------------------#
+
+r_liq = np.zeros((p.shape[0], lat.shape[0]))
+r_ice = np.zeros((p.shape[0], lat.shape[0]))
+
+r_liq[:] = 60
+r_ice[:] = 60
 
 #-------------------------- Input variables into radiative transfer code --------------------------#
 
 sfc, atm = climlab.domain.zonal_mean_column(lat=lat, lev=p)
 
+# surface variables
 insolation = climlab.domain.Field(rsdt, domain=sfc)
 albedo_surface = climlab.domain.Field(albedo_surface, domain=sfc)  
 albedo_surface_cs = climlab.domain.Field(albedo_surface_cs, domain=sfc)  
 albedo_toa = climlab.domain.Field(albedo_toa, domain=sfc)  
 albedo_toa_cs = climlab.domain.Field(albedo_toa_cs, domain=sfc)  
-ts = climlab.domain.Field(ts, domain=sfc)        
+ts = climlab.domain.Field(ts, domain=sfc)
+
+# atmosphere layer variables
 ta = climlab.domain.Field(np.transpose(ta), domain=atm)
 specific_humidity = climlab.domain.Field(np.transpose(hus), domain=atm) # kg/kg
 cldfrac = climlab.domain.Field(np.transpose(cl), domain=atm)
 clwp = climlab.domain.Field(np.transpose(clw), domain=atm) # needs to be g/m2
 ciwp = climlab.domain.Field(np.transpose(cli), domain=atm) # needs to be g/m2
 o3 = climlab.domain.Field(np.transpose(o3), domain=atm)
-
 r_liq = climlab.domain.Field(np.transpose(r_liq), domain=atm) # Cloud water drop effective radius (microns)
 r_ice = climlab.domain.Field(np.transpose(r_ice), domain=atm) # Cloud ice particle effective size (microns)        
 
 # dictionary of volumetric mixing ratios. Default values supplied if None
-# If absorber_vmr = None then ozone will be interpolated to the model grid from a climatology file, or set to zero if ozone_file = None.
+# if absorber_vmr = None then ozone will be interpolated to the model grid from a climatology file, or set to zero if ozone_file = None.
 absorber = {'O3': o3, 'CO2': 400.e-6, 'CH4':ch4, 'N2O':n2o, 'O2': o2,'CCL4':ccl4, 
     'CFC11':cfc11, 'CFC12':cfc12, 'CFC113':cfc113, 'CFC22':cfc22}
 
-#  State variables (Air and surface temperature)
+#  state variables (Air and surface temperature)
 state = {'Tatm': ta, 'Ts': ts}
-h2o = climlab.radiation.ManabeWaterVapor(state=state)
 
-rad = climlab.radiation.RRTMG(name='Radiation', 
+#-------------------------- Execute Control Data --------------------------#
+
+control_rad = climlab.radiation.RRTMG(name='Radiation', 
                                 state=state, 
-                                specific_humidity=h2o.q, 
+                                specific_humidity=specific_humidity, 
                                 absorber_vmr=absorber, 
                                 albedo=albedo_surface, 
                                 insolation = insolation, 
@@ -363,26 +396,51 @@ rad = climlab.radiation.RRTMG(name='Radiation',
                                 ciwp=ciwp
                                 )
 
-rad.compute()
+control_rad.compute()
 
-sw_down = rad.SW_flux_down
-sw_down_clr = rad.SW_flux_down_clr
-sw_up = rad.SW_flux_up
-sw_up_clr = rad.SW_flux_up_clr
+sw_down = control_rad.SW_flux_down
+sw_down[sw_down>1000]=np.nan
+sw_down[sw_down<-1000]=np.nan
 
-lw_down = rad.LW_flux_down
-lw_up_clr = rad.LW_flux_up_clr
-lw_down_clr = rad.LW_flux_down_clr
+sw_down_clr = control_rad.SW_flux_down_clr
+sw_up = control_rad.SW_flux_up
+sw_up_clr = control_rad.SW_flux_up_clr
+lw_down = control_rad.LW_flux_down
+lw_up_clr = control_rad.LW_flux_up_clr
+lw_down_clr = control_rad.LW_flux_down_clr
+net_ASR = control_rad.ASR
 
-net_ASR = rad.ASR
-net_OLR = rad.OLR
+net_ASRcld = control_rad.ASRcld
+net_ASRclr = control_rad.ASRclr   
 
-print(rad.SW_flux_down)
+net_OLR = control_rad.OLR
 
-# rad_lw_dn[k,:,:]=rad_lw_dn[k,:,:]+rad.LW_flux_down.T/nt
-# rad_lw_up_clr[k,:,:]=rad_lw_up_clr[k,:,:]+rad.LW_flux_up_clr.T/nt
-# rad_lw_dn_clr[k,:,:]=rad_lw_dn_clr[k,:,:]+rad.LW_flux_down_clr.T/nt
-# rad_sw_up[k,:,:]=rad_sw_up[k,:,:]+rad.SW_flux_up.T/nt
-# rad_sw_dn[k,:,:]=rad_sw_dn[k,:,:]+rad.SW_flux_down.T/nt
-# rad_sw_up_clr[k,:,:]=rad_sw_up_clr[k,:,:]+rad.SW_flux_up_clr.T/nt
-# rad_sw_dn_clr[k,:,:]=rad_sw_dn_clr[k,:,:]+rad.SW_flux_down_clr.T/nt
+sw_down_net = control_rad.SW_flux_net
+
+print(control_rad)
+
+fig, ax = plt.subplots()
+ax.plot( lat, net_ASRcld )
+ax.set_ylabel('net_ASR')
+ax.set_xlabel('Latitude')
+ax.set_title ('net_ASR')
+plt.grid(True)
+plt.show()
+
+fig, ax = plt.subplots()
+ax.plot( lat, net_ASRclr )
+ax.set_ylabel('net_OLW')
+ax.set_xlabel('Latitude')
+ax.set_title ('net_OLR')
+plt.grid(True)
+plt.show()
+
+# fig, ax = plt.subplots()
+# cont = ax.contourf( lat, p, np.transpose(sw_down[:,:32]) )
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Pressure (Pa)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('sw_down')
+# plt.show()
+
+

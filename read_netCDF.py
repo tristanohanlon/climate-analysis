@@ -35,9 +35,9 @@ import numpy as np
 import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'CMIP6-AMIP-IPSL-CM6A-LR'
+data = 'CMIP6-AMIP-CESM2-CAM6'
 location = constants.network + 'Data/'
-data_type = 'o3'
+data_type = 'ts'
 
 if data == 'ECMWF':
     with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: 
@@ -46,10 +46,10 @@ if data == 'ECMWF':
         print(data.shape)
 
 else:   
-    with Dataset(location + data + data_type + constants.model_dict_cosp[ data ], 'r') as f: 
+    with Dataset(location + data + '/' + data_type + constants.model_dict_all[ data ], 'r') as f: 
         print(f.variables.keys())
-        data = f.variables[ 'alt40' ][:] / 1000
-        print(data)
+        data = f.variables[ 'TS' ][:]
+        print(np.shape(data))
         # time = f.variables['time'][:]
         # print(time)
 
