@@ -8,6 +8,7 @@ import numpy as np
 import os
 from scipy import ndimage as nd
 from netCDF4 import date2index
+import math
 
 home = 'E:/University/University/MSc/Models/'
 network = '//synthesis/E/University/University/MSc/Models/'
@@ -199,7 +200,7 @@ def globalalt_latMeanVal(Data, latitudes):
     areaWeights2D = np.tile(areaWeights,
                                 (np.shape(Data)[0], 1))  #Replicating the area weights 
     weighted2DMatrix = Data*areaWeights2D
-    sumWeighted = np.sum(weighted2DMatrix,axis=(0,1))
+    sumWeighted = np.nansum(weighted2DMatrix,axis=(0,1))
     sumWeights2D = np.sum(areaWeights2D,axis=(0,1))
     weightedMean = sumWeighted/sumWeights2D
     return weightedMean
@@ -398,6 +399,56 @@ def fit_ta_so_data( data, raw_ta ):
             
     data = new_data / data_counts
     return data
+
+# Function that converts water mixing ratio (kg/kg) into water content (g/m3) 
+# all data should be (alt, lat). Pressure in hPa.
+def mix_ratio_to_water_content( mix_ratio, temp, pressure ):
+    air_density_alt_lat = ((pressure * 100) / (286.9 * temp))
+    data = ( mix_ratio * air_density_alt_lat ) * 1000 # in g/m3
+    data[ data < 0 ] = None
+    return data
+
+
+# Function to convert pressure levels (hPa) into altitude (km)
+#https://www.mide.com/pages/air-pressure-at-altitude-calculator
+#https://www.grc.nasa.gov/www/k-12/airplane/atmosmet.html
+
+def p_to_alt( p ):
+    raw_alt = np.empty((p.size,1),dtype=float)
+    if np.amax(p) > 1500:
+        p = p/100
+    state = 0
+    i = 0
+    for item in p:
+        if state == 0:
+            newalt = (288.19 - 288.08*((item/1012.90)**(1/5.256)))/6.49
+            if newalt > 11:
+                state = 1
+        if state == 1:
+            newalt = (1.73 - math.log(item/226.50))/0.157
+            if( newalt > 25 ):
+                state = 2
+        if state == 2:
+            newalt = (216.6*((item/24.88)**(1/-11.388)) - 141.94)/2.99
+        raw_alt[i] = newalt
+        i+=1
+
+    raw_alt = np.transpose( raw_alt )[0]
+    return raw_alt
+
+
+# Function to convert cloud water content (g/m3) in atmospheric layers to liquid water path (g/m2) at each layer.
+# wc in (alt, lat), alt in km
+def wc_to_wp( wc, alt ):
+    if np.amax(alt) < 100:
+        alt = alt * 1000 # convert km to m
+    data = np.empty(np.shape(wc),dtype=float)
+    running_sum = np.zeros( np.shape(wc)[1] ,dtype=float)
+    for i, ( row, altitude ) in enumerate( zip( wc, alt ) ):
+        running_sum += row
+        data[i] = running_sum * altitude
+    return data
+
 
 
 # Function that fills that nan vaules in the data based on nearby data

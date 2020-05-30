@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 import constants
 from scipy import ndimage as nd
+import cartopy.crs as ccrs
 
 ###############################################################################
 start = time.time()
@@ -33,26 +34,26 @@ class DataSet:
         
 zon_data_sets = [
         DataSet( 'cld_amount_zon' ),    # divide by 100, alt[4], lat
-        DataSet( 'cld_amount_liq_zon' ),
-        DataSet( 'cld_amount_ice_zon' )
+        DataSet( 'cld_lwp_zon' ),
+        DataSet( 'cld_iwp_zon' )
 ]        
 
 reg_data_sets = [
         DataSet( 'cld_amount_reg' ),    # divide by 100, alt[4], lat
-        DataSet( 'cld_amount_liq_reg' ),
-        DataSet( 'cld_amount_ice_reg' ),  
+        DataSet( 'cld_lwp_reg' ),
+        DataSet( 'cld_iwp_reg' ),  
 ]      
 
 lc_zon_data_sets = [
         DataSet( 'cld_amount_zon' ),    # divide by 100, alt[3], lat
-        DataSet( 'cld_amount_liq_zon' ),
-        DataSet( 'cld_amount_ice_zon' )
+        DataSet( 'cld_lwp_zon' ),
+        DataSet( 'cld_iwp_zon' )
 ]        
 
 lc_reg_data_sets = [
         DataSet( 'cld_amount_reg' ),    # divide by 100, alt[3], lat
-        DataSet( 'cld_amount_liq_reg' ),
-        DataSet( 'cld_amount_ice_reg' ),  
+        DataSet( 'cld_lwp_reg' ),
+        DataSet( 'cld_iwp_reg' ),  
 ]      
 
        
@@ -64,7 +65,7 @@ reg_radiation_data_sets = [
         DataSet( 'all_toa_lw_reg' ),       # lat and lon  
         DataSet( 'all_toa_net_reg' ),       # lat and lon  
         DataSet( 'toa_sw_insol_reg' ),       # lat and lon  
-        DataSet( 'all_toa_alb_reg' ),
+        DataSet( 'all_toa_alb_reg' ),       # lat and lon 
 ]        
 
 zon_radiation_data_sets = [
@@ -75,7 +76,7 @@ zon_radiation_data_sets = [
         DataSet( 'all_toa_lw_zon' ),       # lat
         DataSet( 'all_toa_net_zon' ),       # lat
         DataSet( 'toa_sw_insol_zon' ),       # lat
-        DataSet( 'all_toa_alb_zon' ),
+        DataSet( 'all_toa_alb_zon' ),       # lat
 ]        
 
 glob_radiation_data_sets = [
@@ -91,40 +92,6 @@ glob_radiation_data_sets = [
 
 # The directory where your HDF files are stored
 os.chdir(location + 'Data/CERES/Run' )
-
-
-def create_southern_ocean_data( lat, global_data ):
-    
-    start_index = 0
-    end_index = 0
-    for index, l in enumerate( lat ):
-        if l < -70:
-            start_index = index + 1
-        if l <= -50:
-            end_index = index
-    so = global_data[start_index:end_index]
-    return so
-
-def fill(data, invalid=None):
-    """
-    Replace the value of invalid 'data' cells (indicated by 'invalid') 
-    by the value of the nearest valid data cell
-
-    Input:
-        data:    numpy array of any dimension
-        invalid: a binary array of same shape as 'data'. 
-                 data value are replaced where invalid is True
-                 If None (default), use: invalid  = np.isnan(data)
-
-    Output: 
-        Return a filled array. 
-    """    
-    if invalid is None: invalid = np.isnan(data)
-
-    ind = nd.distance_transform_edt(invalid, 
-                                    return_distances=False, 
-                                    return_indices=True)
-    return data[tuple(ind)]
 
 # Load every file in the directory
 
@@ -166,10 +133,15 @@ for filename in os.listdir():
     raw_lat = f.select( 'latitude' ).get()
     raw_lat = np.flip( raw_lat, axis = 0 )
     idx = np.where(raw_lon == 180)
+    start_idx = np.abs(raw_lat - (-69.5)).argmin()
+    end_idx = np.abs(raw_lat - (-50)).argmin()
+
+
     for data_set in zon_data_sets:  
 
         sel = f.select( data_set.type_name )
-        data = sel.get()[-1:][0] / 100
+        data = sel.get()[4]
+
         fill_value = sel.attributes()['_FillValue']
         
         for l_index, l in enumerate( raw_lat ):
@@ -183,7 +155,7 @@ for filename in os.listdir():
     for data_set in lc_zon_data_sets:  
 
         sel = f.select( data_set.type_name )
-        data_lc = sel.get()[-2:][0] / 100
+        data = sel.get()[3]
         fill_value = sel.attributes()['_FillValue']
         
         for l_index, l in enumerate( raw_lat ):
@@ -197,7 +169,7 @@ for filename in os.listdir():
     for data_set in reg_data_sets:  
 
         sel = f.select( data_set.type_name )
-        data = sel.get()[-1:][0] / 100
+        data = sel.get()[4]
         data[:] = np.roll(data[:], 179)
         fill_value = sel.attributes()['_FillValue']
         
@@ -213,7 +185,7 @@ for filename in os.listdir():
     for data_set in lc_reg_data_sets:  
 
         sel = f.select( data_set.type_name )
-        data = sel.get()[-2:][0] / 100
+        data = sel.get()[3]
         data[:] = np.roll(data[:], 179)
         fill_value = sel.attributes()['_FillValue']
         
@@ -285,21 +257,21 @@ for data_set in zon_radiation_data_sets:
 for data_set in glob_radiation_data_sets:
     data_set.new_glob_radiation_data /= data_set.glob_radiation_data_counts
 
-clt = np.flip( zon_data_sets[0].new_zon_data, axis = 0 )
-clwvi = np.flip( zon_data_sets[1].new_zon_data, axis = 0 )
-clivi = np.flip( zon_data_sets[2].new_zon_data, axis = 0 )
+clt = np.flip( zon_data_sets[0].new_zon_data, axis = 0 ) / 100
+clwvi = np.flip( zon_data_sets[1].new_zon_data, axis = 0 ) / 1000
+clivi = np.flip( zon_data_sets[2].new_zon_data, axis = 0 ) / 1000
 
-clt_lc = np.flip( lc_zon_data_sets[0].new_lc_zon_data, axis = 0 )
-clwvi_lc = np.flip( lc_zon_data_sets[1].new_lc_zon_data, axis = 0 )
-clivi_lc = np.flip( lc_zon_data_sets[2].new_lc_zon_data, axis = 0 )
+clt_lc = np.flip( lc_zon_data_sets[0].new_lc_zon_data, axis = 0 ) / 100
+clwvi_lc = np.flip( lc_zon_data_sets[1].new_lc_zon_data, axis = 0 ) / 1000
+clivi_lc = np.flip( lc_zon_data_sets[2].new_lc_zon_data, axis = 0 ) / 1000
 
-clt_lc_lat_lon = np.flip( lc_reg_data_sets[0].new_lc_reg_data, axis = 0 )
-clwvi_lc_lat_lon = np.flip( lc_reg_data_sets[1].new_lc_reg_data, axis = 0 )
-clivi_lc_lat_lon = np.flip( lc_reg_data_sets[2].new_lc_reg_data, axis = 0 )
+clt_lc_lat_lon = np.flip( lc_reg_data_sets[0].new_lc_reg_data, axis = 0 ) / 100
+clwvi_lc_lat_lon = np.flip( lc_reg_data_sets[1].new_lc_reg_data, axis = 0 ) / 1000
+clivi_lc_lat_lon = np.flip( lc_reg_data_sets[2].new_lc_reg_data, axis = 0 ) / 1000
 
-clt_lat_lon = np.flip( reg_data_sets[0].new_reg_data, axis = 0 )
-clwvi_lat_lon = np.flip( reg_data_sets[1].new_reg_data, axis = 0 )
-clivi_lat_lon = np.flip( reg_data_sets[2].new_reg_data, axis = 0 )
+clt_lat_lon = np.flip( reg_data_sets[0].new_reg_data, axis = 0 ) / 100
+clwvi_lat_lon = np.flip( reg_data_sets[1].new_reg_data, axis = 0 ) / 1000
+clivi_lat_lon = np.flip( reg_data_sets[2].new_reg_data, axis = 0 ) / 1000
 
 clr_toa_sw_reg = np.flip( reg_radiation_data_sets[0].new_reg_radiation_data, axis = 0 )
 clr_toa_lw_reg = np.flip( reg_radiation_data_sets[1].new_reg_radiation_data, axis = 0 )
@@ -328,33 +300,123 @@ all_toa_net_glob = glob_radiation_data_sets[5].new_glob_radiation_data
 all_toa_sw_insol_glob = glob_radiation_data_sets[6].new_glob_radiation_data
 albedo_glob = glob_radiation_data_sets[7].new_glob_radiation_data
 
-#---create liquid and ice fractions---#
+#------#
 
-clr_toa_sw_so = np.mean( create_southern_ocean_data( raw_lat, clr_toa_sw_zon), axis = 0 )
-clr_toa_lw_so = np.mean( create_southern_ocean_data( raw_lat, clr_toa_lw_zon), axis = 0 )
-clr_toa_net_so = np.mean( create_southern_ocean_data( raw_lat, clr_toa_net_zon), axis = 0 )
-all_toa_sw_so = np.mean( create_southern_ocean_data( raw_lat, all_toa_sw_zon), axis = 0 )
-all_toa_lw_so = np.mean( create_southern_ocean_data( raw_lat, all_toa_lw_zon), axis = 0 )
-all_toa_net_so = create_southern_ocean_data( raw_lat, all_toa_net_zon)
-all_toa_sw_insol_so = np.mean( create_southern_ocean_data( raw_lat, all_toa_sw_insol_zon), axis = 0 )
-albedo_so = create_southern_ocean_data( raw_lat, all_toa_alb_zon)
+clr_toa_sw_so = np.mean( constants.create_southern_ocean_data( raw_lat, clr_toa_sw_zon), axis = 0 )
+clr_toa_lw_so = np.mean( constants.create_southern_ocean_data( raw_lat, clr_toa_lw_zon), axis = 0 )
+clr_toa_net_so = np.mean( constants.create_southern_ocean_data( raw_lat, clr_toa_net_zon), axis = 0 )
+all_toa_sw_so_zon = constants.create_southern_ocean_data( raw_lat, all_toa_sw_zon)
+all_toa_lw_so_zon = constants.create_southern_ocean_data( raw_lat, all_toa_lw_zon)
+all_toa_net_so_zon = constants.create_southern_ocean_data( raw_lat, all_toa_net_zon)
+all_toa_sw_insol_so_zon = constants.create_southern_ocean_data( raw_lat, all_toa_sw_insol_zon)
+albedo_so_zon = constants.create_southern_ocean_data( raw_lat, all_toa_alb_zon)
+
+cre_sw_reg = clr_toa_sw_reg - all_toa_sw_reg
+cre_lw_reg = clr_toa_lw_reg - all_toa_lw_reg
+
+cre_sw = clr_toa_sw_glob - all_toa_sw_glob
+cre_lw = clr_toa_lw_glob - all_toa_lw_glob
+
+cre_sw_reg_so = constants.create_southern_ocean_data( raw_lat, cre_sw_reg )
+cre_lw_reg_so = constants.create_southern_ocean_data( raw_lat, cre_lw_reg )
+albedo_so_reg = constants.create_southern_ocean_data( raw_lat, all_toa_alb_reg )
+rtmt_so_reg = constants.create_southern_ocean_data( raw_lat, all_toa_net_reg )
+
+print( 'Incoming Solar Energy SO = ' + str( constants.global2DMean(all_toa_sw_insol_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
+print( 'Outgoing SW Energy SO = ' + str( constants.global2DMean(all_toa_sw_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
+print( 'Outgoing LW Energy SO = ' + str( constants.global2DMean(all_toa_lw_reg[start_idx:end_idx], raw_lat[start_idx:end_idx]) ) )
+
+print( 'Incoming Solar Energy = ' + str( all_toa_sw_insol_glob ) )
+print( 'Outgoing SW Energy = ' + str( all_toa_sw_glob ) )
+print( 'Outgoing LW Energy = ' + str( all_toa_lw_glob ) )
+print( 'Net Global Energy Flux = ' + str( all_toa_net_glob ) )
+print( 'Net SO Energy Flux = ' + str( constants.global2DMean(rtmt_so_reg, raw_lat[start_idx:end_idx]) ) )
+print( 'Global Albedo = ' + str( albedo_glob ) )
+print( 'SO albedo = ' + str( constants.global2DMean(albedo_so_reg, raw_lat[start_idx:end_idx]) ) )
+
+print( 'Global CRE SW = ' + str( cre_sw ) )
+print( 'Global CRE LW = ' + str( cre_lw ) )
+print( 'SO CRE SW = ' + str( constants.global2DMean(cre_sw_reg_so, raw_lat[start_idx:end_idx]) ) )
+print( 'SO CRE LW = ' + str( constants.global2DMean(cre_lw_reg_so, raw_lat[start_idx:end_idx]) ) )
 
 
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clt_lat_lon, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Cloud Fraction')
+ax.set_title('CERES Global Mean Cloud Fraction')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'clt' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
 
-print( str( all_toa_sw_insol_glob[0] ) )
-print( str( all_toa_sw_glob[0] ) )
-print( ( all_toa_lw_glob[0] ) )
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_alb_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Albedo')
+ax.set_title('CERES Global Mean Albedo')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'albedo' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
 
-print( 'Net Global Energy Flux = ' +  str( all_toa_net_glob[0] ) )
-# print( 'Net Southern Ocean Energy Flux = ' +  str( all_toa_net_so ) )
-print( 'Global Albedo = ' +  str( albedo_glob[0] ) )
-# print( 'Southern Ocean Albedo = ' +  str( albedo_so ) )
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_net_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Net Radiation W/m^2')
+ax.set_title('CERES Global Mean Net Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rtmt' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_net_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Net Radiation W/m^2')
+ax.set_title('CERES Global Mean Net Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rtmt_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_sw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing SW W/m^2')
+ax.set_title('CERES Global Mean Outgoing SW Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rsut' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, all_toa_lw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing LW W/m^2')
+ax.set_title('CERES Global Mean Outgoing LW Radiation (All)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rlut' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_sw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing SW W/m^2')
+ax.set_title('CERES Global Mean Outgoing SW Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rsut_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
+
+ax = plt.axes( projection=ccrs.Mollweide(  central_longitude=180 ) )
+ax.coastlines()
+p = ax.contourf(constants.lon, constants.lat, clr_toa_lw_reg, transform=ccrs.PlateCarree(), cmap='coolwarm')
+cbar = plt.colorbar(p, orientation='horizontal')
+cbar.set_label('Outgoing LW W/m^2')
+ax.set_title('CERES Global Mean Outgoing LW Radiation (Clear Sky)')
+plt.savefig( location + '/Images/' + 'CERES' + '_' +  'rlut_cs' + ".svg", format="svg", bbox_inches='tight')
+plt.show()
 
 #----------------------------#
 
 os.chdir( location + 'climate-analysis/reduced_data' )
 
-save_filename = 'Jun_2006_Jun_2011_CERES.h5'
+save_filename = 'all_CERES.h5'
 
 with h5py.File(save_filename, 'w') as p:
             
@@ -377,9 +439,9 @@ with h5py.File(save_filename, 'w') as p:
     p.create_dataset('albedo_reg', data=all_toa_alb_reg) 
     p.create_dataset('rtmt_lat_lon', data=all_toa_net_reg) 
 
-    p.create_dataset('all_toa_net_so', data=all_toa_net_so) 
+    p.create_dataset('all_toa_net_so', data=all_toa_net_so_zon) 
 
-    p.create_dataset('albedo_so', data=albedo_so) 
+    p.create_dataset('albedo_so', data=albedo_so_zon) 
 
     p.close()
 

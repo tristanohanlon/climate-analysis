@@ -14,8 +14,9 @@ from pyhdf import SD
 import h5py
 import matplotlib.pyplot as plt
 from scipy import interpolate
-import scipy.stats
 import constants
+from scipy import stats
+import cartopy.crs as ccrs
 
 ###############################################################################
 start = time.time()
@@ -42,34 +43,22 @@ class grid_DataSet:
         self.data_counts = np.zeros( (constants.lat.size, constants.lon.size ))
 
 
-data_sets = [
-        DataSet('Cloud fraction profile', 1 ),
-        DataSet('Liquid water content profile used', 0 ), # kg/m3
-        DataSet('Ice water content profile used', 0 ), # kg/m3
-        DataSet('Temperature profile', 2 )        
-]        
+# data_sets = [
+#         DataSet('Cloud fraction profile', 1 ),
+#         DataSet('Liquid water content profile used', 0 ), # kg/m3
+#         DataSet('Ice water content profile used', 0 ), # kg/m3
+#         DataSet('Temperature profile', 2 ),
+#         DataSet('Pressure profile', 2 )      
+# ]        
 
 grid_data_sets = [
         grid_DataSet('Cloud free area percent coverage (CALIPSO-CloudSat)' ),
-        grid_DataSet('Liquid water content profile used' ),
-        grid_DataSet('Ice water content profile used' ),
+        # grid_DataSet('Liquid water content profile used' ),
+        # grid_DataSet('Ice water content profile used' ),
 ]        
 
 # The directory where your HDF files are stored
-os.chdir('E:/TestData')  # Home PC
-
-def create_southern_ocean_data( lat, global_data ):
-    
-    start_index = 0
-    end_index = 0
-    for index, l in enumerate( lat ):
-        if l < -70:
-            start_index = index + 1
-        if l <= -50:
-            end_index = index
-    so = global_data[start_index:end_index]
-    so = np.nanmean( so, axis = 0 ) # average over latitude
-    return so
+os.chdir('E:/CCCM/run')  # Home PC
 
 
 # Load every file in the directory
@@ -88,40 +77,42 @@ for filename in os.listdir():
     altitudes[2] /= 1000
     
 
-    for data_set in data_sets:
-        sel = f.select( data_set.type_name )
-        data = sel.get()
 
-        fill_value = sel.attributes()['_FillValue']
-        for l_index, l in enumerate( raw_lat ):
-            if l <= constants.min_lat or l >= constants.max_lat:
-                continue
-            lat_bin = int( ( l - constants.min_lat ) / constants.lat_division)
-            for a_index, a in enumerate( altitudes[data_set.altitude_type] ):
-                if a <= constants.min_alt or a >= constants.max_alt:
-                    continue
-                alt_bin = int( ( a - constants.min_alt ) / constants.alt_division )
-                #print( lat_bin, alt_bin )
-                val = data[l_index, a_index]
-                if val == fill_value:
-                    continue
-                data_set.data[ lat_bin, alt_bin ] += val
-                data_set.data_counts[ lat_bin, alt_bin ] += 1
+    # for data_set in data_sets:
+    #     sel = f.select( data_set.type_name )
+    #     data = sel.get()
+
+    #     fill_value = sel.attributes()['_FillValue']
+    #     for l_index, l in enumerate( raw_lat ):
+    #         if l <= constants.min_lat or l >= constants.max_lat:
+    #             continue
+    #         lat_bin = int( ( l - constants.min_lat ) / constants.lat_division )
+    #         for a_index, a in enumerate( altitudes[data_set.altitude_type] ):
+    #             if a <= np.amin(constants.alt) or a >= np.amax(constants.alt):
+    #                 continue
+    #             alt_bin = (np.abs(constants.alt - a)).argmin()
+    #             # alt_bin = int( ( a - constants.alt.min ) / constants.alt_division ) # select nearest alt_bin
+    #             #print( lat_bin, alt_bin )
+    #             val = data[l_index, a_index]
+    #             if val == fill_value:
+    #                 continue
+    #             data_set.data[ lat_bin, alt_bin ] += val
+    #             data_set.data_counts[ lat_bin, alt_bin ] += 1
 
     for data_set in grid_data_sets:
         sel = f.select( data_set.type_name )
         data = sel.get()
+        fill_value = sel.attributes()['_FillValue']
+        data[ data == fill_value ] = None #set fill values to nan
         if data_set.type_name == 'Cloud free area percent coverage (CALIPSO-CloudSat)':
             data = (100 - data) / 100
         else:
-            fill_value = sel.attributes()['_FillValue']
-            data[ data == fill_value ] = None #set fill values to nan
-            data = np.nansum(data, axis = 1)
+            data = np.nanmean(data, axis = 1)
         for l_index, ( la, lo ) in enumerate( zip( raw_lat, raw_lon ) ):
             if la <= constants.min_lat or la >= constants.max_lat:
                 continue
             
-            lat_bin = int( ( la - constants.min_lat ) / constants.lat_division)
+            lat_bin = int( ( la - constants.min_lat ) / constants.lat_division )
             lon_bin = int( lo - 1 )
             
             #print( lat_bin, alt_bin )
@@ -136,131 +127,203 @@ for data_set in grid_data_sets:
 #    pprint( data_set.data.shape )
   
 clt_lat_lon = grid_data_sets[0].data
-clwvi_lat_lon = grid_data_sets[1].data
-clivi_lat_lon = grid_data_sets[2].data
+# clwc_lat_lon = grid_data_sets[1].data
+# clic_lat_lon = grid_data_sets[2].data
 
-for data_set in data_sets:
-    data_set.data /= data_set.data_counts
-#    pprint( data_set.data.shape )
+# for data_set in data_sets:
+#     data_set.data /= data_set.data_counts
+# #    pprint( data_set.data.shape )
   
-cl_alt_lat = data_sets[0].data
-clw_alt_lat = data_sets[1].data
-cli_alt_lat = data_sets[2].data
-full_ta_alt_lat = data_sets[3].data
+# cl_alt_lat = data_sets[0].data # 0-1
+# full_clwc_alt_lat = data_sets[1].data # g/m^3
+# clic_alt_lat = data_sets[2].data # g/m^3
+# full_ta_alt_lat = data_sets[3].data # K
+# full_p_alt_lat = data_sets[4].data # hPa
 
 
+# # convert to cloud water mass fractions
+# #https://www.translatorscafe.com/unit-converter/en-US/calculator/altitude/
 
-#---create liquid and ice fractions---#
+# density_alt_lat = ( ( full_p_alt_lat * 100 ) / ( 287.052 * full_ta_alt_lat ) ) * 1000 # g/m^3
+# full_clw_alt_lat = full_clwc_alt_lat / density_alt_lat
+# cli_alt_lat = clic_alt_lat / density_alt_lat
 
-lw_clwvi_lat_lon = (clwvi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
-iw_clivi_lat_lon = (clivi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
+# #---create reduced altitude liquid mass fraction and temperatures---#
 
+# ta_alt_lat = full_ta_alt_lat[:,:constants.liq_alt_confine]
+# clw_alt_lat = full_clw_alt_lat[:,:constants.liq_alt_confine]
+# clwc_alt_lat = full_clwc_alt_lat[:,:constants.liq_alt_confine]
+
+# #---create fractions---#
+
+# full_clw_frac_alt_lat = ( full_clw_alt_lat / ( full_clw_alt_lat + cli_alt_lat ) ) * cl_alt_lat
+# cli_frac_alt_lat = ( cli_alt_lat / ( full_clw_alt_lat + cli_alt_lat ) ) * cl_alt_lat
+# clw_frac_alt_lat = full_clw_frac_alt_lat[:,:constants.liq_alt_confine]
+
+
+# #---create liquid and ice fractions---#
 
 clt = np.nanmean( clt_lat_lon, axis = -1 )
-clwvi = np.nanmean( lw_clwvi_lat_lon, axis = -1 )
-clivi = np.nanmean( iw_clivi_lat_lon, axis = -1 )
 
-
-
-
-
-#---create liquid and ice fractions---#
-
-full_clw_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
-cli_alt_lat = (cli_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
-
-#---create reduced altitude liquid fraction and temperatures---#
-
-new_liq_data = np.zeros(( constants.lat.size, constants.liq_alt.size ))
-liq_data_counts = np.zeros( (constants.lat.size, constants.liq_alt.size ))
-
-for l_index, l in enumerate( constants.lat ):
-    if l < constants.min_lat or l > constants.max_lat:
-        continue
-    lat_bin = int( ( l - constants.min_lat ) / constants.lat_division)
-    for a_index, a in enumerate( constants.liq_alt ):
-        if a < constants.min_liq_alt or a > constants.max_liq_alt:
-            continue
-        liq_alt_bin = int( ( a - constants.min_liq_alt ) / constants.liq_alt_division )
-        val = full_clw_alt_lat[l_index, a_index]
-        if np.isnan(val):
-            continue
-        new_liq_data[ lat_bin, liq_alt_bin ] += val
-        liq_data_counts[ lat_bin, liq_alt_bin ] += 1
-            
-clw_alt_lat = new_liq_data / liq_data_counts
-
-interpolated = interpolate.interp2d( constants.alt, constants.lat, full_ta_alt_lat, kind = 'cubic', fill_value="extrapolate")
-ta_alt_lat = interpolated( constants.liq_alt, constants.lat )
-
-
-
-
-
-#---create southern ocean and global datasets---#
+# #---create southern ocean and global datasets---#
     
-cl_so = create_southern_ocean_data( constants.lat, cl_alt_lat)
-clw_so = create_southern_ocean_data( constants.lat, clw_alt_lat)
-cli_so = create_southern_ocean_data( constants.lat, cli_alt_lat)
-ta_liq_so = create_southern_ocean_data( constants.lat, ta_alt_lat)
+# cl_so = constants.globalalt_latMean(np.transpose(cl_alt_lat[constants.so_idx_1:constants.so_idx_2]), constants.lat[constants.so_idx_1:constants.so_idx_2])
+# full_clw_so = constants.globalalt_latMean(np.transpose(full_clw_alt_lat[constants.so_idx_1:constants.so_idx_2]), constants.lat[constants.so_idx_1:constants.so_idx_2])
+# cli_so = constants.globalalt_latMean(np.transpose(cli_alt_lat[constants.so_idx_1:constants.so_idx_2]), constants.lat[constants.so_idx_1:constants.so_idx_2])
 
-cl_g = np.nanmean( cl_alt_lat, axis = 0 )
-clw_g = np.nanmean( clw_alt_lat, axis = 0 )
-cli_g = np.nanmean( cli_alt_lat, axis = 0 )
-ta_liq_g = np.nanmean( ta_alt_lat, axis = 0 )
+# clwc_so = constants.globalalt_latMean(np.transpose(clwc_alt_lat[constants.so_idx_1:constants.so_idx_2]), constants.lat[constants.so_idx_1:constants.so_idx_2])
+# clic_so = constants.globalalt_latMean(np.transpose(clic_alt_lat[constants.so_idx_1:constants.so_idx_2]), constants.lat[constants.so_idx_1:constants.so_idx_2])
+
+# full_clw_frac_so = ( full_clw_so / ( full_clw_so + cli_so ) ) * cl_so
+# cli_frac_so = ( cli_so / ( full_clw_so + cli_so ) ) * cl_so
+# clw_frac_so = full_clw_frac_so[:constants.liq_alt_confine]
+# clw_so = full_clw_so[:constants.liq_alt_confine]
+
+# cl_g = constants.globalalt_latMean(np.transpose(cl_alt_lat[8:172]), constants.lat[8:172])
+# full_clw_g = constants.globalalt_latMean(np.transpose(full_clw_alt_lat[8:172]), constants.lat[8:172])
+# cli_g = constants.globalalt_latMean(np.transpose(cli_alt_lat[8:172]), constants.lat[8:172])
+
+# clwc_g = constants.globalalt_latMean(np.transpose(clwc_alt_lat[8:172]), constants.lat[8:172])
+# clic_g = constants.globalalt_latMean(np.transpose(clic_alt_lat[8:172]), constants.lat[8:172])
+
+# full_clw_frac_g = ( full_clw_g / ( full_clw_g + cli_g ) ) * cl_g
+# cli_frac_g = ( cli_g / ( full_clw_g + cli_g ) ) * cl_g
+# clw_frac_g = full_clw_frac_g[:constants.liq_alt_confine]
+# clw_g = full_clw_g[:constants.liq_alt_confine]
+
+# #----------------------------#
+
+#     ######## Binned Temperature Data ########
+# # values to bin: full_clw_alt_lat and full_ta_alt_lat
+# # binned into constants.ta_g array
+# # values in each bin to be summed
+# # call the summed values clw_t_g
+
+# stat = 'mean'
+# clwc_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(), full_clwc_alt_lat.flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+# clwc_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), full_clwc_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+
+# clw_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(), full_clw_alt_lat.flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+# clw_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), full_clw_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+
+# cli_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(), cli_alt_lat.flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+# cli_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), cli_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+
+# cl_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(), cl_alt_lat.flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+# cl_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), cl_alt_lat[constants.so_idx_1:constants.so_idx_2].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+
+# clw_frac_t_g = ( clw_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
+# clw_frac_t_so = ( clw_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
+
+# cli_frac_t_g = ( cli_t_g / ( clw_t_g + cli_t_g ) ) * cl_t_g
+# cli_frac_t_so = ( cli_t_so / ( clw_t_so + cli_t_so ) ) * cl_t_so
+
+
+# fig, ax = plt.subplots()
+# ax.plot( clw_frac_so, constants.liq_alt )
+# ax.plot( clw_frac_g, constants.liq_alt )
+# ax.set_ylabel('Altitude (km)')
+# ax.set_xlabel('Mean Cloud  Fraction ')
+# ax.set_title ('Cloud Fraction vs Altitude')
+# plt.grid(True)
+# plt.show()
+
+# fig, ax = plt.subplots()
+# ax.plot( constants.ta, clw_frac_t_g )
+# ax.plot( constants.ta, clw_frac_t_so )
+# ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+# plt.grid(True)
+# plt.show()
+
+# fig, ax = plt.subplots()
+# cont = ax.contourf( constants.lat, constants.liq_alt, np.transpose(clw_frac_alt_lat) )
+# # temp = ax.contour( constants.lat[constants.lat_confine_1:constants.lat_confine_2], constants.alt, (full_ta_alt_lat[constants.lat_confine_1:constants.lat_confine_2] - 273.15), colors='white')
+# # temp.collections[5].set_linewidth(3)
+# # temp.collections[5].set_color('white')
+# # ax.clabel(temp, inline=1, fontsize=10)
+# ax.set_xlabel('Latitude')
+# ax.set_ylabel('Altitude (km)')
+# cbar = fig.colorbar(cont, orientation='horizontal')
+# cbar.set_label('Mean Cloud Liquid Water Mass Fraction in Air')
+# plt.show()
+
+######################
 
 #----------------------------#
 
-interpolated = interpolate.interp1d(ta_liq_g[:-1], clw_g[:-1], kind = 'cubic', fill_value="extrapolate")
-clw_t_g = interpolated(constants.ta_g)
-clw_t_g[clw_t_g < 0] = np.nan
+# os.chdir( location + '/climate-analysis/reduced_data' )
+# save_filename = 'Jan_2007_Dec_2010_CCCM.h5'
 
-interpolated = interpolate.interp1d(ta_liq_so[:-1], clw_so[:-1], kind = 'cubic', fill_value="extrapolate")
-clw_t_so = interpolated(constants.ta_so)
-clw_t_so[clw_t_so < 0] = np.nan
+# with h5py.File(save_filename, 'w') as p:
 
-#----------------------------#
+#     # p.create_dataset('clt', data=clt)
+#     # p.create_dataset('clwvi', data=clwvi)
+#     # p.create_dataset('clivi', data=clivi)
+#     # p.create_dataset('clt_lat_lon', data=clt_lat_lon)
+#     # p.create_dataset('clwvi_lat_lon', data=clwvi_lat_lon)
+#     # p.create_dataset('clivi_lat_lon', data=clivi_lat_lon)
+
+#     p.create_dataset('density_alt_lat', data=np.transpose( density_alt_lat ) ) # global layer total cloud fraction corresponding to alt
+#     p.create_dataset('full_p_alt_lat', data=np.transpose( full_p_alt_lat ) ) # global layer total cloud fraction corresponding to alt
+
+#     p.create_dataset('cl_g', data=cl_g) # global layer total cloud fraction corresponding to alt
+#     p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water mass fraction in air ( kg/kg ) corresponding to liq_alt
+#     p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water mass fraction in air ( kg/kg ) corresponding to alt
+#     p.create_dataset('clwc_g', data=clwc_g) # global layer cloud liquid water content ( g/m^3 ) corresponding to liq_alt
+#     p.create_dataset('clic_g', data=clic_g) # global layer cloud ice water content ( g/m^3 ) corresponding to alt
+#     p.create_dataset('clw_frac_g', data=clw_frac_g) # global layer cloud liquid water fraction corresponding to liq_alt
+#     p.create_dataset('cli_frac_g', data=cli_frac_g) # global layer cloud ice water fraction corresponding to alt
+    
+#     p.create_dataset('cl_so', data=cl_so) # southern ocean layer total cloud fraction corresponding to alt
+#     p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water mass fraction in air ( kg/kg ) corresponding to liq_alt
+#     p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water mass fraction in air ( kg/kg ) corresponding to alt
+#     p.create_dataset('clwc_so', data=clwc_so) # southern ocean layer cloud liquid water content ( g/m^3 ) corresponding to liq_alt
+#     p.create_dataset('clic_so', data=clic_so) # southern ocean layer cloud ice water content ( g/m^3 ) corresponding to alt
+#     p.create_dataset('clw_frac_so', data=clw_frac_so) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
+#     p.create_dataset('cli_frac_so', data=cli_frac_so) # southern ocean layer cloud ice water fraction corresponding to alt
+
+#     p.create_dataset('cl_t_g', data=cl_t_g) # global layer cloud liquid water fraction corresponding to ta
+#     p.create_dataset('cl_t_so', data=cl_t_so) # global layer cloud liquid water fraction corresponding to ta
+
+#     p.create_dataset('clwc_t_g', data=clwc_t_g) # global layer cloud liquid water content ( g/m^3 ) corresponding to ta
+#     p.create_dataset('clwc_t_so', data=clwc_t_so) # global layer cloud liquid water content ( g/m^3 ) corresponding to ta
+
+#     p.create_dataset('clw_t_g', data=clw_t_g) # global layer cloud liquid water mass fraction in air ( kg/kg ) corresponding to ta
+#     p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water mass fraction in air ( kg/kg ) corresponding to ta
+
+#     p.create_dataset('clw_frac_t_g', data=clw_frac_t_g) # global layer cloud liquid water fraction corresponding to ta
+#     p.create_dataset('clw_frac_t_so', data=clw_frac_t_so) # global layer cloud liquid water fraction corresponding to ta
+
+#     p.create_dataset('cli_frac_t_g', data=cli_frac_t_g) # global layer cloud ice water fraction corresponding to ta
+#     p.create_dataset('cli_frac_t_so', data=cli_frac_t_so) # global layer cloud ice water fraction corresponding to ta
+
+#     p.create_dataset('full_clwc_alt_lat', data= np.transpose( full_clwc_alt_lat ) ) # cloud liquid water content ( g/m^3 ) corresponding to alt and lat
+#     p.create_dataset('clic_alt_lat', data= np.transpose( clic_alt_lat ) ) # cloud ice water content ( g/m^3 ) corresponding to alt and lat
+
+#     p.create_dataset('full_clw_frac_alt_lat', data= np.transpose( full_clw_frac_alt_lat ) ) # cloud liquid water fraction corresponding to alt and lat
+#     p.create_dataset('clw_frac_alt_lat', data= np.transpose( clw_frac_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
+#     p.create_dataset('cli_frac_alt_lat', data= np.transpose( cli_frac_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
+
+#     p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat ) ) # temperature corresponding to liq_alt and lat
+#     p.create_dataset('cl_alt_lat', data= np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
+#     p.create_dataset('clw_alt_lat', data= np.transpose( clw_alt_lat ) ) # cloud liquid water mass fraction in air ( kg/kg ) corresponding to liq_alt and lat
+#     p.create_dataset('cli_alt_lat', data= np.transpose( cli_alt_lat ) ) # cloud ice water mass fraction in air ( kg/kg ) corresponding to alt and lat
+
+#     p.create_dataset('full_ta_alt_lat', data= np.transpose( full_ta_alt_lat ) ) # temperature corresponding to alt and lat
+#     p.create_dataset('full_clw_alt_lat', data= np.transpose( full_clw_alt_lat ) ) # tcloud liquid water mass fraction in air ( kg/kg ) corresponding to alt and lat
+
+#     p.close()
+
+# end = time.time()
+# print('Create dataset took:', end - start, 's')
+
+
 
 os.chdir( location + '/climate-analysis/reduced_data' )
-
-save_filename = 'Jun_2006_Apr_2011_CCCM.h5'
-
-with h5py.File(save_filename, 'w') as p:
-
-    p.create_dataset('clt', data=clt)
-    p.create_dataset('clwvi', data=clwvi)
-    p.create_dataset('clivi', data=clivi)
-    p.create_dataset('clt_lat_lon', data=clt_lat_lon)
-    p.create_dataset('clwvi_lat_lon', data=lw_clwvi_lat_lon)
-    p.create_dataset('clivi_lat_lon', data=iw_clivi_lat_lon)
-
-    p.create_dataset('cl_g', data=cl_g) # global layer total cloud fraction corresponding to alt
-    p.create_dataset('clw_g', data=clw_g) # global layer cloud liquid water fraction corresponding to liq_alt
-    p.create_dataset('cli_g', data=cli_g) # global layer cloud ice water fraction corresponding to alt
-    
-    p.create_dataset('cl_so', data=cl_so) # southern ocean layer total cloud fraction corresponding to alt
-    p.create_dataset('clw_so', data=clw_so) # southern ocean layer cloud liquid water fraction corresponding to liq_alt
-    p.create_dataset('cli_so', data=cli_so) # southern ocean layer cloud ice water fraction corresponding to alt
-    
-    p.create_dataset('clw_t_g', data=clw_t_g) # global layer cloud liquid water fraction corresponding to ta_g
-    p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water fraction corresponding to ta_so
-    
-    p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat ) ) # temperature corresponding to liq_alt and lat
-    p.create_dataset('cl_alt_lat', data= np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat
-    p.create_dataset('clw_alt_lat', data= np.transpose( clw_alt_lat ) ) # cloud liquid water fraction corresponding to liq_alt and lat
-    p.create_dataset('cli_alt_lat', data= np.transpose( cli_alt_lat ) ) # cloud ice water fraction corresponding to alt and lat
-
-    p.create_dataset('full_ta_alt_lat', data= np.transpose( full_ta_alt_lat ) ) # temperature corresponding to alt and lat
-    p.create_dataset('full_clw_alt_lat', data= np.transpose( full_clw_alt_lat ) ) # tcloud liquid water fraction corresponding to alt and lat
-
-    p.close()
-
-end = time.time()
-print('Create dataset took:', end - start, 's')
-
-
-
-
+f = h5py.File('Jan_2007_Dec_2010_CCCM.h5','a')
+f.create_dataset('clt', data=clt)
+f.create_dataset('clt_lat_lon', data=clt_lat_lon)
+f.close()
 
 
 

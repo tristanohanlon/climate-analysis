@@ -14,12 +14,14 @@ import h5py
 import math
 from scipy import interpolate
 from scipy.interpolate import RectBivariateSpline
+from scipy import stats
 import datetime
 from pprint import pprint
 from sklearn.impute import SimpleImputer
 import constants
 import time
 from scipy import ndimage as nd
+import matplotlib.pyplot as plt
 
 ###############################################################################
 start = time.time()
@@ -46,10 +48,8 @@ clivi_lat_lon = np.flip(np.mean(clivi, axis = 0), axis = 0)
 clwvi = np.array(dataset.variables['tclw'][:]) #Extract liquid water path (kg/m^2), keyed to time, lon and lat
 clwvi_lat_lon = np.flip(np.mean(clwvi, axis = 0), axis = 0)
 
-lwp_frac_lat_lon = (clwvi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
-iwp_frac_lat_lon = (clivi_lat_lon / (clwvi_lat_lon + clivi_lat_lon)) * clt_lat_lon
-clwvi = np.nanmean(lwp_frac_lat_lon , axis = -1)
-clivi = np.nanmean(iwp_frac_lat_lon , axis = -1)
+clwvi = np.nanmean(clwvi_lat_lon , axis = -1)
+clivi = np.nanmean(clivi_lat_lon , axis = -1)
 clt = np.nanmean(clt_lat_lon , axis = -1)
 clt_lc = np.nanmean(clt_lc_lat_lon , axis = -1)
 
@@ -73,59 +73,20 @@ interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( clt_lc_lat_l
 clt_lc_lat_lon = interpolated(constants.lat, constants.lon)
 clt_lc_lat_lon = np.transpose(clt_lc_lat_lon)
 
-interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( lwp_frac_lat_lon ), kind = 'cubic')
+interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( clwvi_lat_lon ), kind = 'cubic')
 clwvi_lat_lon = interpolated(constants.lat, constants.lon)
 clwvi_lat_lon = np.transpose(clwvi_lat_lon)
 
-interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( iwp_frac_lat_lon ), kind = 'cubic')
+interpolated = interpolate.interp2d(raw_lat, raw_lon, np.transpose( clivi_lat_lon ), kind = 'cubic')
 clivi_lat_lon = interpolated(constants.lat, constants.lon)
 clivi_lat_lon = np.transpose(clivi_lat_lon)
 
 
-os.chdir( location + 'Data/ECMWF/pressure_levels' )
-  
-
-def create_southern_ocean_data( lat, global_data ):
-    
-    start_index = 0
-    end_index = 0
-    for index, l in enumerate( lat ):
-        if l < -70:
-            start_index = index + 1
-        if l <= -50:
-            end_index = index
-    so = global_data[start_index:end_index]
-    so = np.nanmean( so, axis = 0 ) # average over latitude
-    return so
-
-def extract_data( type, f ):
-    return np.array( f.variables[type][:] )
-
-
-def fill(data, invalid=None):
-    """
-    Replace the value of invalid 'data' cells (indicated by 'invalid') 
-    by the value of the nearest valid data cell
-
-    Input:
-        data:    numpy array of any dimension
-        invalid: a binary array of same shape as 'data'. 
-                 data value are replaced where invalid is True
-                 If None (default), use: invalid  = np.isnan(data)
-
-    Output: 
-        Return a filled array. 
-    """    
-    if invalid is None: invalid = np.isnan(data)
-
-    ind = nd.distance_transform_edt(invalid, 
-                                    return_distances=False, 
-                                    return_indices=True)
-    return data[tuple(ind)]
+#------------- Profile variables -------------#
 
 
 with Dataset( '200601-201012_ECMWF_plevel_T_cc_clw_cli_w.nc', 'r') as f:
-    p = np.flip( extract_data( 'level', f ), axis = 0 )        
+    p = np.flip( constants.extract_data( 'level', f ), axis = 0 )        
     raw_alt = np.empty((p.size,1),dtype=float)
     state = 0
     i = 0
@@ -143,21 +104,78 @@ with Dataset( '200601-201012_ECMWF_plevel_T_cc_clw_cli_w.nc', 'r') as f:
         raw_alt[i] = newalt
         i+=1
     raw_alt = np.transpose( raw_alt )[0]
-    raw_lat = np.flip( extract_data( 'latitude', f ), axis = 0 )
+    raw_lat = np.flip( constants.extract_data( 'latitude', f ), axis = 0 )
+    start_idx = np.abs(raw_lat - (-70)).argmin()
+    end_idx = np.abs(raw_lat - (-50)).argmin()
 
 
-    cl_alt_lat = np.flip( np.flip( np.mean( np.mean( extract_data( 'cc', f ), axis = 0 ), axis = -1 ), axis = 0 ), axis = -1 ) 
-    clw_alt_lat = np.flip( np.flip( np.mean( np.mean(extract_data( 'clwc', f ), axis = 0), axis = -1 ), axis = 0 ), axis = -1 )
-    cli_alt_lat = np.flip( np.flip( np.mean( np.mean(extract_data( 'ciwc', f ), axis = 0), axis = -1 ), axis = 0 ), axis = -1 )
-    full_ta_alt_lat = np.flip( np.flip( np.mean( np.mean(extract_data( 't', f ), axis = 0), axis = -1 ), axis = 0 ), axis = -1 )
-    w_alt_lat = np.flip( np.flip( np.mean( np.mean(extract_data( 'w', f ), axis = 0), axis = -1 ), axis = 0 ), axis = -1 )
 
-#---create liquid and ice fractions---#
+    cl = np.flip( np.flip( np.mean( constants.extract_data( 'cc', f ), axis = 0 ), axis = 0 ), axis = 1 ) 
+    clw = np.flip( np.flip( np.mean( constants.extract_data( 'clwc', f ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
+    cli = np.flip( np.flip( np.mean( constants.extract_data( 'ciwc', f ), axis = 0 ), axis = 0 ), axis = 1 )  # kg/kg
+    ta = np.flip( np.flip( np.mean( constants.extract_data( 't', f ), axis = 0), axis = 0 ), axis = 1 ) 
+    w = np.flip( np.flip( np.mean( constants.extract_data( 'w', f ), axis = 0), axis = 0 ), axis = 1 )  # Pa/s
 
-full_clw_alt_lat = (clw_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
-cli_alt_lat = (cli_alt_lat / (clw_alt_lat + cli_alt_lat)) * cl_alt_lat
+
+cl_alt_lat = np.mean( cl, axis = -1 ) 
+full_clw_alt_lat = np.mean( clw, axis = -1 )  # kg/kg
+cli_alt_lat = np.mean( cli, axis = -1 )  # kg/kg
+full_ta_alt_lat = np.mean( ta, axis = -1 ) 
+w_alt_lat = np.mean( w, axis = -1 )  # Pa/s
+
+#---create southern ocean and global datasets---#
+    
+cl_g = constants.global3DMean(cl, raw_lat)
+cl_so = constants.global3DMean(cl[:,start_idx:end_idx], raw_lat[start_idx:end_idx])
+
+clw_g = constants.global3DMean(clw, raw_lat)
+clw_so = constants.global3DMean(clw[:,start_idx:end_idx], raw_lat[start_idx:end_idx])
+
+cli_g = constants.global3DMean(cli, raw_lat)
+cli_so = constants.global3DMean(cli[:,start_idx:end_idx], raw_lat[start_idx:end_idx])
+
+
+#-------------calculate density---------------#
+
+    ######## Binned Temperature Data ########
+# values to bin: clw_alt_lat and ta_alt_lat
+# binned into constants.ta_g array
+# values in each bin to be summed
+# call the summed values clw_t_g
+
+stat = 'mean'
+clw_t_g, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat.flatten(), full_clw_alt_lat.flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+clw_t_so, bin_edges, binnumber = stats.binned_statistic(full_ta_alt_lat[:,start_idx:end_idx].flatten(), full_clw_alt_lat[:,start_idx:end_idx].flatten(), stat, bins=constants.ta.size, range=(constants.min_ta, constants.max_ta))
+
+fig, ax = plt.subplots()
+ax.plot( constants.ta, clw_t_g )
+ax.plot( constants.ta, clw_t_so )
+ax.axvline(x=273, label = '273K', color = 'black', linestyle='--')
+plt.grid(True)
+plt.show()
+######################
+
 
 #---interpolate and fit data---#
+
+interpolated = interpolate.interp1d(raw_alt, cl_g, kind = 'cubic', fill_value="extrapolate")
+cl_g = interpolated(constants.alt)
+
+interpolated = interpolate.interp1d(raw_alt, clw_g, kind = 'cubic', fill_value="extrapolate")
+clw_g = interpolated(constants.liq_alt)
+
+interpolated = interpolate.interp1d(raw_alt, cli_g, kind = 'cubic', fill_value="extrapolate")
+cli_g = interpolated(constants.alt)
+
+interpolated = interpolate.interp1d(raw_alt, cl_so, kind = 'cubic', fill_value="extrapolate")
+cl_so = interpolated(constants.alt)
+
+interpolated = interpolate.interp1d(raw_alt, clw_so, kind = 'cubic', fill_value="extrapolate")
+clw_so = interpolated(constants.liq_alt)
+
+interpolated = interpolate.interp1d(raw_alt, cli_so, kind = 'cubic', fill_value="extrapolate")
+cli_so = interpolated(constants.alt)
+
 
 interpolated = interpolate.interp2d( raw_alt, raw_lat, np.transpose( cl_alt_lat ), kind = 'cubic')
 cl_alt_lat = interpolated( constants.alt, constants.lat )
@@ -186,36 +204,13 @@ full_ta_alt_lat[ full_ta_alt_lat < 0 ] = np.nan
 interpolated = interpolate.interp2d( raw_alt, raw_lat, np.transpose( w_alt_lat ), kind = 'cubic', fill_value="extrapolate")
 w_alt_lat = interpolated( constants.alt, constants.lat )
 
-#---create southern ocean and global datasets---#
-    
-cl_so = create_southern_ocean_data( constants.lat, cl_alt_lat)
-clw_so = create_southern_ocean_data( constants.lat, clw_alt_lat)
-cli_so = create_southern_ocean_data( constants.lat, cli_alt_lat)
-ta_liq_so = create_southern_ocean_data( constants.lat, ta_alt_lat)
-w_so = create_southern_ocean_data( constants.lat, w_alt_lat)
-
-cl_g = np.nanmean( cl_alt_lat, axis = 0 )
-clw_g = np.nanmean( clw_alt_lat, axis = 0 )
-cli_g = np.nanmean( cli_alt_lat, axis = 0 )
-ta_liq_g = np.nanmean( ta_alt_lat, axis = 0 )
-w_g = np.nanmean( w_alt_lat, axis = 0 )
-
-
-#--------------create temp clw--------------#
-
-interpolated = interpolate.interp1d(ta_liq_g, clw_g, kind = 'linear', fill_value="extrapolate")
-clw_t_g = interpolated(constants.ta_g)
-clw_t_g[clw_t_g < 0] = np.nan
-
-interpolated = interpolate.interp1d(ta_liq_so, clw_so, kind = 'linear', fill_value="extrapolate")
-clw_t_so = interpolated(constants.ta_so)
-clw_t_so[clw_t_so < 0] = np.nan
-
 #----------------------------#
+
+
 
 os.chdir( location + '/climate-analysis/reduced_data' )
 
-save_filename = 'Jan_2006_Dec_2010_ECMWF.h5'
+save_filename = 'Jan_2007_Dec_2010_ECMWF.h5'
 
 with h5py.File(save_filename, 'w') as p:
 
@@ -243,8 +238,6 @@ with h5py.File(save_filename, 'w') as p:
     p.create_dataset('clw_t_so', data=clw_t_so) # global layer cloud liquid water fraction corresponding to ta_so
       
     p.create_dataset('w_alt_lat', data=np.transpose( w_alt_lat ) ) # vertical pressure velocity (Pa/s) corresponding to alt, lat
-    p.create_dataset('w_g', data=w_g) # global vertical pressure velocity (Pa/s) corresponding to alt
-    p.create_dataset('w_so', data=w_so) # southern ocean vertical pressure velocity (Pa/s) corresponding to alt
 
     p.create_dataset('ta_alt_lat', data= np.transpose( ta_alt_lat ) ) # temperature corresponding to liq_alt and lat
     p.create_dataset('cl_alt_lat', data=np.transpose( cl_alt_lat ) ) # total cloud fraction corresponding to alt and lat

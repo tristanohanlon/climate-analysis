@@ -45,8 +45,8 @@ import constants
 
 #specify location and data source - stored in constants
 location = constants.hdd + 'Data/'
-data = 'CERES'
-data_type = 'latitude'
+data = 'CCCM'
+data_type = 'Liquid water content profile used'
 
 f = SD.SD( location + constants.satellite_dict[ data ])
 
