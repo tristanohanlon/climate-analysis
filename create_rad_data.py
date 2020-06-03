@@ -17,7 +17,7 @@ max_lat = 70
 use_aerosol_files = False
 use_surface_albedo = True
 plot_diagnostic_data = False
-save_outputs = True # save output graphs and global mean data to excel
+save_outputs = False # save output graphs and global mean data to excel
 show_plots = False
 
 # set ice and liquid droplet radius in microns
