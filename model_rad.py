@@ -23,7 +23,7 @@ fontP = FontProperties()
 fontP.set_size('small')
 import openpyxl
 
-def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol_files, use_surface_albedo, plot_diagnostic_data, save_outputs, liquid_r, ice_r, show_plots ):
+def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol_files, use_surface_albedo, plot_diagnostic_data, save_outputs, use_integrator, liquid_r, ice_r ):
     book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/radiation_data.xlsx' )
     sheet = book.active
 
@@ -36,7 +36,7 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
 
     o2=0.21
     ccl4=0.
-    cfc22=4.8743326488706363-11
+    cfc22=4.8743326488706363e-11
 
     # Mole Fraction of Ozone (time, lev, lat, lon)
 
@@ -61,7 +61,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             ch4 = constants.extract_data_over_time( variable, f, start, end )
             ch4 = np.nanmean( ch4, axis = 0 ) # Average over time
-    print('ch4 = ' + str(ch4))
 
 
     # Global Mean Mole Fraction of N2O (time)
@@ -74,7 +73,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             n2o = constants.extract_data_over_time( variable, f, start, end )
             n2o = np.nanmean( n2o, axis = 0 ) # Average over time
-    print('n2o = ' + str(n2o))
 
 
     # Global Mean Mole Fraction of CFC11 (time)
@@ -87,7 +85,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             cfc11 = constants.extract_data_over_time( variable, f, start, end )
             cfc11 = np.nanmean( cfc11, axis = 0 ) # Average over time
-    print('cfc11 = ' + str(cfc11))
 
 
     # Global Mean Mole Fraction of CFC12 (time)
@@ -100,7 +97,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             cfc12 = constants.extract_data_over_time( variable, f, start, end )
             cfc12 = np.nanmean( cfc12, axis = 0 ) # Average over time
-    print('cfc12 = ' + str(cfc12))
 
 
     # Global Mean Mole Fraction of CFC113 (time)
@@ -113,7 +109,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             cfc113 = constants.extract_data_over_time( variable, f, start, end )
             cfc113 = np.nanmean( cfc113, axis = 0 ) # Average over time
-    print('cfc113 = ' + str(cfc113))
 
 
     # Total Atmospheric Mass (kg) of CO2 
@@ -126,7 +121,6 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         with Dataset( check_file, 'r') as f:
             co2mass = constants.extract_data_over_time( variable, f, start, end )
             co2mass = np.nanmean( co2mass, axis = 0 ) # Average over time
-    print('co2mass = ' + str(co2mass))
 
 
     #----------------------------- Cloud variables -----------------------------#
@@ -207,11 +201,13 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         plev_t = constants.extract_data( 'plev', f ) # in Pa
         ta = ta[:,:,lat_confine_1:lat_confine_2,:]
 
+    # Confine O3 data to set latitudes
+
+        o3 = o3[:,:,lat_confine_1:lat_confine_2,:]
 
 
 
     #-------------------------- Get top of atmosphere radiative flux data ------------------------#
-
 
     # Incoming SW at TOA
 
@@ -341,16 +337,15 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
     # Get number of months to integrate over
 
     dt = np.size( cl, 0 )
-    
 
-    cl = np.nanmean( cl, axis = 0 )
-    clw = np.nanmean( clw, axis = 0 )
-    cli = np.nanmean( cli, axis = 0 )
-    ta = np.nanmean( ta, axis = 0 )
-    ts = np.nanmean( ts, axis = 0 )
-    hus = np.nanmean( hus, axis = 0 )
-    o3 = np.nanmean( o3, axis = 0 )
-    o3 = o3[:,lat_confine_1:lat_confine_2,:]
+    if use_integrator == False:
+        cl = np.nanmean( cl, axis = 0 )
+        clw = np.nanmean( clw, axis = 0 )
+        cli = np.nanmean( cli, axis = 0 )
+        ta = np.nanmean( ta, axis = 0 )
+        ts = np.nanmean( ts, axis = 0 )
+        hus = np.nanmean( hus, axis = 0 )
+        o3 = np.nanmean( o3, axis = 0 )
 
     #-------------------------- Average variables over longitude --------------------------#
 
@@ -390,6 +385,8 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
 
     #-------------------------- Interpolate variables --------------------------#
 
+    # Interpolate temperature
+
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')
     imp.fit(np.transpose(ta))  
     ta = imp.transform(np.transpose(ta))
@@ -399,6 +396,8 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
     interpolated = interpolate.interp2d( lat, plev_t, ta, kind = 'linear')
     ta = np.flip( interpolated( lat, p ), axis = 0 )
 
+    # Interpolate humidity
+
     imp.fit(np.transpose(hus))  
     hus = imp.transform(np.transpose(hus))
     hus = np.transpose(hus)   
@@ -406,6 +405,8 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         plev_h = plev_h[plev_h.shape[0] - hus.shape[0]:] # reshape alt_temp if not equal
     interpolated = interpolate.interp2d( lat, plev_h, hus, kind = 'linear')
     hus = np.flip( interpolated( lat,p ), axis = 0 )
+
+    # Interpolate O3
 
     imp.fit(np.transpose(o3))  
     o3 = imp.transform(np.transpose(o3))
@@ -416,16 +417,20 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
     o3 = np.flip( interpolated( lat,p ), axis = 0 )
 
 
-    #-------------------------- convert mixing ratios to water paths --------------------------#
+    #-------------------------- Convert mixing ratios to water paths, set particle sizes --------------------------#
 
-    # convert mixing ratio (kg/kg) into cloud water content in (g/m3)
+    # Convert mixing ratio (kg/kg) into cloud water content in (g/m3)
+
     clwc = constants.mix_ratio_to_water_content( clw, ta, plev )
     ciwc = constants.mix_ratio_to_water_content( cli, ta, plev )
     alt = constants.p_to_alt( p ) # in km
 
-    # convert cloud water content to water path (g/m2)
+    # Convert cloud water content to water path (g/m2)
+    # WP = WC * deltaz
     clwp = constants.wc_to_wp( clwc, alt )
     ciwp = constants.wc_to_wp( ciwc, alt )
+
+    # Set liquid and ice droplet and particle diameters
 
     r_liq = np.zeros((p.shape[0], lat.shape[0]))
     r_ice = np.zeros((p.shape[0], lat.shape[0]))
@@ -435,7 +440,9 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
 
 
     #-------------------------- diagnostic plots --------------------------#
-    # check for anologies in the model input data - save as a pdf
+
+    # Check for anomolies in the model input data - save as a pdf
+
     if plot_diagnostic_data == True:
 
         fig, axs = plt.subplots(4, 2, figsize=(11, 16))
@@ -469,27 +476,43 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
         f = axs[2, 1].contourf(xx, yy, ciwp, 5, cmap='coolwarm', alpha=0.4)
         plt.colorbar(f, ax=axs[2, 1], label='Cloud Ice Water Path $gm^{-2}$')
 
-        axs[3, 0].plot( lat, rsds, label='SW Down', color = 'black', linestyle='-')
-        axs[3, 0].plot( lat, rsdscs, label='SW Down - Clear Sky', color = 'black', linestyle='--' )
-        axs[3, 0].plot( lat, rsus, label='SW Up', color = 'blue', linestyle='-')
-        axs[3, 0].plot( lat, rsuscs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
-        axs[3, 0].plot( lat, rlus, label='LW Up', color = 'green', linestyle='-')
-        axs[3, 0].plot( lat, rlds, label='LW Down', color = 'red', linestyle='-' )
-        axs[3, 0].plot( lat, rldscs, label='LW Down - Clear Sky', color = 'red', linestyle='--' )
+        axs[3, 0].plot( lat, ( rsdt - rsut ), label='SW Net', color = 'black', linestyle='-')
+        axs[3, 0].plot( lat, ( rsutcs - rsut ), label='SW - Clouds', color = 'blue', linestyle='-' )
+        axs[3, 0].plot( lat, ( rsdt - rsutcs ), label='SW - Clear Sky', color = 'black', linestyle=':')
         axs[3, 0].set_ylabel('Radiation $Wm^{-2}$')
         axs[3, 0].set_xlabel('Latitude')
-        axs[3, 0].set_title ('Surface Flux')
+        axs[3, 0].set_title ('Model Output - Absorbed Shortwave Flux (ASR)')
         axs[3, 0].legend(loc='best', prop=fontP);
 
-        axs[3, 1].plot( lat, rsdt, label='SW Down', color = 'black', linestyle='-')
-        axs[3, 1].plot( lat, rsut, label='SW Up', color = 'blue', linestyle='-')
-        axs[3, 1].plot( lat, rsutcs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
-        axs[3, 1].plot( lat, rlut, label='LW Up', color = 'red', linestyle='-')
-        axs[3, 1].plot( lat, rlutcs, label='LW Up - Clear Sky', color = 'red', linestyle='--' )
+        axs[3, 1].plot( lat, rlut, label='LW Net', color = 'black', linestyle='-')
+        axs[3, 1].plot( lat, ( rlut - rlutcs ), label='LW - Clouds', color = 'blue', linestyle='-')
+        axs[3, 1].plot( lat, rlutcs, label='LW - Clear Sky', color = 'black', linestyle=':' )
         axs[3, 1].set_ylabel('Radiation $Wm^{-2}$')
         axs[3, 1].set_xlabel('Latitude')
-        axs[3, 1].set_title ('TOA Flux')
+        axs[3, 1].set_title ('Model Output - Outgoing Longwave Flux (OLR)')
         axs[3, 1].legend(loc='best', prop=fontP);
+
+        # axs[3, 0].plot( lat, rsds, label='SW Down', color = 'black', linestyle='-')
+        # axs[3, 0].plot( lat, rsdscs, label='SW Down - Clear Sky', color = 'black', linestyle='--' )
+        # axs[3, 0].plot( lat, rsus, label='SW Up', color = 'blue', linestyle='-')
+        # axs[3, 0].plot( lat, rsuscs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
+        # axs[3, 0].plot( lat, rlus, label='LW Up', color = 'green', linestyle='-')
+        # axs[3, 0].plot( lat, rlds, label='LW Down', color = 'red', linestyle='-' )
+        # axs[3, 0].plot( lat, rldscs, label='LW Down - Clear Sky', color = 'red', linestyle='--' )
+        # axs[3, 0].set_ylabel('Radiation $Wm^{-2}$')
+        # axs[3, 0].set_xlabel('Latitude')
+        # axs[3, 0].set_title ('Model Output - Absorbed Shortwave Flux (ASR)')
+        # axs[3, 0].legend(loc='best', prop=fontP);
+
+        # axs[3, 1].plot( lat, rsdt, label='SW Down', color = 'black', linestyle='-')
+        # axs[3, 1].plot( lat, rsut, label='SW Up', color = 'blue', linestyle='-')
+        # axs[3, 1].plot( lat, rsutcs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
+        # axs[3, 1].plot( lat, rlut, label='LW Up', color = 'red', linestyle='-')
+        # axs[3, 1].plot( lat, rlutcs, label='LW Up - Clear Sky', color = 'red', linestyle='--' )
+        # axs[3, 1].set_ylabel('Radiation $Wm^{-2}$')
+        # axs[3, 1].set_xlabel('Latitude')
+        # axs[3, 1].set_title ('Model Output - Outgoing Longwave Flux (OLR)')
+        # axs[3, 1].legend(loc='best', prop=fontP);
 
         plt.savefig( location + '/Images/RRTGM/diagnostics/' + "diagnostics_" + label + ".pdf", format="pdf")
 
@@ -498,7 +521,7 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
 
     sfc, atm = climlab.domain.zonal_mean_column(lat=lat, lev=p)
 
-    # surface variables
+    # Surface variables
     insolation_field = climlab.domain.Field(rsdt, domain=sfc)
     albedo_surface_field = climlab.domain.Field(albedo_surface, domain=sfc)  
     albedo_surface_cs_field = climlab.domain.Field(albedo_surface_cs, domain=sfc)  
@@ -506,19 +529,25 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
     albedo_toa_cs_field = climlab.domain.Field(albedo_toa_cs, domain=sfc)  
     ts_field = climlab.domain.Field(ts, domain=sfc)
 
-    # atmosphere layer variables
+    # Atmosphere layer variables
     ta_field = climlab.domain.Field(np.transpose(ta), domain=atm)
     specific_humidity_field = climlab.domain.Field(np.transpose(hus), domain=atm) # kg/kg
-    cldfrac_field = climlab.domain.Field(np.transpose(cl), domain=atm) # fraction 0. ...
-    clw_field = climlab.domain.Field(np.transpose(clwc), domain=atm) # needs to be g/m3
-    ciw_field = climlab.domain.Field(np.transpose(ciwc), domain=atm) # needs to be g/m3
-    clwp_field = climlab.domain.Field(np.transpose(clwp), domain=atm) # needs to be g/m2
-    ciwp_field = climlab.domain.Field(np.transpose(ciwp), domain=atm) # needs to be g/m2
-    o3_field = climlab.domain.Field(np.transpose(o3), domain=atm)
+    cldfrac_field = climlab.domain.Field(np.transpose(cl), domain=atm) # fraction
+    o3_field = climlab.domain.Field(np.transpose(o3*1000), domain=atm)
     r_liq_field = climlab.domain.Field(np.transpose(r_liq), domain=atm) # Cloud water drop effective radius (microns)
     r_ice_field = climlab.domain.Field(np.transpose(r_ice), domain=atm) # Cloud ice particle effective size (microns)        
 
-    # dictionary of volumetric mixing ratios. Default values supplied if None
+    clw_field = climlab.domain.Field(np.transpose(clw), domain=atm) # mixing ratio kg/kg
+    ciw_field = climlab.domain.Field(np.transpose(cli), domain=atm) # mixing ratio kg/kg
+
+    clwc_field = climlab.domain.Field(np.transpose(clwc), domain=atm) # content g/m3
+    ciwc_field = climlab.domain.Field(np.transpose(ciwc), domain=atm) # content g/m3
+
+    clwp_field = climlab.domain.Field(np.transpose(clwp), domain=atm) # water path g/m2
+    ciwp_field = climlab.domain.Field(np.transpose(ciwp), domain=atm) # water path g/m2
+
+
+    # Dictionary of volumetric mixing ratios. Default values supplied if None
     # if absorber_vmr = None then ozone will be interpolated to the model grid from a climatology file, or set to zero if ozone_file = None.
     if use_aerosol_files == True:
         absorber = {'O3': o3_field, 'CO2': 400.e-6, 'CH4':ch4, 'N2O':n2o, 'O2': o2,'CCL4':ccl4, 
@@ -537,192 +566,169 @@ def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol
 
     #-------------------------- Execute Control Data --------------------------#
 
-    control_rad = climlab.radiation.RRTMG(name='Radiation', 
-                                    state=state, 
-                                    specific_humidity=specific_humidity_field, 
-                                    absorber_vmr=absorber,
-                                    albedo=albedo_surface_field, 
-                                    insolation = insolation_field, 
-                                    cldfrac=cldfrac_field, 
-                                    r_liq=r_liq_field, 
-                                    r_ice=r_ice_field, 
-                                    clwp=clw_field, 
-                                    ciwp=ciw_field
-                                    )
+    sw_down = np.zeros_like(ta_field)
+    sw_down_clr = np.zeros_like(ta_field)
+    sw_up = np.zeros_like(ta_field)
+    sw_up_clr = np.zeros_like(ta_field)
+    sw_net = np.zeros_like(ta_field)
 
-    control_rad.compute()
+    lw_down = np.zeros_like(ta_field)
+    lw_down_clr = np.zeros_like(ta_field)
+    lw_up_clr = np.zeros_like(ta_field)
+    lw_up = np.zeros_like(ta_field)
+    lw_net = np.zeros_like(ta_field)
 
-    sw_down = control_rad.SW_flux_down
-    sw_down[sw_down>1000]=np.nan
-    sw_down[sw_down<-1000]=np.nan
+    net_ASR = np.zeros_like(ts_field)
+    net_ASRcld = np.zeros_like(ts_field)
+    net_ASRclr = np.zeros_like(ts_field)  
 
-    sw_down_clr = control_rad.SW_flux_down_clr
-    sw_down_clr[sw_down_clr>500]=np.nan
-    sw_down_clr[sw_down_clr<-1000]=np.nan
+    net_OLR = np.zeros_like(ts_field)
+    net_OLRcld = np.zeros_like(ts_field)
+    net_OLRclr = np.zeros_like(ts_field)  
 
-    sw_net = control_rad.SW_flux_net
-    sw_net[sw_net>500]=np.nan
-    sw_net[sw_net<-1000]=np.nan
+    for i in range(lat.size):
+        control_rad = climlab.radiation.RRTMG(name='Radiation', 
+                                        state=state, 
+                                        specific_humidity=specific_humidity_field, 
+                                        absorber_vmr=absorber,
+                                        # albedo=albedo_surface_field, 
+                                        # insolation = insolation_field, 
+                                        cldfrac=cldfrac_field, 
+                                        r_liq=r_liq_field, 
+                                        r_ice=r_ice_field, 
+                                        clwp=clwp_field, 
+                                        ciwp=ciwp_field
+                                        )
 
-    sw_up = control_rad.SW_flux_up
-    sw_up[sw_up>500]=np.nan
-    sw_up[sw_up<-1000]=np.nan
+        control_rad.compute_diagnostics()
 
-    sw_up_clr = control_rad.SW_flux_up_clr
-    sw_up_clr[sw_up_clr>500]=np.nan
-    sw_up_clr[sw_up_clr<-500]=np.nan
+        # sw_down[i] = control_rad.SW_flux_down
+        # sw_down_clr[i] = control_rad.SW_flux_down_clr
+        # sw_up[i] = control_rad.SW_flux_up
+        # sw_up_clr[i] = control_rad.SW_flux_up_clr
+        # sw_net[i] = control_rad.SW_flux_net
 
+        # lw_down[i] = control_rad.LW_flux_down
+        # lw_down_clr[i] = control_rad.LW_flux_down_clr
+        # lw_up_clr[i] = control_rad.LW_flux_up_clr
+        # lw_up[i] = control_rad.LW_flux_up
+        # lw_net[i] = control_rad.LW_flux_net
 
-    lw_down = control_rad.LW_flux_down
-    lw_down_clr = control_rad.LW_flux_down_clr
-    lw_up_clr = control_rad.LW_flux_up_clr
-    lw_up = control_rad.LW_flux_up
-    lw_net = control_rad.LW_flux_net
+        net_ASR[i] = control_rad.ASR
+        net_ASRcld[i] = control_rad.ASRcld
+        net_ASRclr[i] = control_rad.ASRclr   
 
+        net_OLR[i] = control_rad.OLR
+        net_OLRcld[i] = control_rad.OLRcld
+        net_OLRclr[i] = control_rad.OLRclr   
 
-    net_ASR = control_rad.ASR
-    net_ASRcld = control_rad.ASRcld
-    net_ASRclr = control_rad.ASRclr   
-
-    net_OLR = control_rad.OLR
-    net_OLRcld = control_rad.OLRcld
-    net_OLRclr = control_rad.OLRclr   
-
-
-    # print(control_rad)
 
     #-------------------------- Plots --------------------------#
     if save_outputs == True:
-        #--- Absorbed Solar Radiation ---#
-        fig, ax = plt.subplots()
-        ax.plot( lat, net_ASR, label='Net ASR', color = 'black', linestyle='-')
-        ax.plot( lat, net_ASRcld, label='ASR With Clouds', color = 'blue', linestyle='--' )
-        ax.plot( lat, net_ASRclr, label='ASR Clear Sky', color = 'black', linestyle=':' )
-        ax.set_ylabel('Radiation $Wm^{-2}$')
-        ax.set_xlabel('Latitude')
-        ax.set_title ('Absorbed Solar Radiation - ' + model)
-        ax.legend(loc='upper right');
-        plt.savefig( location + '/Images/RRTGM/' + "asr_" + label + ".svg", format="svg", bbox_inches='tight', dpi=400)
-        if show_plots == True:
-            plt.show()
 
-        #--- Outgoing Longwave Radiation ---#
-        fig, ax = plt.subplots()
-        ax.plot( lat, net_OLR, label='Net OLR', color = 'black', linestyle='-')
-        ax.plot( lat, net_OLRcld, label='OLR With Clouds', color = 'blue', linestyle='--' )
-        ax.plot( lat, net_OLRclr, label='OLR Clear Sky', color = 'black', linestyle=':' )
-        ax.set_ylabel('Radiation $Wm^{-2}$')
-        ax.set_xlabel('Latitude')
-        ax.set_title ('Outgoing Longwave Radiation - ' + model)
-        ax.legend(loc='upper right');
-        plt.savefig( location + '/Images/RRTGM/' + "olr_" + label + ".svg", format="svg", bbox_inches='tight', dpi=400)
-        if show_plots == True:
-            plt.show()
+        # SW plots
+        fig, axs = plt.subplots(3, 2, figsize=(11, 11))
+        fig.suptitle('SW Flux - ' + model)
+    
+        axs[0, 0].set_title('SW Down - Clear Sky')
+        axs[0, 0].set_ylabel('Altitude (km)')
+        f = axs[0, 0].contourf(lat, alt[:15], np.transpose(sw_down_clr[:,1:16]), 5, cmap='Greens', alpha=0.4)
+        plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
 
-        # #--- SW Flux Data ---#
-        # fig, axs = plt.subplots(2, 2, figsize=(15, 7))
-        # fig.suptitle('SW Flux - ' + model)
-        # xx, yy = np.meshgrid(lat, alt[:15])
-        # axs[0, 0].set_title('SW Down - Clear Sky')
-        # axs[0, 0].set_ylabel('Altitude (km)')
-        # f = axs[0, 0].contourf(xx, yy, np.transpose(sw_down_clr[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        # plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
+        axs[0, 1].set_title('SW Down - Clouds')
+        f = axs[0, 1].contourf(lat, alt[:15], np.transpose(sw_down[:,1:16]), 5, cmap='Greens', alpha=0.4)
+        plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
 
-        # axs[1, 0].set_title('SW Down - Clouds')
-        # axs[1, 0].set_xlabel('Latitude')
-        # axs[1, 0].set_ylabel('Altitude (km)')
-        # f = axs[1, 0].contourf(xx, yy, np.transpose(sw_down[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        # plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
-
-        # axs[0, 1].set_title('SW Up - Clear Sky')
-        # f = axs[0, 1].contourf(xx, yy, np.transpose(sw_up_clr[:,1:16]), 5, cmap='Reds', alpha=0.4)
-        # plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
+        axs[1, 0].set_title('SW Up - Clear Sky')
+        axs[1, 0].set_ylabel('Altitude (km)')
+        f = axs[1, 0].contourf(lat, alt[:15], np.transpose(sw_up_clr[:,1:16]), 5, cmap='Reds', alpha=0.4)
+        plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
         
-        # xx, yy = np.meshgrid(lat, alt[:20])
-        # axs[1, 1].set_title('SW Up - Clouds')
-        # axs[1, 1].set_xlabel('Latitude')
-        # f = axs[1, 1].contourf(xx, yy, np.transpose(sw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
-        # plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
-        # plt.savefig( location + '/Images/RRTGM/' + "sw_flux_" + label + ".svg", format="svg", dpi=400)
-        # if show_plots == True:
-        #     plt.show()
-            
-        # #--- LW Flux Data ---#
-        # fig, axs = plt.subplots(2, 2, figsize=(15, 7))
-        # fig.suptitle('LW Flux - ' + model)
-        # xx, yy = np.meshgrid(lat, alt[:15])
-        # axs[0, 0].set_title('LW Down - Clear Sky')
-        # axs[0, 0].set_ylabel('Altitude (km)')
-        # f = axs[0, 0].contourf(xx, yy, np.transpose(lw_down_clr[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        # plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
+        axs[1, 1].set_title('SW Up - Clouds')
+        f = axs[1, 1].contourf(lat, alt[:20], np.transpose(sw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
+        plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
 
-        # axs[1, 0].set_title('LW Down - Clouds')
-        # axs[1, 0].set_xlabel('Latitude')
-        # axs[1, 0].set_ylabel('Altitude (km)')
-        # f = axs[1, 0].contourf(xx, yy, np.transpose(lw_down[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        # plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
-
-        # axs[0, 1].set_title('LW Up - Clear Sky')
-        # f = axs[0, 1].contourf(xx, yy, np.transpose(lw_up_clr[:,1:16]), 5, cmap='Reds', alpha=0.4)
-        # plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
+        axs[2, 0].set_title('SW Net Flux $Wm^{-2}$ - ' + model)
+        axs[2, 0].set_ylabel('Altitude (km)')
+        axs[2, 0].set_xlabel('Latitude')
+        f = axs[2, 0].contourf( lat, alt[:20], np.transpose(sw_net[:,1:21]), 5, cmap='Blues' )
+        plt.colorbar(f, ax=axs[2, 0], label='SW Net Flux $Wm^{-2}$')
         
-        # xx, yy = np.meshgrid(lat, alt[:20])
-        # axs[1, 1].set_title('LW Up - Clouds')
-        # axs[1, 1].set_xlabel('Latitude')
-        # f = axs[1, 1].contourf(xx, yy, np.transpose(lw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
-        # plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
-        # plt.savefig( location + '/Images/RRTGM/' + "lw_flux_" + label + ".svg", format="svg", dpi=400)
-        # if show_plots == True:
-        #     plt.show()
-            
-        # #--- SW - Net ---#
-        # fig, ax = plt.subplots()
-        # cont = ax.contourf( lat, alt[:15], np.transpose(sw_net[:,1:16]), 5, cmap='Blues' )
-        # ax.set_xlabel('Latitude')
-        # ax.set_ylabel('Altitude (km)')
-        # cbar = fig.colorbar(cont, orientation='horizontal', label='$Wm^{-2}$')
-        # ax.set_title('SW Net Flux $Wm^{-2}$ - ' + model)
-        # plt.savefig( location + '/Images/RRTGM/' + "sw_net_" + label + ".svg", format="svg", bbox_inches='tight', dpi=400)
-        # if show_plots == True:
-        #     plt.show()
-            
-        # #--- LW - Net ---#
-        # fig, ax = plt.subplots()
-        # cont = ax.contourf( lat, alt[:15], np.transpose(lw_net[:,1:16]), 5, cmap='Blues' )
-        # ax.set_xlabel('Latitude')
-        # ax.set_ylabel('Altitude (km)')
-        # cbar = fig.colorbar(cont, orientation='horizontal', label='$Wm^{-2}$')
-        # ax.set_title('LW Net Flux $Wm^{-2}$ - ' + model)
-        # plt.savefig( location + '/Images/RRTGM/' + "lw_net_" + label + ".svg", format="svg", bbox_inches='tight', dpi=400)
-        # if show_plots == True:
-        #     plt.show()
+        axs[2, 1].plot( lat, net_ASR, label='Net ASR', color = 'black', linestyle='-')
+        axs[2, 1].plot( lat, net_ASRcld, label='ASR With Clouds', color = 'blue', linestyle='-' )
+        axs[2, 1].plot( lat, net_ASRclr, label='ASR Clear Sky', color = 'black', linestyle=':' )
+        axs[2, 1].set_ylabel('Radiation $Wm^{-2}$')
+        axs[2, 1].set_xlabel('Latitude')
+        axs[2, 1].set_title('Absorbed Solar Radiation - ' + model)
+        axs[2, 1].legend(loc='best', prop=fontP);
 
-        # # print(constants.globalalt_latMeanVal(np.transpose(np.array(sw_net)), lat))
+        plt.savefig( location + '/Images/RRTGM/' + "sw_output_" + label + ".pdf", format="pdf")
 
-        # # store global means in excel file
-        # start_row = int(label) + 2
-        # sheet.cell(row=start_row, column=1).value = label
-        # sheet.cell(row=start_row, column=2).value = model
-        # sheet.cell(row=start_row, column=3).value = liquid_r
-        # sheet.cell(row=start_row, column=4).value = ice_r
-        # sheet.cell(row=start_row, column=5).value = use_aerosol_files
-        # sheet.cell(row=start_row, column=6).value = constants.globalMean(np.array(net_ASR)[:,0], lat)
-        # sheet.cell(row=start_row, column=7).value = constants.globalMean(np.array(net_OLR)[:,0], lat)
-        # sheet.cell(row=start_row, column=8).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_net)), lat)
-        # sheet.cell(row=start_row, column=9).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_net)), lat)
-        # sheet.cell(row=start_row, column=10).value = constants.globalMean(np.array(net_ASRclr)[:,0], lat)
-        # sheet.cell(row=start_row, column=11).value = constants.globalMean(np.array(net_ASRcld)[:,0], lat)
-        # sheet.cell(row=start_row, column=12).value = constants.globalMean(np.array(net_OLRclr)[:,0], lat)
-        # sheet.cell(row=start_row, column=13).value = constants.globalMean(np.array(net_OLRcld)[:,0], lat)
-        # sheet.cell(row=start_row, column=14).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down_clr)), lat)
-        # sheet.cell(row=start_row, column=15).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down)), lat)
-        # sheet.cell(row=start_row, column=16).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up_clr)), lat)
-        # sheet.cell(row=start_row, column=17).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up)), lat)
-        # sheet.cell(row=start_row, column=18).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down_clr)), lat)
-        # sheet.cell(row=start_row, column=19).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down)), lat)
-        # sheet.cell(row=start_row, column=20).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up_clr)), lat)
-        # sheet.cell(row=start_row, column=21).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up)), lat)
+
+
+        # LW plots
+        fig, axs = plt.subplots(3, 2, figsize=(11, 11))
+        fig.suptitle('LW Flux - ' + model)
+    
+        axs[0, 0].set_title('LW Down - Clear Sky')
+        axs[0, 0].set_ylabel('Altitude (km)')
+        f = axs[0, 0].contourf(lat, alt[:20], np.transpose(lw_down_clr[:,1:21]), 5, cmap='Greens', alpha=0.4)
+        plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
+
+        axs[0, 1].set_title('LW Down - Clouds')
+        f = axs[0, 1].contourf(lat, alt[:20], np.transpose(lw_down[:,1:21]), 5, cmap='Greens', alpha=0.4)
+        plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
+
+        axs[1, 0].set_title('LW Up - Clear Sky')
+        axs[1, 0].set_ylabel('Altitude (km)')
+        f = axs[1, 0].contourf(lat, alt[:20], np.transpose(lw_up_clr[:,1:21]), 5, cmap='Reds', alpha=0.4)
+        plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
+        
+        axs[1, 1].set_title('LW Up - Clouds')
+        f = axs[1, 1].contourf(lat, alt[:20], np.transpose(lw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
+        plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
+
+        axs[2, 0].set_title('LW Net Flux $Wm^{-2}$ - ' + model)
+        axs[2, 0].set_ylabel('Altitude (km)')
+        axs[2, 0].set_xlabel('Latitude')
+        f = axs[2, 0].contourf( lat, alt[:20], np.transpose(lw_net[:,1:21]), 5, cmap='Blues' )
+        plt.colorbar(f, ax=axs[2, 0], label='LW Net Flux $Wm^{-2}$')
+        
+        axs[2, 1].plot( lat, net_OLR, label='Net OLR', color = 'black', linestyle='-')
+        axs[2, 1].plot( lat, net_OLRcld, label='OLR With Clouds', color = 'blue', linestyle='-' )
+        axs[2, 1].plot( lat, net_OLRclr, label='OLR Clear Sky', color = 'black', linestyle=':' )
+        axs[2, 1].set_ylabel('Radiation $Wm^{-2}$')
+        axs[2, 1].set_xlabel('Latitude')
+        axs[2, 1].set_title('Outgoing Longwave Radiation - ' + model)
+        axs[2, 1].legend(loc='best', prop=fontP);
+
+        plt.savefig( location + '/Images/RRTGM/' + "lw_output_" + label + ".pdf", format="pdf")
+
+
+        # Store global means in excel file
+        start_row = int(label) + 2
+        sheet.cell(row=start_row, column=1).value = label
+        sheet.cell(row=start_row, column=2).value = model
+        sheet.cell(row=start_row, column=3).value = liquid_r
+        sheet.cell(row=start_row, column=4).value = ice_r
+        sheet.cell(row=start_row, column=5).value = use_aerosol_files
+        sheet.cell(row=start_row, column=6).value = constants.globalMean(np.array(net_ASR)[:,0], lat)
+        sheet.cell(row=start_row, column=7).value = constants.globalMean(np.array(net_OLR)[:,0], lat)
+        sheet.cell(row=start_row, column=8).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_net)), lat)
+        sheet.cell(row=start_row, column=9).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_net)), lat)
+        sheet.cell(row=start_row, column=10).value = constants.globalMean(np.array(net_ASRclr)[:,0], lat)
+        sheet.cell(row=start_row, column=11).value = constants.globalMean(np.array(net_ASRcld)[:,0], lat)
+        sheet.cell(row=start_row, column=12).value = constants.globalMean(np.array(net_OLRclr)[:,0], lat)
+        sheet.cell(row=start_row, column=13).value = constants.globalMean(np.array(net_OLRcld)[:,0], lat)
+        sheet.cell(row=start_row, column=14).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down_clr)), lat)
+        sheet.cell(row=start_row, column=15).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down)), lat)
+        sheet.cell(row=start_row, column=16).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up_clr)), lat)
+        sheet.cell(row=start_row, column=17).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up)), lat)
+        sheet.cell(row=start_row, column=18).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down_clr)), lat)
+        sheet.cell(row=start_row, column=19).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down)), lat)
+        sheet.cell(row=start_row, column=20).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up_clr)), lat)
+        sheet.cell(row=start_row, column=21).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up)), lat)
   
-        # book.save( location + 'climate-analysis/reduced_data/radiation_data.xlsx' )
+        book.save( location + 'climate-analysis/reduced_data/radiation_data.xlsx' )
 
 

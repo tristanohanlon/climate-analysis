@@ -17,12 +17,12 @@ max_lat = 70
 use_aerosol_files = False
 use_surface_albedo = True
 plot_diagnostic_data = False
-save_outputs = False # save output graphs and global mean data to excel
-show_plots = False
+save_outputs = True # save output graphs to a pdf and global mean data to excel
+use_integrator = False
 
 # set ice and liquid droplet radius in microns
 liquid_r = 30 # below 60 microns
-ice_r = 130 # above 15, below 130
+ice_r = 60 # above 15, below 130
 
 # convert specific_humidity to g/kg and check
 
@@ -37,6 +37,6 @@ model_rad.radiation( start,
                     use_surface_albedo, 
                     plot_diagnostic_data,
                     save_outputs,
+                    use_integrator,
                     liquid_r,
-                    ice_r,
-                    show_plots )
+                    ice_r )

@@ -403,7 +403,7 @@ def fit_ta_so_data( data, raw_ta ):
 # Function that converts water mixing ratio (kg/kg) into water content (g/m3) 
 # all data should be (alt, lat). Pressure in hPa.
 def mix_ratio_to_water_content( mix_ratio, temp, pressure ):
-    air_density_alt_lat = ((pressure * 100) / (286.9 * temp))
+    air_density_alt_lat = ((pressure) / (286.9 * temp))
     data = ( mix_ratio * air_density_alt_lat ) * 1000 # in g/m3
     data[ data < 0 ] = None
     return data
@@ -440,13 +440,15 @@ def p_to_alt( p ):
 # Function to convert cloud water content (g/m3) in atmospheric layers to liquid water path (g/m2) at each layer.
 # wc in (alt, lat), alt in km
 def wc_to_wp( wc, alt ):
+    prev_alt = 0
     if np.amax(alt) < 100:
         alt = alt * 1000 # convert km to m
     data = np.empty(np.shape(wc),dtype=float)
-    running_sum = np.zeros( np.shape(wc)[1] ,dtype=float)
+    # running_sum = np.zeros( np.shape(wc) ,dtype=float)
     for i, ( row, altitude ) in enumerate( zip( wc, alt ) ):
-        running_sum += row
-        data[i] = running_sum * altitude
+        # running_sum += row
+        data[i] = row * (altitude - prev_alt)
+        prev_alt = altitude
     return data
 
 
