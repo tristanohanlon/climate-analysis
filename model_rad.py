@@ -16,719 +16,847 @@ import constants
 from scipy import ndimage as nd
 import matplotlib.pyplot as plt
 import climlab
+from climlab.radiation import RRTMG
 from matplotlib import rc
 rc('text', usetex=True)
 from matplotlib.font_manager import FontProperties
 fontP = FontProperties()
 fontP.set_size('small')
 import openpyxl
+import xarray as xr
 
-def radiation(start, end,  location, model, label, min_lat, max_lat, use_aerosol_files, use_surface_albedo, plot_diagnostic_data, save_outputs, use_integrator, liquid_r, ice_r ):
-    book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/radiation_data.xlsx' )
-    sheet = book.active
 
-    os.chdir( location + 'Data/' + model )
 
-    #----------------------------- Aerosols ---------------------------#
+def ensemble_mean( ref_dict ):
+    running_sum = np.zeros_like(next(iter(ref_dict.values())))
+    for items in ref_dict.values():
+        running_sum += items
+    mean = running_sum / len(ref_dict)
+    return mean
 
-    # Get aerosol values from model files or set default values if they are
-    # not present
 
+def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, lat_bnd_2, save_outputs, liquid_r, ice_r ):
+
+
+
+    #  Set aerosol and level constants
     o2=0.21
     ccl4=0.
     cfc22=4.8743326488706363e-11
+    co2 = 400.e-6
 
-    # Mole Fraction of Ozone (time, lev, lat, lon)
+    state = climlab.column_state(num_lev=50)
+    lev = state.Tatm.domain.axes['lev'].points*100
+    alt = np.flipud(constants.p_to_alt( np.flipud(lev) )  * 1000) # in m
+    f = 2 # counter for excel rows
+    if label == '2':
+        f = 10
 
-    variable = 'o3'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        o3 = 0.
-    else:
-        with Dataset( check_file, 'r') as f:
-            o3 = constants.extract_data_over_time( variable, f, start, end )
-            o3[o3 > 1] = np.nan
-            plev_o3 = constants.extract_data( 'plev', f ) # in Pa
+    model_CLglobals = {}
+    model_CLWPglobals = {}
+    model_CIWPglobals = {}
+    model_Tglobals = {}
+    model_TSglobals = {}
+    model_SHglobals = {}
+    model_albedos = {}
 
+    model_O3globals = {}
+    model_ch4globals = {}
+    model_n2oglobals = {}
+    model_cfc11globals = {}
+    model_cfc12globals = {}
+    model_cfc113globals = {}
+    
+    SWcre_CLdeltas = {}
+    LWcre_CLdeltas = {}
 
-    # Global Mean Mole Fraction of CH4 (time)
+    SWcre_LWPdeltas = {}
+    LWcre_LWPdeltas = {}
 
-    variable = 'ch4global'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        ch4 = 1.557889297535934e-6
-    else:
-        with Dataset( check_file, 'r') as f:
-            ch4 = constants.extract_data_over_time( variable, f, start, end )
-            ch4 = np.nanmean( ch4, axis = 0 ) # Average over time
+    SWcre_IWPdeltas = {}
+    LWcre_IWPdeltas = {}
 
+    SWcre_Tdeltas = {}
+    LWcre_Tdeltas = {}
 
-    # Global Mean Mole Fraction of N2O (time)
-
-    variable = 'n2oglobal'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        n2o = 3.007494866529774e-7
-    else:
-        with Dataset( check_file, 'r') as f:
-            n2o = constants.extract_data_over_time( variable, f, start, end )
-            n2o = np.nanmean( n2o, axis = 0 ) # Average over time
-
-
-    # Global Mean Mole Fraction of CFC11 (time)
-
-    variable = 'n2oglobal'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        cfc11 = 1.680e-10
-    else:
-        with Dataset( check_file, 'r') as f:
-            cfc11 = constants.extract_data_over_time( variable, f, start, end )
-            cfc11 = np.nanmean( cfc11, axis = 0 ) # Average over time
+    SWcre_SHdeltas = {}
+    LWcre_SHdeltas = {}
 
 
-    # Global Mean Mole Fraction of CFC12 (time)
+    SWcs_CLdeltas = {}
+    LWcs_CLdeltas = {}
 
-    variable = 'cfc12global'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        cfc12 = 2.850e-10
-    else:
-        with Dataset( check_file, 'r') as f:
-            cfc12 = constants.extract_data_over_time( variable, f, start, end )
-            cfc12 = np.nanmean( cfc12, axis = 0 ) # Average over time
+    SWcs_LWPdeltas = {}
+    LWcs_LWPdeltas = {}
 
+    SWcs_IWPdeltas = {}
+    LWcs_IWPdeltas = {}
 
-    # Global Mean Mole Fraction of CFC113 (time)
+    SWcs_Tdeltas = {}
+    LWcs_Tdeltas = {}
 
-    variable = 'cfc113global'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        cfc113 = 1.737268993839836e-11
-    else:
-        with Dataset( check_file, 'r') as f:
-            cfc113 = constants.extract_data_over_time( variable, f, start, end )
-            cfc113 = np.nanmean( cfc113, axis = 0 ) # Average over time
+    SWcs_SHdeltas = {}
+    LWcs_SHdeltas = {}
 
 
-    # Total Atmospheric Mass (kg) of CO2 
+    SWcre_lr15deltas = {}
+    LWcre_lr15deltas = {}
 
-    variable = 'co2mass'
-    check_file = constants.variable_to_filename( variable )
-    if check_file == None:
-        co2mass = 400.e-6
-    else:
-        with Dataset( check_file, 'r') as f:
-            co2mass = constants.extract_data_over_time( variable, f, start, end )
-            co2mass = np.nanmean( co2mass, axis = 0 ) # Average over time
+    SWcre_lr45deltas = {}
+    LWcre_lr45deltas = {}
 
+    SWcre_lr60deltas = {}
+    LWcre_lr60deltas = {}
+
+    SWcre_ir30deltas = {}
+    LWcre_ir30deltas = {}
+
+    SWcre_ir80deltas = {}
+    LWcre_ir80deltas = {}
+
+    SWcre_ir130deltas = {}
+    LWcre_ir130deltas = {}
+
+
+
+    colors = ["crimson", "purple", "limegreen", "gold", "blue", "magenta"]
+
+    #  Get global mean valriables for all models and interpolate to common levels
+    for name, model in models.items():
+        os.chdir( location + 'Data/' + model )
+
+        if 'IPSL' in name or 'MRI' in name or 'MIROC' in name:
+            start = start_dt
+            end = end_dt
 
     #----------------------------- Cloud variables -----------------------------#
 
-    # Get layer cloud fraction and pressure level variables - (time, level, lat, lon)
+        #  Take global, annual average
 
-    with Dataset( constants.variable_to_filename( 'cl' ), 'r') as f:
-        lat = constants.extract_data( 'lat', f )
-        # Define latitude confinement parsed from function
-        lat_confine_1 = np.abs(lat - (min_lat)).argmin()
-        lat_confine_2 = np.abs(lat - (max_lat)).argmin()
-        lat = lat[lat_confine_1:lat_confine_2]
+        with xr.open_dataset(constants.variable_to_filename( 'cl' ), decode_times=True) as cl_full:
+            cl = cl_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+        weight = np.cos(np.deg2rad(cl.lat)) / np.cos(np.deg2rad(cl.lat)).mean(dim='lat')
+        CLglobal = (cl.cl * weight).mean(dim=('lat','lon','time')) / 100
 
-        lon = constants.extract_data( 'lon', f )
-        cl = constants.extract_data_over_time( 'cl', f, start, end ) / 100
         if 'CM4' in model or 'IPSL' in model:
-            a = constants.extract_data( 'ap', f )
-            b = constants.extract_data( 'b', f )
+            a = cl.ap
+            b = cl.b
         else:
-            a = constants.extract_data( 'a', f )
-            b = constants.extract_data( 'b', f )
-            p0 = np.array(f.variables['p0'][:])
-            a = a*p0
-        cl = cl[:,:,lat_confine_1:lat_confine_2,:]
+            ap = cl.a
+            b = cl.b
+            p0 = cl.p0
+            a = ap*p0
+
+        with xr.open_dataset(constants.variable_to_filename( 'ps' ), decode_times=True) as ps_full:
+            ps = ps_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            ps = ps.ps
+
+        p = a + b*ps
+        plev = (p * weight).mean(dim=('lat','lon','time'))
+        if 'IPSL' in model:
+            plev = plev[:-1]
 
 
-    # Get surface pressure - (time, lat, lon)
+        with xr.open_dataset(constants.variable_to_filename( 'clw' ), decode_times=True) as clw_full:
+            clw = clw_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            CLWglobal = (clw.clw * weight).mean(dim=('lat','lon','time'))
 
-    with Dataset( constants.variable_to_filename( 'ps' ), 'r') as f:
-        ps = constants.extract_data_over_time( 'ps', f, start, end )
-        ps = np.nanmean( ps, axis = 0 ) # average over time
+        with xr.open_dataset(constants.variable_to_filename( 'cli' ), decode_times=True) as cli_full:
+            cli = cli_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            CLIglobal = (cli.cli * weight).mean(dim=('lat','lon','time'))
 
+        with xr.open_dataset(constants.variable_to_filename( 'ta' ), decode_times=True) as ta_full:
+            ta = ta_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            Tglobal = (ta.ta * weight).mean(dim=('lat','lon','time'))
 
-    # Get surface temperature - (time, lat, lon)
+        with xr.open_dataset(constants.variable_to_filename( 'hus' ), decode_times=True) as hus_full:
+            hus = hus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            SHglobal = (hus.hus * weight).mean(dim=('lat','lon','time'))  # kg/kg
 
-    with Dataset( constants.variable_to_filename( 'ts' ), 'r') as f:
-        ts = constants.extract_data_over_time( 'ts', f, start, end )
-        ts = ts[:,lat_confine_1:lat_confine_2,:]
-
-
-    # Get specific humidity - (time, lev, lat, lon)
-
-    with Dataset( constants.variable_to_filename( 'hus' ), 'r') as f:
-        hus = constants.extract_data_over_time( 'hus', f, start, end )
-        hus[hus > 1] = np.nan
-        plev_h = constants.extract_data( 'plev', f ) # in Pa
-        hus = hus[:,:,lat_confine_1:lat_confine_2,:]
-
-
-    # Convert pressure level variables to pressure
-
-    a = np.swapaxes(np.swapaxes(np.tile(a, (np.shape(ps)[0], np.shape(ps)[1], 1) ), 0, 2), 1, 2)
-    b = np.swapaxes(np.swapaxes(np.tile(b, (np.shape(ps)[0], np.shape(ps)[1], 1) ), 0, 2), 1, 2)
-    ps = np.tile(ps, (np.shape(b)[0], 1, 1) )
-    p = (a + b*ps) # in Pa
-    p = p[:,lat_confine_1:lat_confine_2,:]
-
-
-    # Get Cloud liquid water mass fraction in air (kg/kg) - (time, level, lat, lon)
-
-    with Dataset( constants.variable_to_filename( 'clw' ), 'r') as f:
-        clw = constants.extract_data_over_time( 'clw', f, start, end )
-        clw = clw[:,:,lat_confine_1:lat_confine_2,:]
-
-
-    # Get Cloud ice water mass fraction in air (kg/kg) - (time, level, lat, lon)
-
-    with Dataset( constants.variable_to_filename( 'cli' ), 'r') as f:
-        cli = constants.extract_data_over_time( 'cli', f, start, end )
-        cli = cli[:,:,lat_confine_1:lat_confine_2,:]
-
-
-    # Get temperature in atmosphere levels (time, level, lat, lon)
-
-    with Dataset( constants.variable_to_filename( 'ta' ), 'r' ) as f:
-        ta = constants.extract_data_over_time( 'ta', f, start, end )
-        ta[ta > 500] = np.nan
-        plev_t = constants.extract_data( 'plev', f ) # in Pa
-        ta = ta[:,:,lat_confine_1:lat_confine_2,:]
-
-    # Confine O3 data to set latitudes
-
-        o3 = o3[:,:,lat_confine_1:lat_confine_2,:]
+        with xr.open_dataset(constants.variable_to_filename( 'ts' ), decode_times=True) as ts_full:
+            ts = ts_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            TSglobal = (ts.ts * weight).mean(dim=('lat','lon','time'))  # kg/kg
 
 
 
-    #-------------------------- Get top of atmosphere radiative flux data ------------------------#
+                #----------------------------- Aerosols ---------------------------#
 
-    # Incoming SW at TOA
+        #  Get aerosol values from model files or set default values if they are
+        #  not present.
+        #  Convert mol/mol to ppm by dividing by 1E-6
+        #  Convery CO2 mass to ppm by dividing by atmosphere mass 4.99E18
+    
+        #  Mole Fraction of Ozone (time, lev, lat, lon)
 
-    with Dataset( constants.variable_to_filename( 'rsdt' ), 'r') as f:
-        rsdt = constants.extract_data('rsdt', f )
-        rsdt = rsdt[:,lat_confine_1:lat_confine_2,:]
+        check_file = constants.variable_to_filename( 'o3' )
+        if check_file == None:
+            # use current global mean
+            O3global = ensemble_mean(model_O3globals)
 
-
-    # Outgoing SW at TOA
-
-    with Dataset( constants.variable_to_filename( 'rsut' ), 'r') as f:
-        rsut = constants.extract_data('rsut', f )
-        rsut = rsut[:,lat_confine_1:lat_confine_2,:]
-
-
-    # Outgoing SW at TOA assuming clear sky
-
-    with Dataset( constants.variable_to_filename( 'rsutcs' ), 'r') as f:
-        rsutcs = constants.extract_data('rsutcs', f )
-        rsutcs = rsutcs[:,lat_confine_1:lat_confine_2,:]
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'o3'), decode_times=True) as o3_full:
+                o3 = o3_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+                O3global = (o3.o3 * weight).mean(dim=('lat','lon','time'))  # kg/kg
 
 
-    # Outgoing LW at TOA
+        #  Global Mean Mole Fraction of CH4 (time)
 
-    with Dataset( constants.variable_to_filename( 'rlut' ), 'r') as f:
-        rlut = constants.extract_data('rlut', f )
-        rlut = rlut[:,lat_confine_1:lat_confine_2,:]
-
-
-    # Outgoing LW at TOA assuming clear sky
-
-    with Dataset( constants.variable_to_filename( 'rlutcs' ), 'r') as f:
-        rlutcs = constants.extract_data('rlutcs', f )
-        rlutcs = rlutcs[:,lat_confine_1:lat_confine_2,:]
+        check_file = constants.variable_to_filename( 'ch4global' )
+        if check_file == None:
+            ch4 = 1.557889297535934e-6
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'ch4global' ), decode_times=True) as ch4_full:
+                ch4 = ch4_full.sel(time=slice(start,end))
+                ch4 = (ch4.ch4global).mean(dim=('time'))
+                ch4 = ch4.values / 1e9
 
 
-    # Net TOA flux
+        #  Global Mean Mole Fraction of N2O (time)
 
-    with Dataset( constants.variable_to_filename( 'rtmt' ), 'r') as f:
-        rtmt = constants.extract_data('rtmt', f )
-        rtmt = rtmt[:,lat_confine_1:lat_confine_2,:]
+        check_file = constants.variable_to_filename( 'n2oglobal' )
+        if check_file == None:
+            n2o = 3.007494866529774e-7
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'n2oglobal' ), decode_times=True) as n2o_full:
+                n2o = n2o_full.sel(time=slice(start,end))
+                n2o = (n2o.n2oglobal).mean(dim=('time'))
+                n2o = n2o.values / 1e9
+
+
+        #  Global Mean Mole Fraction of CFC11 (time)
+
+        check_file = constants.variable_to_filename( 'cfc11global' )
+        if check_file == None:
+            cfc11 = 1.680e-10
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'cfc11global' ), decode_times=True) as cfc11_full:
+                cfc11 = cfc11_full.sel(time=slice(start,end))
+                cfc11 = (cfc11.cfc11global).mean(dim=('time'))
+                cfc11 = cfc11.values / 1e12
+
+
+        #  Global Mean Mole Fraction of CFC12 (time)
+
+        check_file = constants.variable_to_filename( 'cfc12global' )
+        if check_file == None:
+            cfc12 = 2.850e-10
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'cfc12global' ), decode_times=True) as cfc12_full:
+                cfc12 = cfc12_full.sel(time=slice(start,end))
+                cfc12 = (cfc12.cfc12global).mean(dim=('time'))
+                cfc12 = cfc12.values / 1e12
+
+
+        #  Global Mean Mole Fraction of CFC113 (time)
+
+        check_file = constants.variable_to_filename( 'cfc113global' )
+        if check_file == None:
+            cfc113 = 1.737268993839836e-11
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'cfc113global' ), decode_times=True) as cfc113_full:
+                cfc113 = cfc113_full.sel(time=slice(start,end))
+                cfc113 = (cfc113.cfc113global).mean(dim=('time'))
+                cfc113 = cfc113.values / 1e12
+
+
+
+
+        #  interpolate to model pressure levels
+        #  Need to 'flipud' because the interpolation routine 
+        #  needs the pressure data to be in increasing order
+        #  Create a state dictionary with corresponsing number of cl data levels
+
+        if 'CAM6' in model:
+            Tinterp = np.interp(lev, np.flipud(Tglobal.plev[:18]), np.flipud(Tglobal[:18]))
+            SHinterp = np.interp(lev, np.flipud(SHglobal.plev[:18]), np.flipud(SHglobal[:18]))
+            O3interp = np.interp(lev, np.flipud(O3global.plev[:18]), np.flipud(O3global[:18]))
+            CLinterp = np.interp(lev, (plev), (CLglobal))
+            CLWinterp = np.interp(lev, (plev), (CLWglobal))
+            CLIinterp = np.interp(lev, (plev), (CLIglobal))
+
+        elif 'MRI' in model or 'MIROC' in model:
+            Tinterp = np.interp(lev, np.flipud(Tglobal.plev[:18]), np.flipud(Tglobal[:18]))
+            SHinterp = np.interp(lev, np.flipud(SHglobal.plev[:18]), np.flipud(SHglobal[:18]))
+            O3interp = O3global
+            CLinterp = np.interp(lev, np.flipud(plev), np.flipud(CLglobal))
+            CLWinterp = np.interp(lev, np.flipud(plev), np.flipud(CLWglobal))
+            CLIinterp = np.interp(lev, np.flipud(plev), np.flipud(CLIglobal))
+
+        else:
+
+            Tinterp = np.interp(lev, np.flipud(Tglobal.plev[:18]), np.flipud(Tglobal[:18]))
+            SHinterp = np.interp(lev, np.flipud(SHglobal.plev[:18]), np.flipud(SHglobal[:18]))
+            O3interp = np.interp(lev, np.flipud(O3global.plev[:18]), np.flipud(O3global[:18]))
+            CLinterp = np.interp(lev, np.flipud(plev), np.flipud(CLglobal))
+            CLWinterp = np.interp(lev, np.flipud(plev), np.flipud(CLWglobal))
+            CLIinterp = np.interp(lev, np.flipud(plev), np.flipud(CLIglobal))
+
+
+    #-------------------------- Get top of atmosphere radiative flux data from model for comparison ------------------------#
+
+        #  Incoming SW at TOA
+        with xr.open_dataset(constants.variable_to_filename( 'rsdt'), decode_times=True) as rsdt_full:
+            rsdt = rsdt_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsdt = (rsdt.rsdt * weight).mean(dim=('lat','lon','time'))
+
+
+        #  Outgoing SW at TOA
+        with xr.open_dataset(constants.variable_to_filename( 'rsut'), decode_times=True) as rsut_full:
+            rsut = rsut_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsut = (rsut.rsut * weight).mean(dim=('lat','lon','time'))
+
+
+        #  Outgoing SW at TOA assuming clear sky
+        with xr.open_dataset(constants.variable_to_filename( 'rsutcs'), decode_times=True) as rsutcs_full:
+            rsutcs = rsutcs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsutcs = (rsutcs.rsutcs * weight).mean(dim=('lat','lon','time'))
+
+
+        #  Outgoing LW at TOA
+        with xr.open_dataset(constants.variable_to_filename( 'rlut'), decode_times=True) as rlut_full:
+            rlut = rlut_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rlut = (rlut.rlut * weight).mean(dim=('lat','lon','time'))
+
+
+        #  Outgoing LW at TOA assuming clear sky
+        with xr.open_dataset(constants.variable_to_filename( 'rlutcs'), decode_times=True) as rlutcs_full:
+            rlutcs = rlutcs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rlutcs = (rlutcs.rlutcs * weight).mean(dim=('lat','lon','time'))
+
+
+        #  Net TOA flux
+        if 'MRI' in model:
+            rtmt = ( rsdt ) - ( rsut + rlut ) # https://www4.uwsp.edu/geo/faculty/lemke/geog101/lectures/02_radiation_energy_balance.html
+        else:
+            with xr.open_dataset(constants.variable_to_filename( 'rtmt'), decode_times=True) as rtmt_full:
+                rtmt = rtmt_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+                rtmt = (rtmt.rtmt * weight).mean(dim=('lat','lon','time'))
 
 
     #-------------------------- Surface radiative flux data --------------------------#
 
-    # Incoming SW at surface
+        #  Incoming SW at surface
+        with xr.open_dataset(constants.variable_to_filename( 'rsds'), decode_times=True) as rsds_full:
+            rsds = rsds_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsds = (rsds.rsds * weight).mean(dim=('lat','lon','time'))
 
-    with Dataset( constants.variable_to_filename( 'rsds' ), 'r') as f:
-        rsds = constants.extract_data('rsds', f )
-        rsds = rsds[:,lat_confine_1:lat_confine_2,:]
 
+        #  Incoming SW at surface assuming clear sky
+        with xr.open_dataset(constants.variable_to_filename( 'rsdscs'), decode_times=True) as rsdscs_full:
+            rsdscs = rsdscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsdscs = (rsdscs.rsdscs * weight).mean(dim=('lat','lon','time'))
 
-    # Incoming SW at surface assuming clear sky
 
-    with Dataset( constants.variable_to_filename( 'rsdscs' ), 'r') as f:
-        rsdscs = constants.extract_data('rsdscs', f )
-        rsdscs = rsdscs[:,lat_confine_1:lat_confine_2,:]
+        #  Outgoing SW at surface
+        with xr.open_dataset(constants.variable_to_filename( 'rsus'), decode_times=True) as rsus_full:
+            rsus = rsus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsus = (rsus.rsus * weight).mean(dim=('lat','lon','time'))
 
 
-    # Outgoing SW at surface
+        #  Outgoing SW at surface assuming clear sky
+        with xr.open_dataset(constants.variable_to_filename( 'rsuscs'), decode_times=True) as rsuscs_full:
+            rsuscs = rsuscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rsuscs = (rsuscs.rsuscs * weight).mean(dim=('lat','lon','time'))
 
-    with Dataset( constants.variable_to_filename( 'rsus' ), 'r') as f:
-        rsus = constants.extract_data('rsus', f )
-        rsus = rsus[:,lat_confine_1:lat_confine_2,:]
 
+        #  Outgoing LW at surface
+        with xr.open_dataset(constants.variable_to_filename( 'rlus'), decode_times=True) as rlus_full:
+            rlus = rlus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rlus = (rlus.rlus * weight).mean(dim=('lat','lon','time'))
 
-    # Outgoing SW at surface assuming clear sky
 
-    with Dataset( constants.variable_to_filename( 'rsuscs' ), 'r') as f:
-        rsuscs = constants.extract_data('rsuscs', f )
-        rsuscs = rsuscs[:,lat_confine_1:lat_confine_2,:]
+        #  Incoming LW at surface
+        with xr.open_dataset(constants.variable_to_filename( 'rlds'), decode_times=True) as rlds_full:
+            rlds = rlds_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rlds = (rlds.rlds * weight).mean(dim=('lat','lon','time'))
 
 
-    # Outgoing LW at surface
+        #  Incoming LW at surface assuming clear sky
+        with xr.open_dataset(constants.variable_to_filename( 'rldscs'), decode_times=True) as rldscs_full:
+            rldscs = rldscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
+            rldscs = (rldscs.rldscs * weight).mean(dim=('lat','lon','time'))
 
-    with Dataset( constants.variable_to_filename( 'rlus' ), 'r') as f:
-        rlus = constants.extract_data('rlus', f )
-        rlus = rlus[:,lat_confine_1:lat_confine_2,:]
 
+        # Determine albedo values at surface and TOA
 
-    # Incoming LW at surface
+        albedo_toa = rsut / rsdt
+        albedo_toa_cs = rsutcs / rsdt
+        albedo_surface = rsus / rsds
+        albedo_surface_cs = rsuscs / rsdscs
 
-    with Dataset( constants.variable_to_filename( 'rlds' ), 'r') as f:
-        rlds = constants.extract_data('rlds', f )
-        rlds = rlds[:,lat_confine_1:lat_confine_2,:]
+        model_rad_output = {"rtmt" : rtmt, 
+                        "rsdt" : rsdt,
+                        "rsut" : rsut,
+                        "rsutcs" : rsutcs,
+                        "rlut" : rlut,
+                        "rlutcs" : rlutcs,
+                        "rsds" : rsds,
+                        "rsdscs" : rsdscs,
+                        "rsus" : rsus,
+                        "rsuscs" : rsuscs,
+                        "rlus" : rlus,
+                        "rlds" : rlds,
+                        "rldscs" : rldscs                        
+                        }
 
-
-    # Incoming LW at surface assuming clear sky
-
-    with Dataset( constants.variable_to_filename( 'rldscs' ), 'r') as f:
-        rldscs = constants.extract_data('rldscs', f )
-        rldscs = rldscs[:,lat_confine_1:lat_confine_2,:]
-
-
-    # Determine albedo values at surface and TOA
-
-    albedo_toa = rsut / rsdt
-    albedo_toa_cs = rsutcs / rsdt
-    albedo_surface = rsus / rsds
-    albedo_surface_cs = rsuscs / rsdscs
-
-
-    #-------------------------- Prepare variables for time integration or average the variables over time --------------------------#
-
-    # Model radiation data for comparison and diagnostics
-
-    rsdt = np.nanmean( rsdt, axis = 0 )
-    rsut = np.nanmean( rsut, axis = 0 )
-    rsutcs = np.nanmean( rsutcs, axis = 0 )
-    rlut = np.nanmean( rlut, axis = 0 )
-    rlutcs = np.nanmean( rlutcs, axis = 0 )
-    rtmt = np.nanmean( rtmt, axis = 0 )
-
-    rsds = np.nanmean( rsds, axis = 0 )
-    rsdscs = np.nanmean( rsdscs, axis = 0 )
-    rsus = np.nanmean( rsus, axis = 0 )
-    rsuscs = np.nanmean( rsuscs, axis = 0 )
-    rlus = np.nanmean( rlus, axis = 0 )
-    rlds = np.nanmean( rlds, axis = 0 )
-    rldscs = np.nanmean( rldscs, axis = 0 )
-
-    albedo_toa = np.nanmean( albedo_toa, axis = 0 )
-    albedo_toa_cs = np.nanmean( albedo_toa_cs, axis = 0 )
-    albedo_surface = np.nanmean( albedo_surface, axis = 0 )
-    albedo_surface_cs = np.nanmean( albedo_surface_cs, axis = 0 )
-
-    # Get number of months to integrate over
-
-    dt = np.size( cl, 0 )
-
-    if use_integrator == False:
-        cl = np.nanmean( cl, axis = 0 )
-        clw = np.nanmean( clw, axis = 0 )
-        cli = np.nanmean( cli, axis = 0 )
-        ta = np.nanmean( ta, axis = 0 )
-        ts = np.nanmean( ts, axis = 0 )
-        hus = np.nanmean( hus, axis = 0 )
-        o3 = np.nanmean( o3, axis = 0 )
-
-    #-------------------------- Average variables over longitude --------------------------#
-
-    cl = np.nanmean( cl, axis = -1 )
-    clw = np.nanmean( clw, axis = -1 )
-    cli = np.nanmean( cli, axis = -1 )
-    ta = np.nanmean( ta, axis = -1 )
-    ts = np.nanmean( ts, axis = -1 )
-    hus = np.nanmean( hus, axis = -1 )
-    plev = np.nanmean( p, axis = -1 )
-
-    rsdt = np.nanmean( rsdt, axis = -1 )
-    rsut = np.nanmean( rsut, axis = -1 )
-    rsutcs = np.nanmean( rsutcs, axis = -1 )
-    rlut = np.nanmean( rlut, axis = -1 )
-    rlutcs = np.nanmean( rlutcs, axis = -1 )
-    rtmt = np.nanmean( rtmt, axis = -1 )
-
-    rsds = np.nanmean( rsds, axis = -1 )
-    rsdscs = np.nanmean( rsdscs, axis = -1 )
-    rsus = np.nanmean( rsus, axis = -1 )
-    rsuscs = np.nanmean( rsuscs, axis = -1 )
-    rlus = np.nanmean( rlus, axis = -1 )
-    rlds = np.nanmean( rlds, axis = -1 )
-    rldscs = np.nanmean( rldscs, axis = -1 )
-
-    albedo_toa = np.nanmean( albedo_toa, axis = -1 )
-    albedo_toa_cs = np.nanmean( albedo_toa_cs, axis = -1 )
-    albedo_surface = np.nanmean( albedo_surface, axis = -1 )
-    albedo_surface_cs = np.nanmean( albedo_surface_cs, axis = -1 )
-
-    o3 = np.nanmean( o3, axis = -1 )
-
-
-    # Get layer pressure levels (Pa)
-    p = constants.global3DMean(p, lat)
-
-    #-------------------------- Interpolate variables --------------------------#
-
-    # Interpolate temperature
-
-    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-    imp.fit(np.transpose(ta))  
-    ta = imp.transform(np.transpose(ta))
-    ta = np.transpose(ta)   
-    if plev_t.shape[0] > ta.shape[0]:
-        plev_t = plev_t[plev_t.shape[0] - ta.shape[0]:] # reshape alt_temp if not equal
-    interpolated = interpolate.interp2d( lat, plev_t, ta, kind = 'linear')
-    ta = np.flip( interpolated( lat, p ), axis = 0 )
-
-    # Interpolate humidity
-
-    imp.fit(np.transpose(hus))  
-    hus = imp.transform(np.transpose(hus))
-    hus = np.transpose(hus)   
-    if plev_h.shape[0] > hus.shape[0]:
-        plev_h = plev_h[plev_h.shape[0] - hus.shape[0]:] # reshape alt_temp if not equal
-    interpolated = interpolate.interp2d( lat, plev_h, hus, kind = 'linear')
-    hus = np.flip( interpolated( lat,p ), axis = 0 )
-
-    # Interpolate O3
-
-    imp.fit(np.transpose(o3))  
-    o3 = imp.transform(np.transpose(o3))
-    o3 = np.transpose(o3)   
-    if plev_o3.shape[0] > o3.shape[0]:
-        plev_o3 = plev_o3[plev_o3.shape[0] - o3.shape[0]:] # reshape alt_temp if not equal
-    interpolated = interpolate.interp2d( lat, plev_o3, o3, kind = 'linear')
-    o3 = np.flip( interpolated( lat,p ), axis = 0 )
-
-
-    #-------------------------- Convert mixing ratios to water paths, set particle sizes --------------------------#
-
-    # Convert mixing ratio (kg/kg) into cloud water content in (g/m3)
-
-    clwc = constants.mix_ratio_to_water_content( clw, ta, plev )
-    ciwc = constants.mix_ratio_to_water_content( cli, ta, plev )
-    alt = constants.p_to_alt( p ) # in km
-
-    # Convert cloud water content to water path (g/m2)
-    # WP = WC * deltaz
-    clwp = constants.wc_to_wp( clwc, alt )
-    ciwp = constants.wc_to_wp( ciwc, alt )
-
-    # Set liquid and ice droplet and particle diameters
-
-    r_liq = np.zeros((p.shape[0], lat.shape[0]))
-    r_ice = np.zeros((p.shape[0], lat.shape[0]))
-
-    r_liq[:] = liquid_r
-    r_ice[:] = ice_r
-
-
-    #-------------------------- diagnostic plots --------------------------#
-
-    # Check for anomolies in the model input data - save as a pdf
-
-    if plot_diagnostic_data == True:
-
-        fig, axs = plt.subplots(4, 2, figsize=(11, 16))
-        fig.suptitle('Diagnostics - ' + model)
-        xx, yy = np.meshgrid(lat, alt)
-    
-        axs[0, 0].set_title('O3 Mole Fraction')
-        axs[0, 0].set_ylabel('Altitude (km)')
-        f = axs[0, 0].contourf(xx, yy, o3, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 0], label='O3 Mole Fraction')
-
-        axs[0, 1].set_title('Atmosphere Temperature $K$')
-        f = axs[0, 1].contourf(xx, yy, ta, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 1], label='Atmosphere Temperature $K$')
-
-        axs[1, 0].set_title('Atmosphere Specific Humidity $kg/kg$')
-        axs[1, 0].set_ylabel('Altitude (km)')
-        f = axs[1, 0].contourf(xx, yy, hus, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 0], label='Atmosphere Specific Humidity $kg/kg$')
-        
-        axs[1, 1].set_title('Cloud Fraction')
-        f = axs[1, 1].contourf(xx, yy, cl, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 1], label='Cloud Fraction')
-
-        axs[2, 0].set_title('Cloud Liquid Water Path')
-        axs[2, 0].set_ylabel('Altitude (km)')
-        f = axs[2, 0].contourf(xx, yy, clwp, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[2, 0], label='Cloud Liquid Water Path $gm^{-2}$')
-        
-        axs[2, 1].set_title('Cloud Ice Water Path')
-        f = axs[2, 1].contourf(xx, yy, ciwp, 5, cmap='coolwarm', alpha=0.4)
-        plt.colorbar(f, ax=axs[2, 1], label='Cloud Ice Water Path $gm^{-2}$')
-
-        axs[3, 0].plot( lat, ( rsdt - rsut ), label='SW Net', color = 'black', linestyle='-')
-        axs[3, 0].plot( lat, ( rsutcs - rsut ), label='SW - Clouds', color = 'blue', linestyle='-' )
-        axs[3, 0].plot( lat, ( rsdt - rsutcs ), label='SW - Clear Sky', color = 'black', linestyle=':')
-        axs[3, 0].set_ylabel('Radiation $Wm^{-2}$')
-        axs[3, 0].set_xlabel('Latitude')
-        axs[3, 0].set_title ('Model Output - Absorbed Shortwave Flux (ASR)')
-        axs[3, 0].legend(loc='best', prop=fontP);
-
-        axs[3, 1].plot( lat, rlut, label='LW Net', color = 'black', linestyle='-')
-        axs[3, 1].plot( lat, ( rlut - rlutcs ), label='LW - Clouds', color = 'blue', linestyle='-')
-        axs[3, 1].plot( lat, rlutcs, label='LW - Clear Sky', color = 'black', linestyle=':' )
-        axs[3, 1].set_ylabel('Radiation $Wm^{-2}$')
-        axs[3, 1].set_xlabel('Latitude')
-        axs[3, 1].set_title ('Model Output - Outgoing Longwave Flux (OLR)')
-        axs[3, 1].legend(loc='best', prop=fontP);
-
-        # axs[3, 0].plot( lat, rsds, label='SW Down', color = 'black', linestyle='-')
-        # axs[3, 0].plot( lat, rsdscs, label='SW Down - Clear Sky', color = 'black', linestyle='--' )
-        # axs[3, 0].plot( lat, rsus, label='SW Up', color = 'blue', linestyle='-')
-        # axs[3, 0].plot( lat, rsuscs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
-        # axs[3, 0].plot( lat, rlus, label='LW Up', color = 'green', linestyle='-')
-        # axs[3, 0].plot( lat, rlds, label='LW Down', color = 'red', linestyle='-' )
-        # axs[3, 0].plot( lat, rldscs, label='LW Down - Clear Sky', color = 'red', linestyle='--' )
-        # axs[3, 0].set_ylabel('Radiation $Wm^{-2}$')
-        # axs[3, 0].set_xlabel('Latitude')
-        # axs[3, 0].set_title ('Model Output - Absorbed Shortwave Flux (ASR)')
-        # axs[3, 0].legend(loc='best', prop=fontP);
-
-        # axs[3, 1].plot( lat, rsdt, label='SW Down', color = 'black', linestyle='-')
-        # axs[3, 1].plot( lat, rsut, label='SW Up', color = 'blue', linestyle='-')
-        # axs[3, 1].plot( lat, rsutcs, label='SW Up - Clear Sky', color = 'blue', linestyle='--' )
-        # axs[3, 1].plot( lat, rlut, label='LW Up', color = 'red', linestyle='-')
-        # axs[3, 1].plot( lat, rlutcs, label='LW Up - Clear Sky', color = 'red', linestyle='--' )
-        # axs[3, 1].set_ylabel('Radiation $Wm^{-2}$')
-        # axs[3, 1].set_xlabel('Latitude')
-        # axs[3, 1].set_title ('Model Output - Outgoing Longwave Flux (OLR)')
-        # axs[3, 1].legend(loc='best', prop=fontP);
-
-        plt.savefig( location + '/Images/RRTGM/diagnostics/' + "diagnostics_" + label + ".pdf", format="pdf")
-
-
-    #-------------------------- Input variables into radiative transfer code --------------------------#
-
-    sfc, atm = climlab.domain.zonal_mean_column(lat=lat, lev=p)
-
-    # Surface variables
-    insolation_field = climlab.domain.Field(rsdt, domain=sfc)
-    albedo_surface_field = climlab.domain.Field(albedo_surface, domain=sfc)  
-    albedo_surface_cs_field = climlab.domain.Field(albedo_surface_cs, domain=sfc)  
-    albedo_toa_field = climlab.domain.Field(albedo_toa, domain=sfc)  
-    albedo_toa_cs_field = climlab.domain.Field(albedo_toa_cs, domain=sfc)  
-    ts_field = climlab.domain.Field(ts, domain=sfc)
-
-    # Atmosphere layer variables
-    ta_field = climlab.domain.Field(np.transpose(ta), domain=atm)
-    specific_humidity_field = climlab.domain.Field(np.transpose(hus), domain=atm) # kg/kg
-    cldfrac_field = climlab.domain.Field(np.transpose(cl), domain=atm) # fraction
-    o3_field = climlab.domain.Field(np.transpose(o3*1000), domain=atm)
-    r_liq_field = climlab.domain.Field(np.transpose(r_liq), domain=atm) # Cloud water drop effective radius (microns)
-    r_ice_field = climlab.domain.Field(np.transpose(r_ice), domain=atm) # Cloud ice particle effective size (microns)        
-
-    clw_field = climlab.domain.Field(np.transpose(clw), domain=atm) # mixing ratio kg/kg
-    ciw_field = climlab.domain.Field(np.transpose(cli), domain=atm) # mixing ratio kg/kg
-
-    clwc_field = climlab.domain.Field(np.transpose(clwc), domain=atm) # content g/m3
-    ciwc_field = climlab.domain.Field(np.transpose(ciwc), domain=atm) # content g/m3
-
-    clwp_field = climlab.domain.Field(np.transpose(clwp), domain=atm) # water path g/m2
-    ciwp_field = climlab.domain.Field(np.transpose(ciwp), domain=atm) # water path g/m2
-
-
-    # Dictionary of volumetric mixing ratios. Default values supplied if None
-    # if absorber_vmr = None then ozone will be interpolated to the model grid from a climatology file, or set to zero if ozone_file = None.
-    if use_aerosol_files == True:
-        absorber = {'O3': o3_field, 'CO2': 400.e-6, 'CH4':ch4, 'N2O':n2o, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':cfc11, 'CFC12':cfc12, 'CFC113':cfc113, 'CFC22':cfc22}
-    else:
-        absorber = {'O3': o3_field, 'CO2': 400.e-6, 'CH4':1.557889297535934e-6, 'N2O':3.007494866529774e-7, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':1.680e-10, 'CFC12':2.850e-10, 'CFC113':1.737268993839836e-11, 'CFC22':cfc22}
-
-    # check if the model should use the given surface albedo from file or not
-    if use_surface_albedo == False:
-        albedo_surface_field = None
-    
-
-    #  state variables (Air and surface temperature)
-    state = {'Tatm': ta_field, 'Ts': ts_field}
-
-    #-------------------------- Execute Control Data --------------------------#
-
-    sw_down = np.zeros_like(ta_field)
-    sw_down_clr = np.zeros_like(ta_field)
-    sw_up = np.zeros_like(ta_field)
-    sw_up_clr = np.zeros_like(ta_field)
-    sw_net = np.zeros_like(ta_field)
-
-    lw_down = np.zeros_like(ta_field)
-    lw_down_clr = np.zeros_like(ta_field)
-    lw_up_clr = np.zeros_like(ta_field)
-    lw_up = np.zeros_like(ta_field)
-    lw_net = np.zeros_like(ta_field)
-
-    net_ASR = np.zeros_like(ts_field)
-    net_ASRcld = np.zeros_like(ts_field)
-    net_ASRclr = np.zeros_like(ts_field)  
-
-    net_OLR = np.zeros_like(ts_field)
-    net_OLRcld = np.zeros_like(ts_field)
-    net_OLRclr = np.zeros_like(ts_field)  
-
-    for i in range(lat.size):
-        control_rad = climlab.radiation.RRTMG(name='Radiation', 
-                                        state=state, 
-                                        specific_humidity=specific_humidity_field, 
-                                        absorber_vmr=absorber,
-                                        # albedo=albedo_surface_field, 
-                                        # insolation = insolation_field, 
-                                        cldfrac=cldfrac_field, 
-                                        r_liq=r_liq_field, 
-                                        r_ice=r_ice_field, 
-                                        clwp=clwp_field, 
-                                        ciwp=ciwp_field
-                                        )
-
-        control_rad.compute_diagnostics()
-
-        # sw_down[i] = control_rad.SW_flux_down
-        # sw_down_clr[i] = control_rad.SW_flux_down_clr
-        # sw_up[i] = control_rad.SW_flux_up
-        # sw_up_clr[i] = control_rad.SW_flux_up_clr
-        # sw_net[i] = control_rad.SW_flux_net
-
-        # lw_down[i] = control_rad.LW_flux_down
-        # lw_down_clr[i] = control_rad.LW_flux_down_clr
-        # lw_up_clr[i] = control_rad.LW_flux_up_clr
-        # lw_up[i] = control_rad.LW_flux_up
-        # lw_net[i] = control_rad.LW_flux_net
-
-        net_ASR[i] = control_rad.ASR
-        net_ASRcld[i] = control_rad.ASRcld
-        net_ASRclr[i] = control_rad.ASRclr   
-
-        net_OLR[i] = control_rad.OLR
-        net_OLRcld[i] = control_rad.OLRcld
-        net_OLRclr[i] = control_rad.OLRclr   
-
-
-    #-------------------------- Plots --------------------------#
-    if save_outputs == True:
-
-        # SW plots
-        fig, axs = plt.subplots(3, 2, figsize=(11, 11))
-        fig.suptitle('SW Flux - ' + model)
-    
-        axs[0, 0].set_title('SW Down - Clear Sky')
-        axs[0, 0].set_ylabel('Altitude (km)')
-        f = axs[0, 0].contourf(lat, alt[:15], np.transpose(sw_down_clr[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
-
-        axs[0, 1].set_title('SW Down - Clouds')
-        f = axs[0, 1].contourf(lat, alt[:15], np.transpose(sw_down[:,1:16]), 5, cmap='Greens', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
-
-        axs[1, 0].set_title('SW Up - Clear Sky')
-        axs[1, 0].set_ylabel('Altitude (km)')
-        f = axs[1, 0].contourf(lat, alt[:15], np.transpose(sw_up_clr[:,1:16]), 5, cmap='Reds', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
-        
-        axs[1, 1].set_title('SW Up - Clouds')
-        f = axs[1, 1].contourf(lat, alt[:20], np.transpose(sw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
-
-        axs[2, 0].set_title('SW Net Flux $Wm^{-2}$ - ' + model)
-        axs[2, 0].set_ylabel('Altitude (km)')
-        axs[2, 0].set_xlabel('Latitude')
-        f = axs[2, 0].contourf( lat, alt[:20], np.transpose(sw_net[:,1:21]), 5, cmap='Blues' )
-        plt.colorbar(f, ax=axs[2, 0], label='SW Net Flux $Wm^{-2}$')
-        
-        axs[2, 1].plot( lat, net_ASR, label='Net ASR', color = 'black', linestyle='-')
-        axs[2, 1].plot( lat, net_ASRcld, label='ASR With Clouds', color = 'blue', linestyle='-' )
-        axs[2, 1].plot( lat, net_ASRclr, label='ASR Clear Sky', color = 'black', linestyle=':' )
-        axs[2, 1].set_ylabel('Radiation $Wm^{-2}$')
-        axs[2, 1].set_xlabel('Latitude')
-        axs[2, 1].set_title('Absorbed Solar Radiation - ' + model)
-        axs[2, 1].legend(loc='best', prop=fontP);
-
-        plt.savefig( location + '/Images/RRTGM/' + "sw_output_" + label + ".pdf", format="pdf")
-
-
-
-        # LW plots
-        fig, axs = plt.subplots(3, 2, figsize=(11, 11))
-        fig.suptitle('LW Flux - ' + model)
-    
-        axs[0, 0].set_title('LW Down - Clear Sky')
-        axs[0, 0].set_ylabel('Altitude (km)')
-        f = axs[0, 0].contourf(lat, alt[:20], np.transpose(lw_down_clr[:,1:21]), 5, cmap='Greens', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 0], label='$Wm^{-2}$')
-
-        axs[0, 1].set_title('LW Down - Clouds')
-        f = axs[0, 1].contourf(lat, alt[:20], np.transpose(lw_down[:,1:21]), 5, cmap='Greens', alpha=0.4)
-        plt.colorbar(f, ax=axs[0, 1], label='$Wm^{-2}$')
-
-        axs[1, 0].set_title('LW Up - Clear Sky')
-        axs[1, 0].set_ylabel('Altitude (km)')
-        f = axs[1, 0].contourf(lat, alt[:20], np.transpose(lw_up_clr[:,1:21]), 5, cmap='Reds', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 0], label='$Wm^{-2}$')
-        
-        axs[1, 1].set_title('LW Up - Clouds')
-        f = axs[1, 1].contourf(lat, alt[:20], np.transpose(lw_up[:,1:21]), 5, cmap='Reds', alpha=0.4)
-        plt.colorbar(f, ax=axs[1, 1], label='$Wm^{-2}$')
-
-        axs[2, 0].set_title('LW Net Flux $Wm^{-2}$ - ' + model)
-        axs[2, 0].set_ylabel('Altitude (km)')
-        axs[2, 0].set_xlabel('Latitude')
-        f = axs[2, 0].contourf( lat, alt[:20], np.transpose(lw_net[:,1:21]), 5, cmap='Blues' )
-        plt.colorbar(f, ax=axs[2, 0], label='LW Net Flux $Wm^{-2}$')
-        
-        axs[2, 1].plot( lat, net_OLR, label='Net OLR', color = 'black', linestyle='-')
-        axs[2, 1].plot( lat, net_OLRcld, label='OLR With Clouds', color = 'blue', linestyle='-' )
-        axs[2, 1].plot( lat, net_OLRclr, label='OLR Clear Sky', color = 'black', linestyle=':' )
-        axs[2, 1].set_ylabel('Radiation $Wm^{-2}$')
-        axs[2, 1].set_xlabel('Latitude')
-        axs[2, 1].set_title('Outgoing Longwave Radiation - ' + model)
-        axs[2, 1].legend(loc='best', prop=fontP);
-
-        plt.savefig( location + '/Images/RRTGM/' + "lw_output_" + label + ".pdf", format="pdf")
-
+        #  Setup excel file to store output values
+        book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/model_global_radiation_outputs.xlsx' )
+        sheet = book.active
 
         # Store global means in excel file
-        start_row = int(label) + 2
-        sheet.cell(row=start_row, column=1).value = label
-        sheet.cell(row=start_row, column=2).value = model
-        sheet.cell(row=start_row, column=3).value = liquid_r
-        sheet.cell(row=start_row, column=4).value = ice_r
-        sheet.cell(row=start_row, column=5).value = use_aerosol_files
-        sheet.cell(row=start_row, column=6).value = constants.globalMean(np.array(net_ASR)[:,0], lat)
-        sheet.cell(row=start_row, column=7).value = constants.globalMean(np.array(net_OLR)[:,0], lat)
-        sheet.cell(row=start_row, column=8).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_net)), lat)
-        sheet.cell(row=start_row, column=9).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_net)), lat)
-        sheet.cell(row=start_row, column=10).value = constants.globalMean(np.array(net_ASRclr)[:,0], lat)
-        sheet.cell(row=start_row, column=11).value = constants.globalMean(np.array(net_ASRcld)[:,0], lat)
-        sheet.cell(row=start_row, column=12).value = constants.globalMean(np.array(net_OLRclr)[:,0], lat)
-        sheet.cell(row=start_row, column=13).value = constants.globalMean(np.array(net_OLRcld)[:,0], lat)
-        sheet.cell(row=start_row, column=14).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down_clr)), lat)
-        sheet.cell(row=start_row, column=15).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_down)), lat)
-        sheet.cell(row=start_row, column=16).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up_clr)), lat)
-        sheet.cell(row=start_row, column=17).value = constants.globalalt_latMeanVal(np.transpose(np.array(sw_up)), lat)
-        sheet.cell(row=start_row, column=18).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down_clr)), lat)
-        sheet.cell(row=start_row, column=19).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_down)), lat)
-        sheet.cell(row=start_row, column=20).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up_clr)), lat)
-        sheet.cell(row=start_row, column=21).value = constants.globalalt_latMeanVal(np.transpose(np.array(lw_up)), lat)
-  
-        book.save( location + 'climate-analysis/reduced_data/radiation_data.xlsx' )
+        start_row = f
+        sheet.cell(row=start_row, column=1).value = name
+
+        for s, val in enumerate(model_rad_output.values()):
+            sheet.cell(row=start_row, column=s+2).value = (val.data).item()
+        book.save( location + 'climate-analysis/reduced_data//model_global_radiation_outputs.xlsx' )
+        f = f+1 # increase row number by 1 to store excel data
 
 
+
+        #-------------------------- Convert mixing ratios to water paths --------------------------#
+
+
+        #  cannot be water content - have tried and gives no effect - values are too small
+        air_density = ((lev) / (286.9 * Tinterp))
+        clwc = (CLWinterp * air_density) * 1000
+        ciwc = (CLIinterp * air_density) * 1000
+
+        prev_alt = 0
+        CLWPglobal = np.zeros_like(lev)
+        for i, ( wc, altitude ) in enumerate( zip( np.flipud(clwc), np.flipud(alt) ) ):
+            CLWPglobal[i] = wc * ( altitude - prev_alt )
+            prev_alt = altitude
+        CLWPglobal = np.flipud(CLWPglobal)
+
+        prev_alt = 0
+        CIWPglobal = np.zeros_like(lev)
+        for i, ( wc, altitude ) in enumerate( zip( np.flipud(ciwc), np.flipud(alt) ) ):
+            CIWPglobal[i] = wc * ( altitude - prev_alt )
+            prev_alt = altitude
+        CIWPglobal = np.flipud(CIWPglobal)
+
+
+        #-------------------------- Set dictionaries --------------------------#
+
+
+        model_CLglobals[name] = CLinterp
+        model_CLWPglobals[name] = CLWPglobal
+        model_CIWPglobals[name] = CIWPglobal
+        model_Tglobals[name] = Tinterp
+        model_TSglobals[name] = TSglobal
+        model_SHglobals[name] = SHinterp
+        model_albedos[name] = albedo_surface
+        model_O3globals[name] = O3interp
+        model_ch4globals[name] = ch4
+        model_n2oglobals[name] = n2o
+        model_cfc11globals[name] = cfc11
+        model_cfc12globals[name] = cfc12
+        model_cfc113globals[name] = cfc113
+
+
+    #-------------------------- Generate ensemble means --------------------------#
+
+    Tmean = ensemble_mean(model_Tglobals)
+    TSmean = ensemble_mean(model_TSglobals)
+    CLmean = ensemble_mean(model_CLglobals)
+    CLWPmean = ensemble_mean(model_CLWPglobals)
+    CIWPmean = ensemble_mean(model_CIWPglobals)
+    SHmean = ensemble_mean(model_SHglobals)
+    albedomean = ensemble_mean(model_albedos)
+
+    O3mean = ensemble_mean(model_O3globals)
+    ch4mean = ensemble_mean(model_ch4globals)
+    n2omean = ensemble_mean(model_n2oglobals)
+    cfc11mean = ensemble_mean(model_cfc11globals)
+    cfc12mean = ensemble_mean(model_cfc12globals)
+    cfc113mean = ensemble_mean(model_cfc113globals)
+
+    absorbermean = {'O3': O3mean, 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
+        'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
+
+
+    #-------------------------- Check ozone profiles --------------------------#
+
+
+    # fig, ax = plt.subplots()
+    # fig.suptitle('Ozone Profiles')
+
+    # for z, (name, data) in enumerate(model_O3globals.items()):
+    #     ax.plot(data, alt, color=colors[z], label=name)
+   
+
+    # ax.legend(bbox_to_anchor=(1, 1))
+    # ax.set_ylabel('Altitude $km$')
+    # ax.set_xlabel('$O_3$')
+    # plt.savefig( location + 'Images/RRTGM/' + label + "_o3.pdf", format="pdf", bbox_inches='tight')
+    # plt.show()
+
+
+    
+
+    #-------------------------- Generate control data --------------------------#
+
+    #  Set the temperature to the observed values
+    state.Tatm[:] = Tmean
+    state.Ts[:] = TSmean
+
+    for i in range(lev.size):
+        control_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                    r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                    )
+        control_rad.compute_diagnostics()
+   
+    #  Print and check mean data
+    print('===MEAN ENSEMBLE DATA===')
+    print('net_sw:')
+    print(control_rad.SW_flux_net[0])
+    print('net_lw:')
+    print(control_rad.LW_flux_net[0])
+    print('rsut:')
+    print(control_rad.SW_flux_up[0])
+    print('rsutcs:')
+    print(control_rad.SW_flux_up_clr[0])
+    print('rlut:')
+    print(control_rad.LW_flux_up[0])
+    print('rlutcs:')
+    print(control_rad.LW_flux_up_clr[0])
+
+
+    #-------------------------- Generate CL Bias Data --------------------------#
+
+    for model_name, model_cl_value in model_CLglobals.items():
+        for i in range(lev.size):
+            cl_rad = RRTMG(state=state, 
+                        albedo=albedomean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=SHmean,
+                        cldfrac=model_cl_value, # compute variances from these model values
+                        verbose=False,
+                        clwp = CLWPmean,
+                        ciwp = CIWPmean,
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            cl_rad.compute_diagnostics()
+        SWcre_CLdeltas[model_name] = (cl_rad.SW_flux_up[0] - cl_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+        LWcre_CLdeltas[model_name] = (cl_rad.LW_flux_up_clr[0] - cl_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+        SWcs_CLdeltas[model_name] = (cl_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up_clr[0])
+        LWcs_CLdeltas[model_name] = (cl_rad.LW_flux_up_clr[0]) - (control_rad.LW_flux_up_clr[0])
+
+    #-------------------------- Generate CLWP Bias Data --------------------------#
+
+    for model_name, model_clwp_value in model_CLWPglobals.items():
+        for i in range(lev.size):
+            clwp_rad = RRTMG(state=state, 
+                        albedo=albedomean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=SHmean,
+                        cldfrac=CLmean,
+                        verbose=False,
+                        clwp = model_clwp_value, # compute variances from these model values
+                        ciwp = CIWPmean,
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            clwp_rad.compute_diagnostics()
+        SWcre_LWPdeltas[model_name] = (clwp_rad.SW_flux_up[0] - clwp_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+        LWcre_LWPdeltas[model_name] = (clwp_rad.LW_flux_up_clr[0] - clwp_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+        SWcs_LWPdeltas[model_name] = (clwp_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up_clr[0])
+        LWcs_LWPdeltas[model_name] = (clwp_rad.LW_flux_up_clr[0]) - (control_rad.LW_flux_up_clr[0])
+
+
+    #-------------------------- Generate CIWP Bias Data --------------------------#
+
+    for model_name, model_ciwp_value in model_CIWPglobals.items():
+        for i in range(lev.size):
+            ciwp_rad = RRTMG(state=state, 
+                        albedo=albedomean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=SHmean,
+                        cldfrac=CLmean,
+                        verbose=False,
+                        clwp = CLWPmean, 
+                        ciwp = model_ciwp_value, # compute variances from these model values
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            ciwp_rad.compute_diagnostics()
+        SWcre_IWPdeltas[model_name] = (ciwp_rad.SW_flux_up[0] - ciwp_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+        LWcre_IWPdeltas[model_name] = (ciwp_rad.LW_flux_up_clr[0] - ciwp_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+        SWcs_IWPdeltas[model_name] = (ciwp_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up_clr[0])
+        LWcs_IWPdeltas[model_name] = (ciwp_rad.LW_flux_up_clr[0]) - (control_rad.LW_flux_up_clr[0])
+
+
+    #-------------------------- Generate T Bias Data --------------------------#
+
+    for model_name, model_T_value in model_Tglobals.items():
+        state.Tatm[:] = model_T_value  # compute variances from these model values
+        for i in range(lev.size):
+            T_rad = RRTMG(state=state, 
+                        albedo=albedomean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=SHmean,
+                        cldfrac=CLmean,
+                        verbose=False,
+                        clwp = CLWPmean,
+                        ciwp = CIWPmean,
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            T_rad.compute_diagnostics()
+        SWcre_Tdeltas[model_name] = (T_rad.SW_flux_up[0] - T_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+        LWcre_Tdeltas[model_name] = (T_rad.LW_flux_up_clr[0] - T_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+        SWcs_Tdeltas[model_name] = (T_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up_clr[0])
+        LWcs_Tdeltas[model_name] = (T_rad.LW_flux_up_clr[0]) - (control_rad.LW_flux_up_clr[0])
+    state.Tatm[:] = Tmean
+
+
+    #-------------------------- Generate SH Bias Data --------------------------#
+
+    for model_name, model_SH_value in model_SHglobals.items():
+        for i in range(lev.size):
+            SH_rad = RRTMG(state=state, 
+                        albedo=albedomean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=model_SH_value, # compute variances from these model values
+                        cldfrac=CLmean,
+                        verbose=False,
+                        clwp = CLWPmean,
+                        ciwp = CIWPmean,
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            SH_rad.compute_diagnostics()
+        SWcre_SHdeltas[model_name] = (SH_rad.SW_flux_up[0] - SH_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+        LWcre_SHdeltas[model_name] = (SH_rad.LW_flux_up_clr[0] - SH_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+        SWcs_SHdeltas[model_name] = (SH_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up_clr[0])
+        LWcs_SHdeltas[model_name] = (SH_rad.LW_flux_up_clr[0]) - (control_rad.LW_flux_up_clr[0])
+
+
+
+    #-------------------------- Generate Liquid Particle Radius Change Data --------------------------#
+
+
+    for i in range(lev.size):
+        lr15_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + 15.0,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                    )
+        lr15_rad.compute_diagnostics()
+    SWcre_lr15deltas = (lr15_rad.SW_flux_up[0] - lr15_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_lr15deltas = (lr15_rad.LW_flux_up_clr[0] - lr15_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+    for i in range(lev.size):
+        lr45_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + 45.0,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                    )
+        lr45_rad.compute_diagnostics()
+    SWcre_lr45deltas = (lr45_rad.SW_flux_up[0] - lr45_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_lr45deltas = (lr45_rad.LW_flux_up_clr[0] - lr45_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+    for i in range(lev.size):
+        lr60_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + 60.0,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                    )
+        lr60_rad.compute_diagnostics()
+    SWcre_lr60deltas = (lr60_rad.SW_flux_up[0] - lr60_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_lr60deltas = (lr60_rad.LW_flux_up_clr[0] - lr60_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+    #-------------------------- Generate Ice Particle Radius Change Data --------------------------#
+
+
+    for i in range(lev.size):
+        ir30_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + liquid_r,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + 30.0,               
+                    )
+        ir30_rad.compute_diagnostics()
+    SWcre_ir30deltas = (ir30_rad.SW_flux_up[0] - ir30_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_ir30deltas = (ir30_rad.LW_flux_up_clr[0] - ir30_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+    for i in range(lev.size):
+        ir80_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + liquid_r,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + 80.0,               
+                    )
+        ir80_rad.compute_diagnostics()
+    SWcre_ir80deltas = (ir80_rad.SW_flux_up[0] - ir80_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_ir80deltas = (ir80_rad.LW_flux_up_clr[0] - ir80_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+    for i in range(lev.size):
+        ir130_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=SHmean,
+                    cldfrac=CLmean,
+                    verbose=False,
+                    clwp = CLWPmean,
+                    ciwp = CIWPmean,
+                    r_liq = np.zeros_like(state.Tatm) + liquid_r,  # compute variances from these model values
+                    r_ice = np.zeros_like(state.Tatm) + 130.0,               
+                    )
+        ir130_rad.compute_diagnostics()
+    SWcre_ir130deltas = (ir130_rad.SW_flux_up[0] - ir130_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_ir130deltas = (ir130_rad.LW_flux_up_clr[0] - ir130_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+
+
+ #-------------------------- Build data plots --------------------------#
+
+
+    #  CRE Plots
+    
+    labels = ["$\Delta cl$", "$\Delta lwp$", "$\Delta iwp$", "$\Delta T$", "$\Delta SH$"]
+    sw_cre_data = [SWcre_CLdeltas, SWcre_LWPdeltas, SWcre_IWPdeltas, SWcre_Tdeltas, SWcre_SHdeltas]
+    lw_cre_data = [LWcre_CLdeltas, LWcre_LWPdeltas, LWcre_IWPdeltas, LWcre_Tdeltas, LWcre_SHdeltas]
+    width=0.4
+    fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
+    fig.suptitle('Changes in Cloud Radiative Effect from Ensemble Mean')
+
+    label_added = False
+    for i, data in enumerate(sw_cre_data):
+        if not label_added:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=25, label=j[0])
+            label_added = True
+        else:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=25)
+   
+    for i, data in enumerate(lw_cre_data):
+        for z, j in enumerate(data.items()):
+            ax2.scatter(i, j[1], color=colors[z], s=25)
+
+
+    ax1.axhline(y=0, label = 'Ensemble Mean', color = 'black', linestyle='--')
+    ax2.axhline(y=0, color = 'black', linestyle='--')
+    ax1.set_xticks(range(len(labels)))
+    ax1.set_xticklabels(labels)
+    ax2.set_xticks(range(len(labels)))
+    ax2.set_xticklabels(labels)
+    ax1.legend(bbox_to_anchor=(1, 1))
+    ax1.set_ylabel('$\Delta$SW CRE $Wm^{-2}$')
+    ax2.set_ylabel('$\Delta$LW CRE $Wm^{-2}$')
+    plt.savefig( location + 'Images/RRTGM/' + label + "_enemble_cre_bias.pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+
+
+
+    #  CS Plots
+
+    sw_cs_data = [SWcs_CLdeltas, SWcs_LWPdeltas, SWcs_IWPdeltas, SWcs_Tdeltas, SWcs_SHdeltas]
+    lw_cs_data = [LWcs_CLdeltas, LWcs_LWPdeltas, LWcs_IWPdeltas, LWcs_Tdeltas, LWcs_SHdeltas]
+    width=0.4
+    fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
+    fig.suptitle('Changes in Outgoing Clear Sky Radiation from Ensemble Mean')
+
+    label_added = False
+    for i, data in enumerate(sw_cs_data):
+        if not label_added:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=25, label=j[0])
+            label_added = True
+        else:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=25)
+   
+    for i, data in enumerate(lw_cs_data):
+        for z, j in enumerate(data.items()):
+            ax2.scatter(i, j[1], color=colors[z], s=25)
+
+
+    ax1.axhline(y=0, label = 'Ensemble Mean', color = 'black', linestyle='--')
+    ax2.axhline(y=0, color = 'black', linestyle='--')
+    ax1.set_xticks(range(len(labels)))
+    ax1.set_xticklabels(labels)
+    ax2.set_xticks(range(len(labels)))
+    ax2.set_xticklabels(labels)
+    ax1.legend(bbox_to_anchor=(1, 1))
+    ax1.set_ylabel('$\Delta$Outgoing SW Clear Sky $Wm^{-2}$')
+    ax2.set_ylabel('$\Delta$Outgoing LW Clear Sky $Wm^{-2}$')
+    plt.savefig( location + 'Images/RRTGM/' + label + "_enemble_cs_bias.pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+
+
+    #  Liquid and Ice Particle Plots
+
+    labels = ["$r_{liq} = 15 \mu m$", "$r_{liq} = 45 \mu m$", "$r_{liq} = 60 \mu m$", "$r_{ice} = 30 \mu m$", "$r_{ice} = 80 \mu m$", "$r_{ice} = 130 \mu m$"]
+    sw_r_data = [SWcre_lr15deltas, SWcre_lr45deltas, SWcre_lr60deltas, SWcre_ir30deltas, SWcre_ir80deltas, SWcre_ir130deltas]
+    lw_r_data = [LWcre_lr15deltas, LWcre_lr45deltas, LWcre_lr60deltas, LWcre_ir30deltas, LWcre_ir80deltas, LWcre_ir130deltas]
+    width=0.4
+    fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
+    fig.suptitle('Changes in Cloud Radiative Effect from Ensemble Mean with Particle Size Perturbations')
+
+    for i, data in enumerate(sw_r_data):
+        ax1.scatter(i, data, s=25)
+   
+    for i, data in enumerate(lw_r_data):
+        ax2.scatter(i, data, s=25)
+
+
+    ax1.axhline(y=0, label = 'Ensemble Mean', color = 'black', linestyle='--')
+    ax2.axhline(y=0, color = 'black', linestyle='--')
+    ax1.set_xticks(range(len(labels)))
+    ax1.set_xticklabels(labels)
+    ax2.set_xticks(range(len(labels)))
+    ax2.set_xticklabels(labels)
+    ax1.legend(bbox_to_anchor=(1, 1))
+    ax1.set_ylabel('$\Delta$SW CRE $Wm^{-2}$')
+    ax2.set_ylabel('$\Delta$LW CRE $Wm^{-2}$')
+    plt.savefig( location + 'Images/RRTGM/' + label + "_enemble_r_bias.pdf", format="pdf", bbox_inches='tight')
+    plt.show()
