@@ -51,8 +51,8 @@ date_ceres = 'Jan_2007_Dec_2010'
 date_cccm = 'Jan_2007_Dec_2010'
 
 
-min_lat = -89.5
-max_lat = 90
+min_lat = -80
+max_lat = 80
 lat_division = 1
 lat = np.arange(min_lat, max_lat, lat_division)
 # Southern Ocean index ranges

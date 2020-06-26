@@ -1,7 +1,8 @@
 
 from cftime import DatetimeNoLeap
 import constants
-import model_rad_dt # change to model_rad for pre average
+import statistics
+import model_rad_lat # change to model_rad for pre average
 from netCDF4 import date2index
 import datetime
 
@@ -21,22 +22,26 @@ models = {
     "BCC-ESM1" : "CMIP6-AMIP-BCC-ESM1",
     "IPSL-CM6A-LR" : "CMIP6-AMIP-IPSL-CM6A-LR",
     "MRI-ESM2" : "CMIP6-AMIP-MRI-ESM2",
-    "MIROC6" : "CMIP6-AMIP-MIROC6",
+    # "MIROC6" : "CMIP6-AMIP-MIROC6",
 }
 
-label = '2'
+
+label = '1'
 
 # confine latitudes between:
 lat_bnd_1 = -80
 lat_bnd_2 = 80
 
+print('lat bound 1 = ' + str(lat_bnd_1))
+
+set_alb_insol = True
 save_outputs = True # save output graphs to a pdf and global mean data to excel
 
 # set ice and liquid droplet radius in microns
-liquid_r = 30 # below 60 microns
-ice_r = 60 # above 15, below 130
+liquid_r = 23 # above 2.5, below 60 microns - best ensemble result with 23, 35 for SO
+ice_r = 60 # above 15, below 130 - best ensemble result with 60, 110 for SO
 
-model_rad_dt.radiation( start, 
+model_rad_lat.radiation( start, 
                     end,
                     start_dt, 
                     end_dt, 
@@ -47,4 +52,5 @@ model_rad_dt.radiation( start,
                     lat_bnd_2,
                     save_outputs,
                     liquid_r,
-                    ice_r )
+                    ice_r,
+                    set_alb_insol )

@@ -45,9 +45,6 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     cfc22=4.8743326488706363e-11
     co2 = 400.e-6
 
-    state = climlab.column_state(num_lev=50)
-    lev = state.Tatm.domain.axes['lev'].points*100
-    alt = np.flipud(constants.p_to_alt( np.flipud(lev) )  * 1000) # in m
     f = 2 # counter for excel rows
     if label == '2':
         f = 10
@@ -66,7 +63,6 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     model_cfc11globals = {}
     model_cfc12globals = {}
     model_cfc113globals = {}
-    model_INSOLATIONglobals = {}
     
     SWcre_CLdeltas = {}
     LWcre_CLdeltas = {}
@@ -137,7 +133,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         with xr.open_dataset(constants.variable_to_filename( 'cl' ), decode_times=True) as cl_full:
             cl = cl_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
         weight = np.cos(np.deg2rad(cl.lat)) / np.cos(np.deg2rad(cl.lat)).mean(dim='lat')
-        CLglobal = (cl.cl * weight).mean(dim=('lat','lon')) / 100
+        CLglobal = (cl.cl).mean(dim=('time')) / 100
 
         if 'CM4' in model or 'IPSL' in model:
             a = cl.ap
@@ -148,35 +144,42 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
             p0 = cl.p0
             a = ap*p0
 
+
         with xr.open_dataset(constants.variable_to_filename( 'ps' ), decode_times=True) as ps_full:
             ps = ps_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
             ps = ps.ps
 
         p = a + b*ps
+        p_lat = (p).mean(dim=('time'))
         plev = (p * weight).mean(dim=('lat','lon','time'))
         if 'IPSL' in model:
             plev = plev[:-1]
 
+        state = climlab.column_state(lev=plev, lat=cl.lat, lon=cl.lon)
+        lev = state.Tatm.domain.axes['lev'].points*100
+        alt = np.flipud(constants.p_to_alt( np.flipud(lev) )  * 1000) # in m
 
         with xr.open_dataset(constants.variable_to_filename( 'clw' ), decode_times=True) as clw_full:
             clw = clw_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            CLWglobal = (clw.clw * weight).mean(dim=('lat','lon'))
+            CLWglobal = (clw.clw).mean(dim=('time'))
 
         with xr.open_dataset(constants.variable_to_filename( 'cli' ), decode_times=True) as cli_full:
             cli = cli_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            CLIglobal = (cli.cli * weight).mean(dim=('lat','lon'))
+            CLIglobal = (cli.cli).mean(dim=('time'))
 
         with xr.open_dataset(constants.variable_to_filename( 'ta' ), decode_times=True) as ta_full:
             ta = ta_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            Tglobal = (ta.ta * weight).mean(dim=('lat','lon'))
+            Tglobal = (ta.ta).mean(dim=('time'))
 
         with xr.open_dataset(constants.variable_to_filename( 'hus' ), decode_times=True) as hus_full:
             hus = hus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            SHglobal = (hus.hus * weight).mean(dim=('lat','lon'))  # kg/kg
+            SHglobal = (hus.hus).mean(dim=('time'))  # kg/kg
 
         with xr.open_dataset(constants.variable_to_filename( 'ts' ), decode_times=True) as ts_full:
             ts = ts_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            TSglobal = (ts.ts * weight).mean(dim=('lat','lon')).values  # kg/kg
+            TSglobal = (ts.ts).mean(dim=('time')).values
+
+
 
 
                 #----------------------------- Aerosols ---------------------------#
@@ -196,7 +199,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         else:
             with xr.open_dataset(constants.variable_to_filename( 'o3'), decode_times=True) as o3_full:
                 o3 = o3_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-                O3global = (o3.o3 * weight).mean(dim=('lat','lon'))  # kg/kg
+                O3global = (o3.o3).mean(dim=('time'))  # kg/kg
 
 
         #  Global Mean Mole Fraction of CH4 (time)
@@ -292,91 +295,101 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
             interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLIglobal.values)
             CLIinterp = interpolated(lev, T_time)
 
-        elif 'MRI' in model or 'MIROC' in model:
-            O3interp = O3global
+        # elif 'MRI' in model or 'MIROC' in model:
+        #     O3interp = O3global
 
-            T_plev = np.flipud(Tglobal.plev[:18])
-            T_time = np.arange(np.size(Tglobal.time))
-            T_ready = np.flip(Tglobal.values[:,:18], axis = 1)
-            interpolated = interpolate.interp2d(T_plev, T_time, T_ready)
-            Tinterp = interpolated(lev, T_time)
+        #     T_plev = np.flipud(Tglobal.plev[:18])
+        #     T_time = np.arange(np.size(Tglobal.time))
+        #     T_ready = np.flip(Tglobal.values[:,:18], axis = 1)
+        #     interpolated = interpolate.interp2d(T_plev, T_time, T_ready)
+        #     Tinterp = interpolated(lev, T_time)
 
-            SH_plev = np.flipud(SHglobal.plev[:18])
-            SH_ready = np.flip(SHglobal.values[:,:18], axis = 1)
-            interpolated = interpolate.interp2d(SH_plev, T_time, SH_ready)
-            SHinterp = interpolated(lev, T_time)
+        #     SH_plev = np.flipud(SHglobal.plev[:18])
+        #     SH_ready = np.flip(SHglobal.values[:,:18], axis = 1)
+        #     interpolated = interpolate.interp2d(SH_plev, T_time, SH_ready)
+        #     SHinterp = interpolated(lev, T_time)
 
-            CL_ready = np.flip(CLglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CL_ready)
-            CLinterp = interpolated(lev, T_time)
+        #     CL_ready = np.flip(CLglobal.values, axis = 1)
+        #     interpolated = interpolate.interp2d(np.flipud(plev), T_time, CL_ready)
+        #     CLinterp = interpolated(lev, T_time)
 
-            CLW_ready = np.flip(CLWglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLW_ready)
-            CLWinterp = interpolated(lev, T_time)
+        #     CLW_ready = np.flip(CLWglobal.values, axis = 1)
+        #     interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLW_ready)
+        #     CLWinterp = interpolated(lev, T_time)
 
-            CLI_ready = np.flip(CLIglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLI_ready)
-            CLIinterp = interpolated(lev, T_time)
+        #     CLI_ready = np.flip(CLIglobal.values, axis = 1)
+        #     interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLI_ready)
+        #     CLIinterp = interpolated(lev, T_time)
 
-        else:
-            T_plev = np.flipud(Tglobal.plev[:18])
-            T_time = np.arange(np.size(Tglobal.time))
-            T_ready = np.flip(Tglobal.values[:,:18], axis = 1)
-            interpolated = interpolate.interp2d(T_plev, T_time, T_ready)
-            Tinterp = interpolated(lev, T_time)
+        # else:
+        #     T_plev = np.flipud(Tglobal.plev[:18])
+        #     lat = Tglobal.lat.values
+        #     lon = Tglobal.lon.values
+        #     (x1, y1, z1) = np.meshgrid(lat, T_plev, lon)
+        #     (xx, yy, zz) = np.meshgrid(constants.lat, lev, constants.lon)
+        #     T_ready = np.flip(Tglobal.values[:18,:,:], axis = 0)
+        #     Tinterp = interpolate.interpn((z1), T_ready, (zz))
 
-            SH_plev = np.flipud(SHglobal.plev[:18])
-            SH_ready = np.flip(SHglobal.values[:,:18], axis = 1)
-            interpolated = interpolate.interp2d(SH_plev, T_time, SH_ready)
-            SHinterp = interpolated(lev, T_time)
 
-            O3_plev = np.flipud(O3global.plev[:18])
-            O3_ready = np.flip(O3global.values[:,:18], axis = 1)
-            interpolated = interpolate.interp2d(O3_plev, T_time, O3_ready)
-            O3interp = interpolated(lev, T_time)
+        #     p_ready = np.flip(p_lat.values, axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, np.flipud(plev), p_ready)
+        #     p_lat = interpolated(constants.lat, lev)
 
-            CL_ready = np.flip(CLglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CL_ready)
-            CLinterp = interpolated(lev, T_time)
+        #     air_density = ((p_lat) / (286.9 * Tinterp))
 
-            CLW_ready = np.flip(CLWglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLW_ready)
-            CLWinterp = interpolated(lev, T_time)
 
-            CLI_ready = np.flip(CLIglobal.values, axis = 1)
-            interpolated = interpolate.interp2d(np.flipud(plev), T_time, CLI_ready)
-            CLIinterp = interpolated(lev, T_time)
+        #     SH_plev = np.flipud(SHglobal.plev[:18])
+        #     SH_ready = np.flip(SHglobal.values[:18,:], axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, SH_plev, SH_ready)
+        #     SHinterp = interpolated(constants.lat, lev)
+
+        #     O3_plev = np.flipud(O3global.plev[:18])
+        #     O3_ready = np.flip(O3global.values[:18,:], axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, O3_plev, O3_ready)
+        #     O3interp = interpolated(constants.lat, lev)
+
+        #     CL_ready = np.flip(CLglobal.values, axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, np.flipud(plev), CL_ready)
+        #     CLinterp = interpolated(constants.lat, lev)
+
+        #     CLW_ready = np.flip(CLWglobal.values, axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, np.flipud(plev), CLW_ready)
+        #     CLWinterp = interpolated(constants.lat, lev)
+
+        #     CLI_ready = np.flip(CLIglobal.values, axis = 0)
+        #     interpolated = interpolate.interp2d(T_lat, np.flipud(plev), CLI_ready)
+        #     CLIinterp = interpolated(constants.lat, lev)
 
     #-------------------------- Get top of atmosphere radiative flux data from model for comparison ------------------------#
 
         #  Incoming SW at TOA
         with xr.open_dataset(constants.variable_to_filename( 'rsdt'), decode_times=True) as rsdt_full:
             rsdt = rsdt_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsdt = (rsdt.rsdt * weight).mean(dim=('lat','lon'))
+            rsdt = (rsdt.rsdt).mean(dim=('time'))
 
 
         #  Outgoing SW at TOA
         with xr.open_dataset(constants.variable_to_filename( 'rsut'), decode_times=True) as rsut_full:
             rsut = rsut_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsut = (rsut.rsut * weight).mean(dim=('lat','lon'))
+            rsut = (rsut.rsut).mean(dim=('time'))
 
 
         #  Outgoing SW at TOA assuming clear sky
         with xr.open_dataset(constants.variable_to_filename( 'rsutcs'), decode_times=True) as rsutcs_full:
             rsutcs = rsutcs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsutcs = (rsutcs.rsutcs * weight).mean(dim=('lat','lon'))
+            rsutcs = (rsutcs.rsutcs).mean(dim=('time'))
 
 
         #  Outgoing LW at TOA
         with xr.open_dataset(constants.variable_to_filename( 'rlut'), decode_times=True) as rlut_full:
             rlut = rlut_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rlut = (rlut.rlut * weight).mean(dim=('lat','lon'))
+            rlut = (rlut.rlut).mean(dim=('time'))
 
 
         #  Outgoing LW at TOA assuming clear sky
         with xr.open_dataset(constants.variable_to_filename( 'rlutcs'), decode_times=True) as rlutcs_full:
             rlutcs = rlutcs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rlutcs = (rlutcs.rlutcs * weight).mean(dim=('lat','lon'))
+            rlutcs = (rlutcs.rlutcs).mean(dim=('time'))
 
 
         #  Net TOA flux
@@ -385,7 +398,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         else:
             with xr.open_dataset(constants.variable_to_filename( 'rtmt'), decode_times=True) as rtmt_full:
                 rtmt = rtmt_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-                rtmt = (rtmt.rtmt * weight).mean(dim=('lat','lon'))
+                rtmt = (rtmt.rtmt).mean(dim=('time'))
 
 
     #-------------------------- Surface radiative flux data --------------------------#
@@ -393,43 +406,43 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         #  Incoming SW at surface
         with xr.open_dataset(constants.variable_to_filename( 'rsds'), decode_times=True) as rsds_full:
             rsds = rsds_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsds = (rsds.rsds * weight).mean(dim=('lat','lon'))
+            rsds = (rsds.rsds).mean(dim=('time'))
 
 
         #  Incoming SW at surface assuming clear sky
         with xr.open_dataset(constants.variable_to_filename( 'rsdscs'), decode_times=True) as rsdscs_full:
             rsdscs = rsdscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsdscs = (rsdscs.rsdscs * weight).mean(dim=('lat','lon'))
+            rsdscs = (rsdscs.rsdscs).mean(dim=('time'))
 
 
         #  Outgoing SW at surface
         with xr.open_dataset(constants.variable_to_filename( 'rsus'), decode_times=True) as rsus_full:
             rsus = rsus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsus = (rsus.rsus * weight).mean(dim=('lat','lon'))
+            rsus = (rsus.rsus).mean(dim=('time'))
 
 
         #  Outgoing SW at surface assuming clear sky
         with xr.open_dataset(constants.variable_to_filename( 'rsuscs'), decode_times=True) as rsuscs_full:
             rsuscs = rsuscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rsuscs = (rsuscs.rsuscs * weight).mean(dim=('lat','lon'))
+            rsuscs = (rsuscs.rsuscs).mean(dim=('time'))
 
 
         #  Outgoing LW at surface
         with xr.open_dataset(constants.variable_to_filename( 'rlus'), decode_times=True) as rlus_full:
             rlus = rlus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rlus = (rlus.rlus * weight).mean(dim=('lat','lon'))
+            rlus = (rlus.rlus).mean(dim=('time'))
 
 
         #  Incoming LW at surface
         with xr.open_dataset(constants.variable_to_filename( 'rlds'), decode_times=True) as rlds_full:
             rlds = rlds_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rlds = (rlds.rlds * weight).mean(dim=('lat','lon'))
+            rlds = (rlds.rlds).mean(dim=('time'))
 
 
         #  Incoming LW at surface assuming clear sky
         with xr.open_dataset(constants.variable_to_filename( 'rldscs'), decode_times=True) as rldscs_full:
             rldscs = rldscs_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            rldscs = (rldscs.rldscs * weight).mean(dim=('lat','lon'))
+            rldscs = (rldscs.rldscs).mean(dim=('time'))
 
 
         # Determine albedo values at surface and TOA
@@ -439,20 +452,20 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         albedo_surface = rsus / rsds
         albedo_surface_cs = rsuscs / rsdscs
 
-        model_rad_output = {"rtmt" : rtmt, 
-                        "rsdt" : rsdt,
-                        "rsut" : rsut,
-                        "rsutcs" : rsutcs,
-                        "rlut" : rlut,
-                        "rlutcs" : rlutcs,
-                        "rsds" : rsds,
-                        "rsdscs" : rsdscs,
-                        "rsus" : rsus,
-                        "rsuscs" : rsuscs,
-                        "rlus" : rlus,
-                        "rlds" : rlds,
-                        "rldscs" : rldscs                        
-                        }
+        # model_rad_output = {"rtmt" : rtmt, 
+        #                 "rsdt" : rsdt,
+        #                 "rsut" : rsut,
+        #                 "rsutcs" : rsutcs,
+        #                 "rlut" : rlut,
+        #                 "rlutcs" : rlutcs,
+        #                 "rsds" : rsds,
+        #                 "rsdscs" : rsdscs,
+        #                 "rsus" : rsus,
+        #                 "rsuscs" : rsuscs,
+        #                 "rlus" : rlus,
+        #                 "rlds" : rlds,
+        #                 "rldscs" : rldscs                        
+        #                 }
 
         # #  Setup excel file to store output values
         # book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/model_global_radiation_outputs_dt.xlsx' )
@@ -471,21 +484,21 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
         #-------------------------- Convert mixing ratios to water paths --------------------------#
 
+        air_density = ((p_lat) / (286.9 * Tglobal))
 
         #  cannot be water content - have tried and gives no effect - values are too small
-        air_density = ((lev) / (286.9 * Tinterp))
-        clwc = (CLWinterp * air_density) * 1000
-        ciwc = (CLIinterp * air_density) * 1000
+        clwc = (CLWglobal * air_density) * 1000
+        ciwc = (CLIglobal * air_density) * 1000
 
         prev_alt = 0
-        CLWPglobal = np.zeros_like(CLWinterp)
+        CLWPglobal = np.zeros_like(CLWglobal)
         for i, ( wc, altitude ) in enumerate( zip( np.flipud(clwc), np.flipud(alt) ) ):
             CLWPglobal[i] = wc * ( altitude - prev_alt )
             prev_alt = altitude
         CLWPglobal = np.flipud(CLWPglobal)
 
         prev_alt = 0
-        CIWPglobal = np.zeros_like(CLWinterp)
+        CIWPglobal = np.zeros_like(CLWglobal)
         for i, ( wc, altitude ) in enumerate( zip( np.flipud(ciwc), np.flipud(alt) ) ):
             CIWPglobal[i] = wc * ( altitude - prev_alt )
             prev_alt = altitude
@@ -495,20 +508,19 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         #-------------------------- Set dictionaries --------------------------#
 
 
-        model_CLglobals[name] = CLinterp
+        model_CLglobals[name] = CLglobal
         model_CLWPglobals[name] = CLWPglobal
         model_CIWPglobals[name] = CIWPglobal
-        model_Tglobals[name] = Tinterp
+        model_Tglobals[name] = Tglobal
         model_TSglobals[name] = TSglobal
-        model_SHglobals[name] = SHinterp
+        model_SHglobals[name] = SHglobal
         model_albedos[name] = albedo_surface
-        model_O3globals[name] = O3interp
+        model_O3globals[name] = O3global
         model_ch4globals[name] = ch4
         model_n2oglobals[name] = n2o
         model_cfc11globals[name] = cfc11
         model_cfc12globals[name] = cfc12
         model_cfc113globals[name] = cfc113
-        model_INSOLATIONglobals[name] = rsdt
 
 
     #-------------------------- Generate ensemble means --------------------------#
@@ -527,7 +539,6 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     cfc11mean = ensemble_mean(model_cfc11globals)
     cfc12mean = ensemble_mean(model_cfc12globals)
     cfc113mean = ensemble_mean(model_cfc113globals)
-    INSOLATIONmean = ensemble_mean(model_INSOLATIONglobals)
 
    
 
@@ -539,39 +550,31 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     control_rsutcs = 0
     control_rlut = 0
     control_rlutcs = 0
-    control_rsds = 0
-    control_rsdscs = 0
 
-    dt = np.size(Tglobal.time)
 
-    for k in range(0, np.size(Tglobal.time)):
+    absorbermean = {'O3': np.transpose(O3mean), 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
+        'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
 
-        absorbermean = {'O3': O3mean[k,:], 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
+    state.Tatm[:] = Tmean
+    state.Ts[:] = TSmean
 
-        state.Tatm[:] = Tmean[k,:]
-        state.Ts[:] = TSmean[k]
-
-        for i in range(lev.size):
-            control_rad = RRTMG(state=state, 
-                        albedo=albedomean[k],
-                        absorber_vmr=absorbermean,
-                        insolation = INSOLATIONmean[k],
-                        specific_humidity=SHmean[k,:],
-                        cldfrac=CLmean[k,:],
-                        verbose=False,
-                        clwp = CLWPmean[k,:],
-                        ciwp = CIWPmean[k,:],
-                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
-                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
-                        )
-            control_rad.compute_diagnostics()
-        control_rsut = control_rsut + control_rad.SW_flux_up[0]/dt
-        control_rsutcs = control_rsutcs + control_rad.SW_flux_up_clr[0]/dt
-        control_rsds = control_rsds + control_rad.SW_flux_down[-1]/dt
-        control_rsdscs = control_rsdscs + control_rad.SW_flux_down_clr[-1]/dt
-        control_rlut = control_rlut + control_rad.LW_flux_up[0]/dt
-        control_rlutcs = control_rlutcs + control_rad.LW_flux_up_clr[0]/dt
+    for i in range(lev.size):
+        control_rad = RRTMG(state=state, 
+                    albedo=albedomean,
+                    absorber_vmr=absorbermean,
+                    specific_humidity=np.transpose(SHmean),
+                    cldfrac=np.transpose(CLmean),
+                    verbose=False,
+                    clwp = np.transpose(CLWPmean),
+                    ciwp = np.transpose(CIWPmean),
+                    r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                    r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                    )
+        control_rad.compute_diagnostics()
+    control_rsut = control_rsut + control_rad.SW_flux_up[:,0]
+    control_rsutcs = control_rsutcs + control_rad.SW_flux_up_clr[:,0]
+    control_rlut = control_rlut + control_rad.LW_flux_up[:,0]
+    control_rlutcs = control_rlutcs + control_rad.LW_flux_up_clr[:,0]
 
 
 
@@ -579,16 +582,12 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     #  Print and check mean data
     print('===MEAN ENSEMBLE DATA===')
     print('rsut:')
-    print(control_rsut)
+    print(np.mean(control_rsut))
     print('rsutcs:')
-    print(control_rsutcs)
-    print('rsds:')
-    print(control_rsds)
-    print('rsdscs:')
-    print(control_rsdscs)
+    print(np.mean(control_rsutcs))
     print('rlut:')
-    print(control_rlut)
+    print(np.mean(control_rlut))
     print('rlutcs:')
-    print(control_rlutcs)
+    print(np.mean(control_rlutcs))
 
 

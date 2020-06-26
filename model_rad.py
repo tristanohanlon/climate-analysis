@@ -66,6 +66,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     model_cfc11globals = {}
     model_cfc12globals = {}
     model_cfc113globals = {}
+    model_INSOLATIONglobals = {}
     
     SWcre_CLdeltas = {}
     LWcre_CLdeltas = {}
@@ -99,11 +100,11 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     LWcs_SHdeltas = {}
 
 
-    SWcre_lr15deltas = {}
-    LWcre_lr15deltas = {}
+    SWcre_lr5deltas = {}
+    LWcre_lr5deltas = {}
 
-    SWcre_lr45deltas = {}
-    LWcre_lr45deltas = {}
+    SWcre_lr25deltas = {}
+    LWcre_lr25deltas = {}
 
     SWcre_lr60deltas = {}
     LWcre_lr60deltas = {}
@@ -400,17 +401,17 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
                         }
 
         #  Setup excel file to store output values
-        book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/model_global_radiation_outputs.xlsx' )
-        sheet = book.active
+        # book = openpyxl.load_workbook( location + 'climate-analysis/reduced_data/model_global_radiation_outputs.xlsx' )
+        # sheet = book.active
 
-        # Store global means in excel file
-        start_row = f
-        sheet.cell(row=start_row, column=1).value = name
+        # # Store global means in excel file
+        # start_row = f
+        # sheet.cell(row=start_row, column=1).value = name
 
-        for s, val in enumerate(model_rad_output.values()):
-            sheet.cell(row=start_row, column=s+2).value = (val.data).item()
-        book.save( location + 'climate-analysis/reduced_data//model_global_radiation_outputs.xlsx' )
-        f = f+1 # increase row number by 1 to store excel data
+        # for s, val in enumerate(model_rad_output.values()):
+        #     sheet.cell(row=start_row, column=s+2).value = (val.data).item()
+        # book.save( location + 'climate-analysis/reduced_data//model_global_radiation_outputs.xlsx' )
+        # f = f+1 # increase row number by 1 to store excel data
 
 
 
@@ -453,6 +454,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         model_cfc11globals[name] = cfc11
         model_cfc12globals[name] = cfc12
         model_cfc113globals[name] = cfc113
+        model_INSOLATIONglobals[name] = rsdt
 
 
     #-------------------------- Generate ensemble means --------------------------#
@@ -471,6 +473,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     cfc11mean = ensemble_mean(model_cfc11globals)
     cfc12mean = ensemble_mean(model_cfc12globals)
     cfc113mean = ensemble_mean(model_cfc113globals)
+    INSOLATIONmean = ensemble_mean(model_INSOLATIONglobals)
 
     absorbermean = {'O3': O3mean, 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
         'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
@@ -488,7 +491,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
     # ax.legend(bbox_to_anchor=(1, 1))
     # ax.set_ylabel('Altitude $km$')
-    # ax.set_xlabel('$O_3$')
+    # ax.set_xlabel('$O_3$ ($mol/mol$)')
     # plt.savefig( location + 'Images/RRTGM/' + label + "_o3.pdf", format="pdf", bbox_inches='tight')
     # plt.show()
 
@@ -504,6 +507,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     for i in range(lev.size):
         control_rad = RRTMG(state=state, 
                     albedo=albedomean,
+                    insolation = INSOLATIONmean,
                     absorber_vmr=absorbermean,
                     specific_humidity=SHmean,
                     cldfrac=CLmean,
@@ -517,18 +521,52 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
    
     #  Print and check mean data
     print('===MEAN ENSEMBLE DATA===')
-    print('net_sw:')
-    print(control_rad.SW_flux_net[0])
-    print('net_lw:')
-    print(control_rad.LW_flux_net[0])
     print('rsut:')
     print(control_rad.SW_flux_up[0])
     print('rsutcs:')
     print(control_rad.SW_flux_up_clr[0])
+    print('rsds:')
+    print(control_rad.SW_flux_down[-1])
+    print('rsdscs:')
+    print(control_rad.SW_flux_down_clr[-1])
     print('rlut:')
     print(control_rad.LW_flux_up[0])
     print('rlutcs:')
     print(control_rad.LW_flux_up_clr[0])
+    print('rldscs:')
+    print(control_rad.LW_flux_down_clr[-1])
+
+    labels = ["rsutcs", "rsdscs", "rlutcs"]
+
+    rad_data = [control_rad.SW_flux_up_clr[0], control_rad.SW_flux_down_clr[-1], control_rad.LW_flux_up_clr[0]]
+    model_data = [51.5, 245.4, 263.8]
+    width=0.4
+    fig, ax = plt.subplots()
+    
+    label_added = False
+    for i, data in enumerate(rad_data):
+        if not label_added:
+            ax.scatter(i, data, s=25, marker=".", label="RRTMG Output", c="k")
+            label_added = True
+        else:
+            ax.scatter(i, data, s=25, marker=".", c="k")
+    
+    label_added = False
+    for i, data in enumerate(model_data):
+        if not label_added:
+            ax.scatter(i, data, s=25, marker="x", label="Model Output", c="k")
+            label_added = True
+        else:
+            ax.scatter(i, data, s=25, marker="x", c="k")
+
+
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.legend(bbox_to_anchor=(1, 1))
+    ax.set_ylabel('$Wm^{-2}$')
+    plt.savefig( location + 'Images/RRTGM/' + label + "_model_rad_output_compare.pdf", format="pdf", bbox_inches='tight')
+    plt.show()
+
 
 
     #-------------------------- Generate CL Bias Data --------------------------#
@@ -652,7 +690,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
 
     for i in range(lev.size):
-        lr15_rad = RRTMG(state=state, 
+        lr5_rad = RRTMG(state=state, 
                     albedo=albedomean,
                     absorber_vmr=absorbermean,
                     specific_humidity=SHmean,
@@ -663,13 +701,13 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
                     r_liq = np.zeros_like(state.Tatm) + 15.0,  # compute variances from these model values
                     r_ice = np.zeros_like(state.Tatm) + ice_r,               
                     )
-        lr15_rad.compute_diagnostics()
-    SWcre_lr15deltas = (lr15_rad.SW_flux_up[0] - lr15_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
-    LWcre_lr15deltas = (lr15_rad.LW_flux_up_clr[0] - lr15_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+        lr5_rad.compute_diagnostics()
+    SWcre_lr5deltas = (lr5_rad.SW_flux_up[0] - lr5_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_lr5deltas = (lr5_rad.LW_flux_up_clr[0] - lr5_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
 
 
     for i in range(lev.size):
-        lr45_rad = RRTMG(state=state, 
+        lr25_rad = RRTMG(state=state, 
                     albedo=albedomean,
                     absorber_vmr=absorbermean,
                     specific_humidity=SHmean,
@@ -680,9 +718,9 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
                     r_liq = np.zeros_like(state.Tatm) + 45.0,  # compute variances from these model values
                     r_ice = np.zeros_like(state.Tatm) + ice_r,               
                     )
-        lr45_rad.compute_diagnostics()
-    SWcre_lr45deltas = (lr45_rad.SW_flux_up[0] - lr45_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
-    LWcre_lr45deltas = (lr45_rad.LW_flux_up_clr[0] - lr45_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
+        lr25_rad.compute_diagnostics()
+    SWcre_lr25deltas = (lr25_rad.SW_flux_up[0] - lr25_rad.SW_flux_up_clr[0]) - (control_rad.SW_flux_up[0] - control_rad.SW_flux_up_clr[0])
+    LWcre_lr25deltas = (lr25_rad.LW_flux_up_clr[0] - lr25_rad.LW_flux_up[0]) - (control_rad.LW_flux_up_clr[0] - control_rad.LW_flux_up[0])
 
 
     for i in range(lev.size):
@@ -835,9 +873,9 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
     #  Liquid and Ice Particle Plots
 
-    labels = ["$r_{liq} = 15 \mu m$", "$r_{liq} = 45 \mu m$", "$r_{liq} = 60 \mu m$", "$r_{ice} = 30 \mu m$", "$r_{ice} = 80 \mu m$", "$r_{ice} = 130 \mu m$"]
-    sw_r_data = [SWcre_lr15deltas, SWcre_lr45deltas, SWcre_lr60deltas, SWcre_ir30deltas, SWcre_ir80deltas, SWcre_ir130deltas]
-    lw_r_data = [LWcre_lr15deltas, LWcre_lr45deltas, LWcre_lr60deltas, LWcre_ir30deltas, LWcre_ir80deltas, LWcre_ir130deltas]
+    labels = ["$r_{liq} = 5 \mu m$", "$r_{liq} = 25 \mu m$", "$r_{liq} = 60 \mu m$", "$r_{ice} = 30 \mu m$", "$r_{ice} = 80 \mu m$", "$r_{ice} = 130 \mu m$"]
+    sw_r_data = [SWcre_lr5deltas, SWcre_lr25deltas, SWcre_lr60deltas, SWcre_ir30deltas, SWcre_ir80deltas, SWcre_ir130deltas]
+    lw_r_data = [LWcre_lr5deltas, LWcre_lr25deltas, LWcre_lr60deltas, LWcre_ir30deltas, LWcre_ir80deltas, LWcre_ir130deltas]
     width=0.4
     fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
     fig.suptitle('Changes in Cloud Radiative Effect from Ensemble Mean with Particle Size Perturbations')
