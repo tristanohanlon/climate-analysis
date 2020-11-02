@@ -36,8 +36,8 @@ import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
 data = 'CMIP6-AMIP-GFDL-CM4'
-location = constants.laptop + 'Data/'
-data_type = 'ch4global'
+location = constants.home + 'Data/'
+data_type = 'cl'
 
 if data == 'ECMWF':
     with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: 
@@ -54,8 +54,23 @@ if data == 'CALIPSO-GOCCP':
 else:   
     with Dataset(location + data + '/' + data_type + constants.model_dict_all[ data ], 'r') as f: 
         print(f.variables.keys())
-        data = f.variables[ 'ch4global' ][:]
+        data = f.variables[ 'cl' ][:]
         print(np.shape(data))
+
+for n in range(data.shape[0]):
+    print(n)
+
+x = data[0,:,:,:]
+print(x)
+print(np.shape(x))
+
+
+
+
+
+
+
+
         # time = f.variables['time'][:]
         # print(time)
 

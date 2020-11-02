@@ -13,7 +13,7 @@ import math
 home = 'E:/University/University/MSc/Models/'
 network = '//synthesis/E/University/University/MSc/Models/'
 uni = 'C:/Users/toha006/University/University/MSc/Models/'
-hdd = 'E:/MSc/Models/'
+hdd = 'D:/MSc/Models/'
 laptop = 'D:/'
 
 
@@ -173,6 +173,23 @@ def global2DMean(Data, latitudes):
     sumWeights2D = np.sum(areaWeights2D,axis=(0,1))
     weightedMean = sumWeighted/sumWeights2D
     return weightedMean
+
+
+# Function to calculate the global mean of a variable that has
+# already been averaged over time. 
+# Data is (alt, lat)
+# Input the raw latitudes from the variable file.
+# Output is a altitude array
+def globaltime_latMean(Data, latitudes):
+    weightedMean = np.zeros(Data.shape[0])
+    for nt in range(Data.shape[0]):
+        areaWeights = np.cos(latitudes*np.pi/180)
+        weightedMatrix = Data[nt]*areaWeights
+        sumWeighted = np.sum(weightedMatrix,axis=0)
+        sumWeights = np.sum(areaWeights,axis=0)
+        weightedMean[nt] = sumWeighted/sumWeights
+    return weightedMean
+
 
 # Function to calculate the global mean of a variable that has
 # already been averaged over time. 

@@ -177,7 +177,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
         with xr.open_dataset(constants.variable_to_filename( 'hus' ), decode_times=True) as hus_full:
             hus = hus_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-            SHglobal = (hus.hus).mean(dim=('lon','time'))  # kg/kg
+            SHglobal = (hus.hus).mean(dim=('lon','time'))  # kg/kg, Specific humidity is the mass fraction of water vapor in (moist) air.
 
         with xr.open_dataset(constants.variable_to_filename( 'ts' ), decode_times=True) as ts_full:
             ts = ts_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
@@ -203,7 +203,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         else:
             with xr.open_dataset(constants.variable_to_filename( 'o3'), decode_times=True) as o3_full:
                 o3 = o3_full.sel(time=slice(start,end), lat=slice(lat_bnd_1, lat_bnd_2))
-                O3global = (o3.o3).mean(dim=('lon','time'))  # kg/kg
+                O3global = (o3.o3).mean(dim=('lon','time'))  # mol/mol
 
 
         #  Global Mean Mole Fraction of CH4 (time)
@@ -638,9 +638,9 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
     for i in range(lev.size):
         control_rad = RRTMG(state=state, 
-                    albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
-                    insolation =np.zeros_like(state.Ts) + ideal_insolation_mean,
-                    absorber_vmr=absorbermean,
+                    albedo= albedomean,
+                    insolation = INSOLATIONmean,
+                    absorber_vmr= absorbermean,
                     specific_humidity=np.transpose(SHmean),
                     cldfrac=np.transpose(CLmean),
                     verbose=False,
