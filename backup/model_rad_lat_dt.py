@@ -63,11 +63,8 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     model_SHglobals = {}
     model_albedos = {}
     model_albedos_cs = {}
-
-    model_rsutcsglobals = {}
-    model_rsutglobals = {}
-    model_rlutcsglobals = {}
-    model_rlutglobals = {}
+    model_aldir = {}
+    model_aldif = {}
 
     model_O3globals = {}
     model_ch4globals = {}
@@ -395,6 +392,9 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         albedo_surface_raw = rsus / rsds
         albedo_surface_cs_raw = rsuscs / rsdscs
 
+        aldir_raw = rlus / rldscs
+        aldif_raw = rlus / rlds
+
        #---Approximate missing nan values in albedo data---#  
        
         imp = SimpleImputer(missing_values=np.nan, strategy='mean')
@@ -405,10 +405,21 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         imp.fit(albedo_surface_raw)  
         albedo_surface = imp.transform(albedo_surface_raw)
 
+        imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+        imp.fit(aldir_raw)  
+        aldir = imp.transform(aldir_raw)
+
+        imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+        imp.fit(aldif_raw)  
+        aldif = imp.transform(aldif_raw)
+
+
         Tinterp = np.zeros((lev.shape[0], lat.shape[0]))
         TSinterp = np.zeros(lat.shape)
         albedo_surface_interp = np.zeros(lat.shape)
         albedo_surface_cs_interp = np.zeros(lat.shape)
+        aldir_interp = np.zeros(lat.shape)
+        aldif_interp = np.zeros(lat.shape)
 
         rsdt_interp = np.zeros(lat.shape)
         SHinterp = np.zeros((lev.shape[0], lat.shape[0]))
@@ -468,7 +479,7 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
                 interpolated = interpolate.interp2d(T_lat, plev[:,nt], CLIglobal.values[nt])
                 CLIinterp = interpolated(lat, lev)
 
-            elif 'MRI' in model:
+            elif 'MRI' in model or 'MIROC' in model:
 
                 T_plev = np.flipud(Tglobal.plev[1:])
                 T_ready = np.flip(Tglobal.values[:,1:,:], axis = 1)
@@ -493,6 +504,11 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
                 interpolated = interpolate.interp2d(T_lat, np.flipud(plev[:,nt]), p_ready[nt])
                 p_interp = interpolated(lat, lev)
                 air_density = ((p_interp) / (286.9 * Tinterp_temp))
+
+            #     O3_plev = np.flipud(O3global.lev * 100000)
+            #     O3_ready = np.flip(O3global.values, axis = 0)
+            #     interpolated = interpolate.interp2d(O3global.lat, O3_plev, O3_ready)
+            #     O3interp = interpolated(lat, lev)
 
                 O3_plev = np.flipud(O3global.lev[:] * 100000)
                 O3_lat = np.flipud(O3global.lat[:])
@@ -533,6 +549,12 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
                 interpolated = interpolate.interp1d(T_lat, albedo_surface_cs[nt], kind = 'cubic', fill_value="extrapolate")
                 albedo_surface_cs_interp = np.vstack((albedo_surface_cs_interp, interpolated(lat)))
+
+                # interpolated = interpolate.interp1d(T_lat, aldir[nt], kind = 'cubic', fill_value="extrapolate")
+                # aldir_interp = np.vstack((aldir, interpolated(lat)))
+
+                # interpolated = interpolate.interp1d(T_lat, aldif[nt], kind = 'cubic', fill_value="extrapolate")
+                # aldif_interp = np.vstack((aldif, interpolated(lat)))
 
                 interpolated = interpolate.interp1d(T_lat, rsdt[nt], kind = 'cubic', fill_value="extrapolate")
                 rsdt_interp = np.vstack((rsdt_interp, interpolated(lat)))
@@ -595,6 +617,8 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         TSinterp = TSinterp[1:,:]
         albedo_surface_cs_interp = albedo_surface_cs_interp[1:,:]
         albedo_surface_interp = albedo_surface_interp[1:,:]
+        # aldir_interp = aldir_interp[1:,:]
+        # aldif_interp = aldif_interp[1:,:]
 
         rsdt_interp = rsdt_interp[1:,:]
         SHinterp = np.swapaxes(np.swapaxes(SHinterp,0,2),1,2)[1:,:,:]
@@ -615,12 +639,8 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         model_SHglobals[name] = SHinterp
         model_albedos[name] = albedo_surface_interp
         model_albedos_cs[name] = albedo_surface_cs_interp
-
-        model_rsutcsglobals[name] = constants.globalMean(np.nanmean(rsutcs, axis = 0), T_lat)
-        model_rsutglobals[name] = constants.globalMean(np.nanmean(rsut, axis = 0), T_lat)
-        model_rlutcsglobals[name] = constants.globalMean(np.nanmean(rlutcs, axis = 0), T_lat)
-        model_rlutglobals[name] = constants.globalMean(np.nanmean(rlut, axis = 0), T_lat)
-
+        model_aldir[name] = aldir_interp
+        model_aldif[name] = aldif_interp
         model_O3globals[name] = O3interp
         model_ch4globals[name] = ch4
         model_n2oglobals[name] = n2o
@@ -651,11 +671,8 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     SHmean = ensemble_mean(model_SHglobals)
     albedomean = ensemble_mean(model_albedos)
     albedomean_cs = ensemble_mean(model_albedos_cs)
-
-    rsutcsmean = ensemble_mean(model_rsutcsglobals)
-    rsutmean = ensemble_mean(model_rsutglobals)
-    rlutcsmean = ensemble_mean(model_rlutcsglobals)
-    rlutmean = ensemble_mean(model_rlutglobals)
+    aldirmean = ensemble_mean(model_aldir)
+    aldifmean = ensemble_mean(model_aldif)
 
     O3mean = ensemble_mean(model_O3globals)
     ch4mean = ensemble_mean(model_ch4globals)
@@ -714,20 +731,20 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
         control_rlutcs = np.dstack((control_rlutcs, control_rad.LW_flux_up_clr[:,0]))
         control_rldscs = np.dstack((control_rldscs, control_rad.LW_flux_down_clr[:,-1]))
 
-        # full_control_rsut = np.dstack((full_control_rsut, control_rad.SW_flux_up[:,:]))
-        # full_control_rsutcs = np.dstack((full_control_rsutcs, control_rad.SW_flux_up_clr[:,:]))
-        # full_control_rsdscs = np.dstack((full_control_rsdscs, control_rad.SW_flux_down_clr[:,:]))
-        # full_control_rlut = np.dstack((full_control_rlut, control_rad.LW_flux_up[:,:]))
-        # full_control_rlutcs = np.dstack((full_control_rlutcs, control_rad.LW_flux_up_clr[:,:]))
-        # full_control_rldscs = np.dstack((full_control_rldscs, control_rad.LW_flux_down_clr[:,:]))
+        full_control_rsut = np.dstack((full_control_rsut, control_rad.SW_flux_up[:,:]))
+        full_control_rsutcs = np.dstack((full_control_rsutcs, control_rad.SW_flux_up_clr[:,:]))
+        full_control_rsdscs = np.dstack((full_control_rsdscs, control_rad.SW_flux_down_clr[:,:]))
+        full_control_rlut = np.dstack((full_control_rlut, control_rad.LW_flux_up[:,:]))
+        full_control_rlutcs = np.dstack((full_control_rlutcs, control_rad.LW_flux_up_clr[:,:]))
+        full_control_rldscs = np.dstack((full_control_rldscs, control_rad.LW_flux_down_clr[:,:]))
 
     #--------- Full profile: remove the zero data and swap axes ----------#
-    # full_control_rsut = np.swapaxes(full_control_rsut,0,2)[1:,:,:]
-    # full_control_rsutcs = np.swapaxes(full_control_rsutcs,0,2)[1:,:,:]
-    # full_control_rsdscs = np.swapaxes(full_control_rsdscs,0,2)[1:,:,:]
-    # full_control_rlut = np.swapaxes(full_control_rlut,0,2)[1:,:,:]
-    # full_control_rlutcs = np.swapaxes(full_control_rlutcs,0,2)[1:,:,:]
-    # full_control_rldscs = np.swapaxes(full_control_rldscs,0,2)[1:,:,:]
+    full_control_rsut = np.swapaxes(full_control_rsut,0,2)[1:,:,:]
+    full_control_rsutcs = np.swapaxes(full_control_rsutcs,0,2)[1:,:,:]
+    full_control_rsdscs = np.swapaxes(full_control_rsdscs,0,2)[1:,:,:]
+    full_control_rlut = np.swapaxes(full_control_rlut,0,2)[1:,:,:]
+    full_control_rlutcs = np.swapaxes(full_control_rlutcs,0,2)[1:,:,:]
+    full_control_rldscs = np.swapaxes(full_control_rldscs,0,2)[1:,:,:]
 
 
     #--------- Diagnostic plots of full profile data ----------#
@@ -746,267 +763,249 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
 
 
     #--------- Surface and TOA: remove the zero data and swap axes ----------#
-    # control_rsdt = np.swapaxes(control_rsdt[0],0,1)[1:,:]
+    control_rsdt = np.swapaxes(control_rsdt[0],0,1)[1:,:]
     control_rsut = np.swapaxes(control_rsut[0],0,1)[1:,:]
     control_rsutcs = np.swapaxes(control_rsutcs[0],0,1)[1:,:]
-    # control_rsdscs = np.swapaxes(control_rsdscs[0],0,1)[1:,:]
+    control_rsdscs = np.swapaxes(control_rsdscs[0],0,1)[1:,:]
     control_rlut = np.swapaxes(control_rlut[0],0,1)[1:,:]
     control_rlutcs = np.swapaxes(control_rlutcs[0],0,1)[1:,:]
-    # control_rldscs = np.swapaxes(control_rldscs[0],0,1)[1:,:]
+    control_rldscs = np.swapaxes(control_rldscs[0],0,1)[1:,:]
 
-    control_rsut = constants.globalMean(np.mean(control_rsut, axis = 0), lat)
-    control_rsutcs = constants.globalMean(np.mean(control_rsutcs, axis = 0), lat)
-    control_rlut = constants.globalMean(np.mean(control_rlut, axis = 0), lat)
-    control_rlutcs = constants.globalMean(np.mean(control_rlutcs, axis = 0), lat)
-
-    control_sw_cre = control_rsutcs - control_rsut
-    control_lw_cre = control_rlutcs - control_rlut
-
+   
     #  Print and check mean data - single model only
 
     print('===MEAN ENSEMBLE DATA===')
-    # print('rsdt:')
-    # print(constants.globalMean(np.mean(control_rsdt, axis = 0), lat))
-    # print('rsdscs:')
-    # print(constants.globalMean(np.mean(control_rsdscs, axis = 0), lat))
-    # print('rldscs:')
-    # print(constants.globalMean(np.mean(control_rldscs, axis = 0), lat))
-    print('rsutcs', ':', control_rsutcs)
-    print('rlutcs', ':', control_rlutcs)
-    print('rsut', ':', control_rsut)
-    print('rlut', ':', control_rlut)
-    print('SW CRE', ':', control_sw_cre)
-    print('LW CRE', ':', control_lw_cre)
+    print('rsdt:')
+    print(constants.globalMean(np.mean(control_rsdt, axis = 0), lat))
+    print('rsutcs:')
+    print(constants.globalMean(np.mean(control_rsutcs, axis = 0), lat))
+    print('rsdscs:')
+    print(constants.globalMean(np.mean(control_rsdscs, axis = 0), lat))
+    print('rlutcs:')
+    print(constants.globalMean(np.mean(control_rlutcs, axis = 0), lat))
+    print('rldscs:')
+    print(constants.globalMean(np.mean(control_rldscs, axis = 0), lat))
+    print('rsut:')
+    print(constants.globalMean(np.mean(control_rsut, axis = 0), lat))
+    print('rlut:')
+    print(constants.globalMean(np.mean(control_rlut, axis = 0), lat))
     print('===MEAN MODEL DATA===')
-    # print('rldscs:')
-    # print(model_rad_output['rldscs'])
-    # print('rsdscs:')
-    # print(model_rad_output['rsdscs'])
-    # print('rsdt:')
-    # print(model_rad_output['rsdt'])
-    print('rsutcs', ':', rsutcsmean)
-    print('rlutcs', ':', rlutcsmean)
-    print('rsut', ':', rsutmean)
-    print('rlut', ':', rlutmean)
-    print('SW CRE', ':', (rsutcsmean - rsutmean))
-    print('LW CRE', ':', (rlutcsmean - rlutmean))
+    print('rsdt:')
+    print(model_rad_output['rsdt'])
+    print('rsutcs:')
+    print(model_rad_output['rsutcs'])
+    print('rsdscs:')
+    print(model_rad_output['rsdscs'])
+    print('rlutcs:')
+    print(model_rad_output['rlutcs'])
+    print('rldscs:')
+    print(model_rad_output['rldscs'])
+    print('rsut:')
+    print(model_rad_output['rsut'])
+    print('rlut:')
+    print(model_rad_output['rlut'])
 
 
-    # #---graph over time---#
-    # fig, ax = plt.subplots()
-    # label_added = False
-    # for i, data in enumerate(constants.globaltime_latMean(control_rsdt, lat)):
-    #     if not label_added:
-    #         ax.scatter(i, data, s=25, marker=".", label="RRTMG_rsdt", c="k")
-    #         ax.scatter(i, constants.globaltime_latMean(rsdt, T_lat)[i], s=25, marker="x", label="model_rsdt", c="b")
-    #         label_added = True
-    #     else:
-    #         ax.scatter(i, data, s=25, marker=".", c="k")
-    #         ax.scatter(i, constants.globaltime_latMean(rsdt, T_lat)[i], s=25, marker="x", c="b")
-
-    # ax.set_ylabel( 'mean monthly value rsdt (W/m^2)' )
-    # ax.set_xlabel( 'time (months)' )
-    # ax.legend(loc='upper right')
-
-    # plt.show()
-
-    # #---comparitive latitude plot at specific time---#
-    # fig, ax = plt.subplots()
-    # ax.scatter(lat, control_rsdt[0], s=25, marker=".", label="Jan RRTMG_rsdt", c="k")
-    # ax.scatter(T_lat, rsdt[0], s=25, marker="x", label="Jan model_rsdt", c="k")
-    # ax.scatter(lat, control_rsdt[2], s=25, marker=".", label="March RRTMG_rsdt", c="b")
-    # ax.scatter(T_lat, rsdt[2], s=25, marker="x", label="March model_rsdt", c="b")
-    # ax.scatter(lat, control_rsdt[5], s=25, marker=".", label="June RRTMG_rsdt", c="r")
-    # ax.scatter(T_lat, rsdt[5], s=25, marker="x", label="June model_rsdt", c="r")
-
-    # ax.set_ylabel( 'rsdt (W/m^2)' )
-    # ax.set_xlabel( 'latitude' )
-    # ax.legend(loc='upper right')
-    # plt.show()
 
 
-    labels = ["rsutcs", "rlutcs", "rsut", "rlut"]
 
-    rad_data = [control_rsutcs, control_rlutcs, control_rsut, control_rlut]
-    model_data = [rsutcsmean, rlutcsmean, rsutmean, rlutmean]
-    # width=0.4
+    #---graph over time---#
     fig, ax = plt.subplots()
-    
     label_added = False
-    for i, data in enumerate(rad_data):
+    for i, data in enumerate(constants.globaltime_latMean(control_rsdt, lat)):
         if not label_added:
-            ax.scatter(i, data, s=25, marker=".", label="RRTMG Output", c="k")
+            ax.scatter(i, data, s=25, marker=".", label="RRTMG_rsdt", c="k")
+            ax.scatter(i, constants.globaltime_latMean(rsdt, T_lat)[i], s=25, marker="x", label="model_rsdt", c="b")
             label_added = True
         else:
             ax.scatter(i, data, s=25, marker=".", c="k")
-    
-    label_added = False
-    for i, data in enumerate(model_data):
-        if not label_added:
-            ax.scatter(i, data, s=25, marker="x", label="Model Output", c="k")
-            label_added = True
-        else:
-            ax.scatter(i, data, s=25, marker="x", c="k")
+            ax.scatter(i, constants.globaltime_latMean(rsdt, T_lat)[i], s=25, marker="x", c="b")
 
+    ax.set_ylabel( 'mean monthly value rsdt (W/m^2)' )
+    ax.set_xlabel( 'time (months)' )
+    ax.legend(loc='upper right')
 
-    ax.set_xticks(range(len(labels)))
-    ax.set_xticklabels(labels)
-    ax.legend(bbox_to_anchor=(1, 1))
-    ax.set_ylabel('$Wm^{-2}$')
-    plt.savefig( location + 'Images/RRTGM/' + label + "_model_rad_output_compare.pdf", format="pdf", bbox_inches='tight')
     plt.show()
+
+    #---comparitive latitude plot at specific time---#
+    fig, ax = plt.subplots()
+    ax.scatter(lat, control_rsdt[0], s=25, marker=".", label="Jan RRTMG_rsdt", c="k")
+    ax.scatter(T_lat, rsdt[0], s=25, marker="x", label="Jan model_rsdt", c="k")
+    ax.scatter(lat, control_rsdt[2], s=25, marker=".", label="March RRTMG_rsdt", c="b")
+    ax.scatter(T_lat, rsdt[2], s=25, marker="x", label="March model_rsdt", c="b")
+    ax.scatter(lat, control_rsdt[5], s=25, marker=".", label="June RRTMG_rsdt", c="r")
+    ax.scatter(T_lat, rsdt[5], s=25, marker="x", label="June model_rsdt", c="r")
+
+    ax.set_ylabel( 'rsdt (W/m^2)' )
+    ax.set_xlabel( 'latitude' )
+    ax.legend(loc='upper right')
+    plt.show()
+
+
+    # labels = ["rsutcs", "rsdscs", "rlutcs", "rldscs", "rsut", "rlut"]
+
+    # rad_data = [constants.globalMean(control_rsutcs, lat), constants.globalMean(control_rsdscs, lat), constants.globalMean(control_rlutcs, lat), constants.globalMean(control_rldscs, lat), constants.globalMean(control_rsut, lat), constants.globalMean(control_rlut, lat)]
+    # model_data = [model_rad_output['rsutcs'], model_rad_output['rsdscs'], model_rad_output['rlutcs'], model_rad_output['rldscs'], model_rad_output['rsut'], model_rad_output['rlut']]
+    # # width=0.4
+    # fig, ax = plt.subplots()
+    
+    # label_added = False
+    # for i, data in enumerate(rad_data):
+    #     if not label_added:
+    #         ax.scatter(i, data, s=25, marker=".", label="RRTMG Output", c="k")
+    #         label_added = True
+    #     else:
+    #         ax.scatter(i, data, s=25, marker=".", c="k")
+    
+    # label_added = False
+    # for i, data in enumerate(model_data):
+    #     if not label_added:
+    #         ax.scatter(i, data, s=25, marker="x", label="Model Output", c="k")
+    #         label_added = True
+    #     else:
+    #         ax.scatter(i, data, s=25, marker="x", c="k")
+
+
+    # ax.set_xticks(range(len(labels)))
+    # ax.set_xticklabels(labels)
+    # ax.legend(bbox_to_anchor=(1, 1))
+    # ax.set_ylabel('$Wm^{-2}$')
+    # plt.savefig( location + 'Images/RRTGM/' + label + "_model_rad_output_compare.pdf", format="pdf", bbox_inches='tight')
+    # plt.show()
 
 
     #-------------------------- Generate CL Bias Data --------------------------#
 
     for model_name, model_cl_value in model_CLglobals.items():
-        cl_rsut = np.zeros(lat.shape)
-        cl_rsutcs = np.zeros(lat.shape)
-        cl_rlut = np.zeros(lat.shape)
-        cl_rlutcs = np.zeros(lat.shape)
-
-        for nt in range(CLglobal.shape[0]):
-            absorbermean = {'O3': np.transpose(O3mean[nt]), 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
-
-            state.Tatm[:] = np.transpose(Tmean[nt])
-            state.Ts[:] = TSmean[nt].reshape(-1,1)
-
+        for i in range(lev.size):
             cl_rad = RRTMG(state=state, 
-                        albedo=albedomean_cs[nt],
-                        insolation =INSOLATIONmean[nt],
+                        albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
+                        insolation = np.zeros_like(state.Ts) + ideal_insolation_mean,
                         absorber_vmr=absorbermean,
-                        specific_humidity=np.transpose(SHmean[nt]),
-                        cldfrac=np.transpose(model_cl_value[nt]), # compute variances from these model values
+                        specific_humidity=np.transpose(SHmean),
+                        cldfrac=np.transpose(model_cl_value), # compute variances from these model values
                         verbose=False,
-                        clwp = np.transpose(CLWPmean[nt]),
-                        ciwp = np.transpose(CIWPmean[nt]),
-                        r_liq = np.zeros_like(state.Tatm)+ liquid_r,
-                        r_ice = np.zeros_like(state.Tatm)+ ice_r,  
+                        clwp = np.transpose(CLWPmean),
+                        ciwp = np.transpose(CIWPmean),
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
                         )
             cl_rad.compute_diagnostics()
 
-            cl_rsut = np.dstack((cl_rsut, cl_rad.SW_flux_up[:,0]))
-            cl_rsutcs = np.dstack((cl_rsutcs, cl_rad.SW_flux_up_clr[:,0]))
-            cl_rlut = np.dstack((cl_rlut, cl_rad.LW_flux_up[:,0]))
-            cl_rlutcs = np.dstack((cl_rlutcs, cl_rad.LW_flux_up_clr[:,0]))
 
-        cl_rsut = np.swapaxes(cl_rsut[0],0,1)[1:,:]
-        cl_rsutcs = np.swapaxes(cl_rsutcs[0],0,1)[1:,:]
-        cl_rlut = np.swapaxes(cl_rlut[0],0,1)[1:,:]
-        cl_rlutcs = np.swapaxes(cl_rlutcs[0],0,1)[1:,:]
 
-        cl_rsut = constants.globalMean(np.mean(cl_rsut, axis = 0), lat)
-        cl_rsutcs = constants.globalMean(np.mean(cl_rsutcs, axis = 0), lat)
-        cl_rlut = constants.globalMean(np.mean(cl_rlut, axis = 0), lat)
-        cl_rlutcs = constants.globalMean(np.mean(cl_rlutcs, axis = 0), lat)
+        SWcre_CLdeltas[model_name] = constants.globalMean((cl_rad.SW_flux_up[:,0] - cl_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up[:,0] - control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcre_CLdeltas[model_name] = constants.globalMean((cl_rad.LW_flux_up_clr[:,0] - cl_rad.LW_flux_up[:,0]) - (control_rad.LW_flux_up_clr[:,0] - control_rad.LW_flux_up[:,0]), lat)
 
-        SWcre_CLdeltas[model_name] = ((cl_rsutcs - cl_rsut) - (control_sw_cre))
-        LWcre_CLdeltas[model_name] = ((cl_rlutcs - cl_rlut) - (control_lw_cre))
+        SWcs_CLdeltas[model_name] = constants.globalMean((cl_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcs_CLdeltas[model_name] = constants.globalMean((cl_rad.LW_flux_up_clr[:,0]) - (control_rad.LW_flux_up_clr[:,0]), lat)
 
 
     #-------------------------- Generate CLWP Bias Data --------------------------#
 
     for model_name, model_clwp_value in model_CLWPglobals.items():
-        clwp_rsut = np.zeros(lat.shape)
-        clwp_rsutcs = np.zeros(lat.shape)
-        clwp_rlut = np.zeros(lat.shape)
-        clwp_rlutcs = np.zeros(lat.shape)
-
-        for nt in range(CLglobal.shape[0]):
-            absorbermean = {'O3': np.transpose(O3mean[nt]), 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
-
-            state.Tatm[:] = np.transpose(Tmean[nt])
-            state.Ts[:] = TSmean[nt].reshape(-1,1)
-
+        for i in range(lev.size):
             clwp_rad = RRTMG(state=state, 
-                        albedo=albedomean_cs[nt],
-                        insolation =INSOLATIONmean[nt],
+                        albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
+                        insolation = np.zeros_like(state.Ts) + ideal_insolation_mean,
                         absorber_vmr=absorbermean,
-                        specific_humidity=np.transpose(SHmean[nt]),
-                        cldfrac=np.transpose(CLmean[nt]), 
+                        specific_humidity=np.transpose(SHmean),
+                        cldfrac=np.transpose(CLmean),
                         verbose=False,
-                        clwp = np.transpose(model_clwp_value[nt]), # compute variances from these model values
-                        ciwp = np.transpose(CIWPmean[nt]),
-                        r_liq = np.zeros_like(state.Tatm)+ liquid_r,
-                        r_ice = np.zeros_like(state.Tatm)+ ice_r,  
+                        clwp = np.transpose(model_clwp_value), # compute variances from these model values
+                        ciwp = np.transpose(CIWPmean),
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
                         )
             clwp_rad.compute_diagnostics()
+        SWcre_LWPdeltas[model_name] = constants.globalMean((clwp_rad.SW_flux_up[:,0] - clwp_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up[:,0] - control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcre_LWPdeltas[model_name] = constants.globalMean((clwp_rad.LW_flux_up_clr[:,0] - clwp_rad.LW_flux_up[:,0]) - (control_rad.LW_flux_up_clr[:,0] - control_rad.LW_flux_up[:,0]), lat)
 
-            clwp_rsut = np.dstack((clwp_rsut, clwp_rad.SW_flux_up[:,0]))
-            clwp_rsutcs = np.dstack((clwp_rsutcs, clwp_rad.SW_flux_up_clr[:,0]))
-            clwp_rlut = np.dstack((clwp_rlut, clwp_rad.LW_flux_up[:,0]))
-            clwp_rlutcs = np.dstack((clwp_rlutcs, clwp_rad.LW_flux_up_clr[:,0]))
+        SWcs_LWPdeltas[model_name] = constants.globalMean((clwp_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcs_LWPdeltas[model_name] = constants.globalMean((clwp_rad.LW_flux_up_clr[:,0]) - (control_rad.LW_flux_up_clr[:,0]), lat)
 
-        clwp_rsut = np.swapaxes(clwp_rsut[0],0,1)[1:,:]
-        clwp_rsutcs = np.swapaxes(clwp_rsutcs[0],0,1)[1:,:]
-        clwp_rlut = np.swapaxes(clwp_rlut[0],0,1)[1:,:]
-        clwp_rlutcs = np.swapaxes(clwp_rlutcs[0],0,1)[1:,:]
-
-        clwp_rsut = constants.globalMean(np.mean(clwp_rsut, axis = 0), lat)
-        clwp_rsutcs = constants.globalMean(np.mean(clwp_rsutcs, axis = 0), lat)
-        clwp_rlut = constants.globalMean(np.mean(clwp_rlut, axis = 0), lat)
-        clwp_rlutcs = constants.globalMean(np.mean(clwp_rlutcs, axis = 0), lat)
-
-        SWcre_LWPdeltas[model_name] = ((clwp_rsutcs - clwp_rsut) - (control_sw_cre))
-        LWcre_LWPdeltas[model_name] = ((clwp_rlutcs - clwp_rlut) - (control_lw_cre))
 
     #-------------------------- Generate CIWP Bias Data --------------------------#
 
     for model_name, model_ciwp_value in model_CIWPglobals.items():
-        ciwp_rsut = np.zeros(lat.shape)
-        ciwp_rsutcs = np.zeros(lat.shape)
-        ciwp_rlut = np.zeros(lat.shape)
-        ciwp_rlutcs = np.zeros(lat.shape)
-
-        for nt in range(CLglobal.shape[0]):
-            absorbermean = {'O3': np.transpose(O3mean[nt]), 'CO2': co2, 'CH4':ch4mean, 'N2O':n2omean, 'O2': o2,'CCL4':ccl4, 
-            'CFC11':cfc11mean, 'CFC12':cfc12mean, 'CFC113':cfc113mean, 'CFC22':cfc22}
-
-            state.Tatm[:] = np.transpose(Tmean[nt])
-            state.Ts[:] = TSmean[nt].reshape(-1,1)
-
+        for i in range(lev.size):
             ciwp_rad = RRTMG(state=state, 
-                        albedo=albedomean_cs[nt],
-                        insolation =INSOLATIONmean[nt],
+                        albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
+                        insolation = np.zeros_like(state.Ts) + ideal_insolation_mean,
                         absorber_vmr=absorbermean,
-                        specific_humidity=np.transpose(SHmean[nt]),
-                        cldfrac=np.transpose(CLmean[nt]), 
+                        specific_humidity=np.transpose(SHmean),
+                        cldfrac=np.transpose(CLmean),
                         verbose=False,
-                        clwp = np.transpose(CLWPmean[nt]),
-                        ciwp = np.transpose(model_ciwp_value[nt]),  # compute variances from these model values
-                        r_liq = np.zeros_like(state.Tatm)+ liquid_r,
-                        r_ice = np.zeros_like(state.Tatm)+ ice_r,  
+                        clwp = np.transpose(CLWPmean), # compute variances from these model values
+                        ciwp = np.transpose(model_ciwp_value),
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
                         )
             ciwp_rad.compute_diagnostics()
+        SWcre_IWPdeltas[model_name] = constants.globalMean((ciwp_rad.SW_flux_up[:,0] - ciwp_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up[:,0] - control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcre_IWPdeltas[model_name] = constants.globalMean((ciwp_rad.LW_flux_up_clr[:,0] - ciwp_rad.LW_flux_up[:,0]) - (control_rad.LW_flux_up_clr[:,0] - control_rad.LW_flux_up[:,0]), lat)
 
-            ciwp_rsut = np.dstack((ciwp_rsut, ciwp_rad.SW_flux_up[:,0]))
-            ciwp_rsutcs = np.dstack((ciwp_rsutcs, ciwp_rad.SW_flux_up_clr[:,0]))
-            ciwp_rlut = np.dstack((ciwp_rlut, ciwp_rad.LW_flux_up[:,0]))
-            ciwp_rlutcs = np.dstack((ciwp_rlutcs, ciwp_rad.LW_flux_up_clr[:,0]))
+        SWcs_IWPdeltas[model_name] = constants.globalMean((ciwp_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcs_IWPdeltas[model_name] = constants.globalMean((ciwp_rad.LW_flux_up_clr[:,0]) - (control_rad.LW_flux_up_clr[:,0]), lat)
 
-        ciwp_rsut = np.swapaxes(ciwp_rsut[0],0,1)[1:,:]
-        ciwp_rsutcs = np.swapaxes(ciwp_rsutcs[0],0,1)[1:,:]
-        ciwp_rlut = np.swapaxes(ciwp_rlut[0],0,1)[1:,:]
-        ciwp_rlutcs = np.swapaxes(ciwp_rlutcs[0],0,1)[1:,:]
 
-        ciwp_rsut = constants.globalMean(np.mean(ciwp_rsut, axis = 0), lat)
-        ciwp_rsutcs = constants.globalMean(np.mean(ciwp_rsutcs, axis = 0), lat)
-        ciwp_rlut = constants.globalMean(np.mean(ciwp_rlut, axis = 0), lat)
-        ciwp_rlutcs = constants.globalMean(np.mean(ciwp_rlutcs, axis = 0), lat)
+    # #-------------------------- Generate T Bias Data --------------------------#
 
-        SWcre_IWPdeltas[model_name] = ((ciwp_rsutcs - ciwp_rsut) - (control_sw_cre))
-        LWcre_IWPdeltas[model_name] = ((ciwp_rlutcs - ciwp_rlut) - (control_lw_cre))
+    for model_name, model_T_value in model_Tglobals.items():
+        state.Tatm[:] = np.transpose(model_T_value)  # compute variances from these model values
+        for i in range(lev.size):
+            T_rad = RRTMG(state=state, 
+                        albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
+                        insolation = np.zeros_like(state.Ts) + ideal_insolation_mean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=np.transpose(SHmean),
+                        cldfrac=np.transpose(CLmean),
+                        verbose=False,
+                        clwp = np.transpose(CLWPmean),
+                        ciwp = np.transpose(CIWPmean),
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            T_rad.compute_diagnostics()
+        SWcre_Tdeltas[model_name] = constants.globalMean((T_rad.SW_flux_up[:,0] - T_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up[:,0] - control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcre_Tdeltas[model_name] = constants.globalMean((T_rad.LW_flux_up_clr[:,0] - T_rad.LW_flux_up[:,0]) - (control_rad.LW_flux_up_clr[:,0] - control_rad.LW_flux_up[:,0]), lat)
+
+        SWcs_Tdeltas[model_name] = constants.globalMean((T_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcs_Tdeltas[model_name] = constants.globalMean((T_rad.LW_flux_up_clr[:,0]) - (control_rad.LW_flux_up_clr[:,0]), lat)
+    state.Tatm[:] = np.transpose(Tmean)
+
+
+    # #-------------------------- Generate SH Bias Data --------------------------#
+
+    for model_name, model_SH_value in model_SHglobals.items():
+        for i in range(lev.size):
+            SH_rad = RRTMG(state=state, 
+                        albedo=np.zeros_like(state.Ts) + ideal_albedo_mean,
+                        insolation = np.zeros_like(state.Ts) + ideal_insolation_mean,
+                        absorber_vmr=absorbermean,
+                        specific_humidity=np.transpose(model_SH_value),   # compute variances from these model values
+                        cldfrac=np.transpose(CLmean),
+                        verbose=False,
+                        clwp = np.transpose(CLWPmean),
+                        ciwp = np.transpose(CIWPmean),
+                        r_liq = np.zeros_like(state.Tatm) + liquid_r,
+                        r_ice = np.zeros_like(state.Tatm) + ice_r,               
+                        )
+            SH_rad.compute_diagnostics()
+        SWcre_SHdeltas[model_name] = constants.globalMean((SH_rad.SW_flux_up[:,0] - SH_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up[:,0] - control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcre_SHdeltas[model_name] = constants.globalMean((SH_rad.LW_flux_up_clr[:,0] - SH_rad.LW_flux_up[:,0]) - (control_rad.LW_flux_up_clr[:,0] - control_rad.LW_flux_up[:,0]), lat)
+
+        SWcs_SHdeltas[model_name] = constants.globalMean((SH_rad.SW_flux_up_clr[:,0]) - (control_rad.SW_flux_up_clr[:,0]), lat)
+        LWcs_SHdeltas[model_name] = constants.globalMean((SH_rad.LW_flux_up_clr[:,0]) - (control_rad.LW_flux_up_clr[:,0]), lat)
 
 
  #-------------------------- Build data plots --------------------------#
 
     #  CRE Plots
     
-    labels = ["$\Delta cl$", "$\Delta lwp$", "$\Delta iwp$"]
-    sw_cre_data = [SWcre_CLdeltas, SWcre_LWPdeltas, SWcre_IWPdeltas]
-    lw_cre_data = [LWcre_CLdeltas, LWcre_LWPdeltas, LWcre_IWPdeltas]
+    labels = ["$\Delta cl$", "$\Delta lwp$", "$\Delta iwp$", "$\Delta T$", "$\Delta SH$"]
+    sw_cre_data = [SWcre_CLdeltas, SWcre_LWPdeltas, SWcre_IWPdeltas, SWcre_Tdeltas, SWcre_SHdeltas]
+    lw_cre_data = [LWcre_CLdeltas, LWcre_LWPdeltas, LWcre_IWPdeltas, LWcre_Tdeltas, LWcre_SHdeltas]
     width=0.4
     fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
     fig.suptitle('Changes in Cloud Radiative Effect from Ensemble Mean')
@@ -1033,34 +1032,44 @@ def radiation(start, end, start_dt, end_dt, location, models, label, lat_bnd_1, 
     ax2.set_xticks(range(len(labels)))
     ax2.set_xticklabels(labels)
     ax1.legend(bbox_to_anchor=(1, 1))
-    ax1.set_ylabel('$\Delta$SW CRE $W m^{-2}$')
-    ax2.set_ylabel('$\Delta$LW CRE $W m^{-2}$')
+    ax1.set_ylabel('$\Delta$SW CRE $Wm^{-2}$')
+    ax2.set_ylabel('$\Delta$LW CRE $Wm^{-2}$')
     plt.savefig( location + 'Images/RRTGM/' + label + "_enemble_cre_bias.pdf", format="pdf", bbox_inches='tight')
     plt.show()
 
-    print ('SWcre_CLdeltas:')
-    for x in SWcre_CLdeltas:
-        print (x, ':', SWcre_CLdeltas[x])
-
-    print ('SWcre_LWPdeltas:')
-    for x in SWcre_LWPdeltas:
-        print (x, ':', SWcre_LWPdeltas[x])
-
-    print ('SWcre_IWPdeltas:')
-    for x in SWcre_IWPdeltas:
-        print (x, ':', SWcre_IWPdeltas[x])
 
 
-    print ('LWcre_CLdeltas:')
-    for x in LWcre_CLdeltas:
-        print (x, ':', LWcre_CLdeltas[x])
+    #  CS Plots
 
-    print ('LWcre_LWPdeltas:')
-    for x in LWcre_LWPdeltas:
-        print (x, ':', LWcre_LWPdeltas[x])
+    sw_cs_data = [SWcs_CLdeltas, SWcs_LWPdeltas, SWcs_IWPdeltas, SWcs_Tdeltas, SWcs_SHdeltas]
+    lw_cs_data = [LWcs_CLdeltas, LWcs_LWPdeltas, LWcs_IWPdeltas, LWcs_Tdeltas, LWcs_SHdeltas]
+    width=0.4
+    fig, ( ax1, ax2 ) = plt.subplots(2, 1, figsize=(6, 6))
+    fig.suptitle('Changes in Outgoing Clear Sky Radiation from Ensemble Mean')
 
-    print ('LWcre_IWPdeltas:')
-    for x in LWcre_IWPdeltas:
-        print (x, ':', LWcre_IWPdeltas[x])
+    label_added = False
+    for i, data in enumerate(sw_cs_data):
+        if not label_added:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=10, label=j[0])
+            label_added = True
+        else:
+            for z, j in enumerate(data.items()):
+                ax1.scatter(i, j[1], color=colors[z], s=10)
+   
+    for i, data in enumerate(lw_cs_data):
+        for z, j in enumerate(data.items()):
+            ax2.scatter(i, j[1], color=colors[z], s=10)
 
 
+    ax1.axhline(y=0, label = 'Ensemble Mean', color = 'black', linestyle='--')
+    ax2.axhline(y=0, color = 'black', linestyle='--')
+    ax1.set_xticks(range(len(labels)))
+    ax1.set_xticklabels(labels)
+    ax2.set_xticks(range(len(labels)))
+    ax2.set_xticklabels(labels)
+    ax1.legend(bbox_to_anchor=(1, 1))
+    ax1.set_ylabel('$\Delta$Outgoing SW Clear Sky $Wm^{-2}$')
+    ax2.set_ylabel('$\Delta$Outgoing LW Clear Sky $Wm^{-2}$')
+    plt.savefig( location + 'Images/RRTGM/' + label + "_enemble_cs_bias.pdf", format="pdf", bbox_inches='tight')
+    plt.show()

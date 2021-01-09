@@ -35,34 +35,41 @@ import numpy as np
 import pprint
 
 #specify location, data source - stored in constants and data type (cl, clw, cli, ps, ta ...)
-data = 'CMIP6-AMIP-GFDL-CM4'
-location = constants.home + 'Data/'
+data = 'tra'
+location = constants.laptop + 'Data/'
 data_type = 'cl'
 
-if data == 'ECMWF':
-    with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: 
+if data == 'tra':
+    with Dataset(location + 'lb_mean_19820101_month.nc', 'r') as f: 
         print(f.variables.keys())
-        data = f.variables['level'][:]
+        data = f.variables['t_atm'][:]
         print(data.shape)
+        print(data)
 
-if data == 'CALIPSO-GOCCP':
-    with Dataset(location + data + '/' + data_type, 'r') as f: 
-        print(f.variables.keys())
-        data = f.variables['time'][:]
-        print(data.shape)
+# if data == 'ECMWF':
+#     with Dataset(location + data + '/' + constants.model_dict[ data ], 'r') as f: 
+#         print(f.variables.keys())
+#         data = f.variables['level'][:]
+#         print(data.shape)
 
-else:   
-    with Dataset(location + data + '/' + data_type + constants.model_dict_all[ data ], 'r') as f: 
-        print(f.variables.keys())
-        data = f.variables[ 'cl' ][:]
-        print(np.shape(data))
+# if data == 'CALIPSO-GOCCP':
+#     with Dataset(location + data + '/' + data_type, 'r') as f: 
+#         print(f.variables.keys())
+#         data = f.variables['time'][:]
+#         print(data.shape)
 
-for n in range(data.shape[0]):
-    print(n)
+# else:   
+#     with Dataset(location + data + '/' + data_type + constants.model_dict_all[ data ], 'r') as f: 
+#         print(f.variables.keys())
+#         data = f.variables[ 'cl' ][:]
+#         print(np.shape(data))
 
-x = data[0,:,:,:]
-print(x)
-print(np.shape(x))
+# for n in range(data.shape[0]):
+#     print(n)
+
+# x = data[0,:,:,:]
+# print(x)
+# print(np.shape(x))
 
 
 

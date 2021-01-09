@@ -14,7 +14,7 @@ home = 'E:/University/University/MSc/Models/'
 network = '//synthesis/E/University/University/MSc/Models/'
 uni = 'C:/Users/toha006/University/University/MSc/Models/'
 hdd = 'D:/MSc/Models/'
-laptop = 'D:/'
+laptop = 'C:/Users/tristan/University/University/MSc/Models/'
 
 
 all_amip_models = [ 'CMIP5-AMIP-CESM1-CAM5', 
